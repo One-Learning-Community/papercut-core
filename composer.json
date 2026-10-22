@@ -1,0 +1,65 @@
+{
+    "name": "papercut/core",
+    "description": "Component-based, page-aware PDF layout engine for modern PHP.",
+    "type": "library",
+    "license": "MIT",
+    "homepage": "https://github.com/One-Learning-Community/papercut",
+    "support": {
+        "issues": "https://github.com/One-Learning-Community/papercut/issues",
+        "source": "https://github.com/One-Learning-Community/papercut"
+    },
+    "authors": [
+        {
+            "name": "One Learning Community",
+            "role": "Maintainer"
+        }
+    ],
+    "keywords": [
+        "pdf",
+        "pdf-generator",
+        "layout",
+        "flexbox",
+        "document",
+        "invoice",
+        "report"
+    ],
+    "require": {
+        "php": "^8.4",
+        "ext-dom": "*",
+        "ext-mbstring": "*",
+        "ext-zlib": "*",
+        "dskripchenko/php-pdf": "^1.24"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^2.3",
+        "phpunit/phpunit": "^13.4"
+    },
+    "suggest": {
+        "ext-gd": "Read WebP, GIF, BMP and AVIF images (PNG and JPEG work without it)"
+    },
+    "autoload": {
+        "psr-4": {
+            "Papercut\\": "src/"
+        },
+        "files": [
+            "src/functions.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Papercut\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "analyse": "phpstan analyse --memory-limit=1G"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "0.1.x-dev"
+        }
+    }
+}

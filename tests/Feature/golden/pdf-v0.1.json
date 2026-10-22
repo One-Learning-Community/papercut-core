@@ -1,0 +1,12 @@
+{
+    "example:invoice": "097360ed58c9143782e06fb9ef20071069708226d6d105e5bb3e567e9cdb463d",
+    "example:report": "be2d5b4d430e2b079516cc3200af17701b4d5bf040519545d459635f98ada5da",
+    "example:transcript": "17ed4133e66b9239bffd437ca1ef2590d4d9a65400b31f1e281fb84f869515ee",
+    "fixture:borders-radius-background": "4b418b3d1cbeb75c954cb6ebf93f622d934c5495b9c23838774aaee335ddd6c0",
+    "fixture:flex-justify": "672d9a9b6a934f240a98876469fd6063326d0c29e22349e7c16cc3c8feca64b3",
+    "fixture:image-fit": "e4e5ad313f14a52ba47abad9e3dd6ef97b1ad185914f6e115e959c8f6aec4dfe",
+    "fixture:keep-together": "c2b936f89e59fb693c28f03d47b0c3734fb8a1a52e41c6a7d9a2ec8e4153685d",
+    "fixture:page-numbers": "fac616762eddc0048ce05b75b19d9b2839c0b88732ce2f716da6937073539b3b",
+    "fixture:table-split-repeat-header": "55940d14957bb9f864cde294635e829bcd526dd101e582d7b5240a4824bf34b6",
+    "fixture:text-align-justify": "8efed3b69a1a144c235ca2ef7a2a4fc0e44becd3be9c50cdb4d8fcf0087ea6d3"
+}

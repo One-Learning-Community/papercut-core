@@ -1,0 +1,12 @@
+{
+    "note": "Medians of bench/run.php (5 runs after 1 warm-up, Xdebug off, OPcache CLI on) per machine class (env PAPERCUT_BENCH_MACHINE). \"local\" is a developer laptop (Apple M5 Max); CI runs as \"ci-ubuntu-latest\" and, until that entry is committed, checks only the page count and uploads the baseline it wrote as a build artifact.",
+    "machines": {
+        "local": {
+            "median_ms": 59.77,
+            "php": "8.4.23",
+            "opcache": true,
+            "recorded": "2026-10-19",
+            "html_median_ms": 20.37
+        }
+    }
+}
