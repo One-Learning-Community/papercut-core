@@ -104,6 +104,7 @@ final class HtmlWriter implements TreeVisitor
     {
         $this->page = $page;
         $path = $this->pageCount > 1 ? sprintf('page[%d]', $index) : 'page';
+        $page->checkMargins($path);
         $this->fidelity->approximated('page box', $path);
         if ($page->headerNodes() !== [] || $page->footerNodes() !== []) {
             $this->fidelity->approximated('header and footer once per page', $path);

@@ -8,7 +8,7 @@ use Papercut\Exception\InvalidValue;
 use Papercut\Style\Style;
 use Papercut\Value\{Edges, Length};
 
-use function Papercut\mm;
+use function Papercut\{mm, pt};
 
 final class Page implements Node
 {
@@ -203,6 +203,26 @@ final class Page implements Node
     public function margins(): Edges
     {
         return $this->margins;
+    }
+
+    /**
+     * Throws when the margins meet or cross, leaving no room for content. Checked at
+     * export, not in margin(), because the size and orientation can change afterwards.
+     *
+     * @param string $name the page's path in messages: "page", or "page[1]" among several
+     */
+    public function checkMargins(string $name): void
+    {
+        $m = $this->margins;
+        $fail = static fn (string $pair, string $extent) => InvalidValue::for('page margins', $pair)
+            ->within(sprintf('on "%s"', $name))
+            ->because(sprintf('they leave no room for content on a page %s', $extent));
+        if ($m->left->points + $m->right->points >= $this->width()) {
+            throw $fail(sprintf('%s left + %s right', $m->left, $m->right), sprintf('%s wide', pt($this->width())));
+        }
+        if ($m->top->points + $m->bottom->points >= $this->height()) {
+            throw $fail(sprintf('%s top + %s bottom', $m->top, $m->bottom), sprintf('%s tall', pt($this->height())));
+        }
     }
 
     public function headerGapLength(): Length
