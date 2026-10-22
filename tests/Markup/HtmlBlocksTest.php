@@ -407,7 +407,7 @@ final class HtmlBlocksTest extends TestCase
     private static function only(string $class, array $children): object
     {
         self::assertCount(1, $children);
-        $child = $children[array_key_first($children)];
+        $child = array_values($children)[0];
         self::assertInstanceOf($class, $child);
         return $child;
     }
