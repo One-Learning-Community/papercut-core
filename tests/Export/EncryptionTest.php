@@ -28,7 +28,8 @@ final class EncryptionTest extends TestCase
      */
     private static function tool(string $pdf, array $args, array $after = []): array
     {
-        $file = tempnam(sys_get_temp_dir(), 'pc');
+        $file = tempnam(sys_get_temp_dir(), 'pc') . '.pdf'; // qpdf's AppArmor profile wants .pdf
+        rename(substr($file, 0, -4), $file);
         file_put_contents($file, $pdf);
         $cmd = [...array_map('escapeshellarg', $args), escapeshellarg($file), ...array_map('escapeshellarg', $after)];
         exec(implode(' ', $cmd) . ' 2>&1', $out, $code);

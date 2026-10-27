@@ -77,8 +77,11 @@ final class PdfInspector
 
     private static function tmp(string $pdf): string
     {
-        $file = tempnam(sys_get_temp_dir(), 'pc');
-        Assert::assertNotFalse($file);
+        // Ubuntu's AppArmor profile for qpdf only lets it open files named *.pdf, *.json or *.qdf.
+        $base = tempnam(sys_get_temp_dir(), 'pc');
+        Assert::assertNotFalse($base);
+        $file = $base . '.pdf';
+        rename($base, $file);
         file_put_contents($file, $pdf);
         return $file;
     }
