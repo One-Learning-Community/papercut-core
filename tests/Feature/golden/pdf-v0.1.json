@@ -1,12 +1,12 @@
 {
-    "example:invoice": "097360ed58c9143782e06fb9ef20071069708226d6d105e5bb3e567e9cdb463d",
-    "example:report": "be2d5b4d430e2b079516cc3200af17701b4d5bf040519545d459635f98ada5da",
-    "example:transcript": "17ed4133e66b9239bffd437ca1ef2590d4d9a65400b31f1e281fb84f869515ee",
-    "fixture:borders-radius-background": "4b418b3d1cbeb75c954cb6ebf93f622d934c5495b9c23838774aaee335ddd6c0",
-    "fixture:flex-justify": "672d9a9b6a934f240a98876469fd6063326d0c29e22349e7c16cc3c8feca64b3",
-    "fixture:image-fit": "e4e5ad313f14a52ba47abad9e3dd6ef97b1ad185914f6e115e959c8f6aec4dfe",
-    "fixture:keep-together": "c2b936f89e59fb693c28f03d47b0c3734fb8a1a52e41c6a7d9a2ec8e4153685d",
-    "fixture:page-numbers": "fac616762eddc0048ce05b75b19d9b2839c0b88732ce2f716da6937073539b3b",
-    "fixture:table-split-repeat-header": "55940d14957bb9f864cde294635e829bcd526dd101e582d7b5240a4824bf34b6",
-    "fixture:text-align-justify": "8efed3b69a1a144c235ca2ef7a2a4fc0e44becd3be9c50cdb4d8fcf0087ea6d3"
+    "example:invoice": "01894e6236fd5324c4a28c560246c422a6853c2a8990d2c85a7c1dea2752679a",
+    "example:report": "5ac41a6630bec7017b5549af49e2078622a40a3942a600470c9c34fecda9d755",
+    "example:transcript": "c46db587bb6483c7575e849ecba25886eb77e10f7dfbc1ef74671f1747af797d",
+    "fixture:borders-radius-background": "cc55e0c808b4a19a456c95acc48337840ed5c295ef14c3858630198d090833ea",
+    "fixture:flex-justify": "03a9a82655731a6757be7d55078acea90f44d4e757f73d4f6b282653d030d72b",
+    "fixture:image-fit": "faca7ccdeab821e9aff7db634b0aea5b59e7abd687c81dab061d4d31a9bea0cb",
+    "fixture:keep-together": "507d39f84f863a00df240901b6154683ed04d8d22511bc1de27f06e3a78aacd2",
+    "fixture:page-numbers": "aac3618d1385449660d7432784319599d627f2934f791d6efe6d6ede61cad9e5",
+    "fixture:table-split-repeat-header": "d5d1f538aad3ce93aeffca1a73de531e72ef13eb54f444483d23387c6014d30a",
+    "fixture:text-align-justify": "c04e8fde15061df14ab1fa6bfc3821638c1137835e7c0108abc303064df5b652"
 }

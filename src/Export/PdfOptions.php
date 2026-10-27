@@ -16,8 +16,10 @@ final readonly class PdfOptions extends ExportOptions
 
     /**
      * @param (\Closure(string, ?FidelityReport=): void)|null $onWarning
-     * @param string|false|null $cacheDir directory for the default backend's font kerning cache
+     * @param string|false|null $cacheDir directory for the default backend's font cache
      *        (null = sys_get_temp_dir()/papercut-cache-<uid>, false = no disk cache); ignored when $backend is given
+     * @param bool $bookmarks false leaves the PDF without a bookmarks panel, even for headings
+     * @param Encryption|null $encryption password protection and permissions; null writes an unencrypted PDF
      */
     public function __construct(
         ?Theme $theme = null,
@@ -27,6 +29,8 @@ final readonly class PdfOptions extends ExportOptions
         ?Backend $backend = null,
         private OverflowMode $overflow = OverflowMode::Throw,
         private string|false|null $cacheDir = null,
+        private bool $bookmarks = true,
+        private ?Encryption $encryption = null,
     ) {
         parent::__construct($theme, $fonts, $onWarning, $strict);
         $this->backend = $backend;
@@ -44,6 +48,22 @@ final readonly class PdfOptions extends ExportOptions
     public function overflow(): OverflowMode
     {
         return $this->overflow;
+    }
+
+    /** A copy that encrypts with $encryption, or writes an unencrypted PDF for null. */
+    public function withEncryption(?Encryption $encryption): self
+    {
+        return new self($this->theme(), $this->fonts(), $this->onWarning(), $this->strict(), $this->backend, $this->overflow, $this->cacheDir, $this->bookmarks, $encryption);
+    }
+
+    public function encryption(): ?Encryption
+    {
+        return $this->encryption;
+    }
+
+    public function bookmarks(): bool
+    {
+        return $this->bookmarks;
     }
 
     public function cacheDir(): string|false|null

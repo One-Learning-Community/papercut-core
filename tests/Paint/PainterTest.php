@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Papercut\Tests\Paint;
 
 use Papercut\Layout\{Fragment, PlacedPage};
-use Papercut\Paint\{Clip, Opacity, PageNumberSlot, Painter, Rect, TextRun};
+use Papercut\Paint\{Clip, DrawSvg, Opacity, PageNumberSlot, Painter, Rect, TextRun};
+use Papercut\Tests\Support\FakeBackend;
+use Papercut\Text\{FontRegistry, SvgFonts};
+use Papercut\Vector\SvgDocument;
 use Papercut\Style\TextAlign;
 use Papercut\Tests\Support\FakeFont;
 use Papercut\Text\CachedFont;
@@ -62,6 +65,25 @@ final class PainterTest extends TestCase
         self::assertInstanceOf(TextRun::class, $ops[3]);
         self::assertSame('1 of 1', $ops[3]->text);
         self::assertEqualsWithDelta([70.0, 160.0], [$ops[3]->x, $ops[3]->baseline], 1e-9);
+    }
+
+    public function test_svg_drawings_move_with_their_fragment(): void
+    {
+        $svg = SvgDocument::parse('<svg width="10" height="10"/>');
+        $fonts = new SvgFonts(FontRegistry::withDefaults(new FakeBackend()), 'Inter');
+        $f = new Fragment(50, 50);
+        $f->addOp(new Clip(1, 2, 30, 30, [new DrawSvg(-4, 2, 40, 20, $svg, $fonts)]));
+        $root = new Fragment(200, 200);
+        $root->addChild(10, 20, $f);
+
+        $ops = Painter::paint([new PlacedPage(200, 300, [['x' => 0.0, 'y' => 0.0, 'fragment' => $root]])])[0]->ops;
+
+        self::assertInstanceOf(Clip::class, $ops[0]);
+        $draw = $ops[0]->ops[0];
+        self::assertInstanceOf(DrawSvg::class, $draw);
+        self::assertEqualsWithDelta([6.0, 22.0, 40.0, 20.0], [$draw->x, $draw->y, $draw->width, $draw->height], 1e-9);
+        self::assertSame($svg, $draw->svg);
+        self::assertSame($fonts, $draw->fonts);
     }
 
     public function test_page_number_counts_pages_and_aligns(): void

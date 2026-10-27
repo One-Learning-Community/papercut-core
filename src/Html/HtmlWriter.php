@@ -6,7 +6,9 @@ namespace Papercut\Html;
 
 use Papercut\Backend\Backend;
 use Papercut\Export\LoadedImage;
-use Papercut\{Document, Image, Link, ListItem, ListNode, Node, Page, PageBreak, PageNumber, Spacer, Table, TableCell, TableRow, Text, View};
+use Papercut\{Document, Image, Link, ListItem, ListNode, Node, Page, PageBreak, PageNumber, PdfPage, Place, QrCode, Spacer, Svg, Table, TableCell, TableRow, Text, View};
+use Papercut\Barcode\Bacon\BaconQrSvg;
+use Papercut\Barcode\ModuleRects;
 use Papercut\Exception\InvalidValue;
 use Papercut\Export\{Fidelity, HtmlOptions};
 use Papercut\Layout\WidthResolver;
@@ -109,14 +111,21 @@ final class HtmlWriter implements TreeVisitor
         if ($page->headerNodes() !== [] || $page->footerNodes() !== []) {
             $this->fidelity->approximated('header and footer once per page', $path);
         }
+        if ($page->templatePage() !== null) {
+            $this->fidelity->dropped('PDF page template', $path);
+        }
         if ($page->backgroundNodes() !== []) {
             $this->fidelity->approximated('background layer', $path);
+        }
+        if ($page->overlayPlaces() !== []) {
+            $this->fidelity->approximated('overlay positions', $path);
         }
         $m = $page->margins();
         $this->out .= '<section class="pc-page" style="' . self::attr([
             'max-width' => Css::pt($page->width()),
             'min-height' => Css::pt($page->height()),
             'padding' => Css::pt($m->top->points) . ' ' . Css::pt($m->right->points) . ' ' . Css::pt($m->bottom->points) . ' ' . Css::pt($m->left->points),
+            ...($page->overlayPlaces() === [] ? [] : ['position' => 'relative']),
         ]) . '">';
     }
 
@@ -135,6 +144,7 @@ final class HtmlWriter implements TreeVisitor
         $style = match ($region) {
             Region::Header => ' style="margin-bottom:' . Css::pt($this->page?->headerGapLength()->points ?? 0.0) . '"',
             Region::Footer => ' style="margin-top:' . Css::pt($this->page?->footerGapLength()->points ?? 0.0) . '"',
+            Region::Overlay => ' style="position:absolute;inset:0"',
             default => '',
         };
         $this->out .= '<div class="pc-' . $region->value . '"' . $style . '>';
@@ -158,6 +168,10 @@ final class HtmlWriter implements TreeVisitor
             $node instanceof PageBreak => $this->pageBreak(),
             $node instanceof PageNumber => '',
             $node instanceof Image => $this->image($node, $style, $at),
+            $node instanceof QrCode => $this->qrCode($node, $style, $at),
+            $node instanceof Svg => $this->svg($node, $style, $at),
+            $node instanceof PdfPage => $this->pdfPage($at),
+            $node instanceof Place => $this->place($node),
             $node instanceof Table => $this->table($node, $style, $at),
             $node instanceof TableRow => $this->tableRow($node, $style, $at),
             $node instanceof TableCell => $this->tableCell($node, $style, $at),
@@ -337,6 +351,44 @@ final class HtmlWriter implements TreeVisitor
         return $this->images[$key] ??= LoadedImage::load($n, $this->backend);
     }
 
+    /** An inline SVG in module units, so it scales with the box and stays crisp. */
+    private function qrCode(QrCode $n, ComputedStyle $s, Visit $at): string
+    {
+        $decls = Css::box($s);
+        if ($this->parentIsFlex($at)) {
+            $decls += Css::flexItem($s);
+        }
+        if (!isset($decls['width']) && !isset($decls['height'])) {
+            $decls['width'] = '25mm';
+        }
+        $decls['display'] = 'block';
+        $decls['aspect-ratio'] = '1';
+        $label = $n->value() === null ? 'QR code' : 'QR code: ' . $n->value();
+        $design = $n->design();
+        if ($design !== null) {
+            // An image, like other SVG: its gradient ids cannot clash with another code's on the page.
+            $xml = BaconQrSvg::svg($n->modules(), $n->quietZoneModules(), $n->level(), $design, $s->color);
+            $this->out .= '<img src="data:image/svg+xml;base64,' . base64_encode($xml) . '" alt="' . self::esc($label) . '"' . self::styleAttr($decls) . '>';
+
+            return '';
+        }
+        $q = $n->quietZoneModules();
+        $d = '';
+        foreach (ModuleRects::of($n->modules()) as $r) {
+            $d .= sprintf('M%d %dh%dv%dh-%dz', $r['x'] + $q, $r['y'] + $q, $r['w'], $r['h'], $r['w']);
+        }
+        $this->out .= sprintf(
+            '<svg viewBox="0 0 %1$d %1$d" role="img" aria-label="%2$s" shape-rendering="crispEdges"%3$s><path d="%4$s" fill="%5$s"/></svg>',
+            $n->span(),
+            self::esc($label),
+            self::styleAttr($decls),
+            $d,
+            self::esc(Css::color($s->color)),
+        );
+
+        return '';
+    }
+
     private function image(Image $n, ComputedStyle $s, Visit $at): string
     {
         $decls = Css::box($s);
@@ -345,6 +397,52 @@ final class HtmlWriter implements TreeVisitor
         }
         $decls['object-fit'] = $n->fitMode()->value;
         $this->out .= '<img src="' . self::esc(ImageSource::uri($n, $this->options->imageUrl(), $this->backend, fn () => $this->fidelity->warn(sprintf('[%s] imageUrl returned an unsafe URL; the image was embedded instead', $at->path())), $this->loadImage(...))) . '" alt=""' . self::styleAttr($decls) . '>';
+
+        return '';
+    }
+
+    /**
+     * An img with a data URI, never inline markup: a browser runs no script and fetches nothing
+     * for an SVG image. Its text is set in the browser's fonts, which cannot be the page's.
+     */
+    private function svg(Svg $n, ComputedStyle $s, Visit $at): string
+    {
+        $svg = $n->document();
+        $decls = Css::box($s);
+        if ($this->parentIsFlex($at)) {
+            $decls += Css::flexItem($s);
+        }
+        if ($svg->hasText) {
+            $this->fidelity->approximated('SVG text in the browser\'s own fonts', $at->path());
+        }
+        $this->out .= '<img src="data:image/svg+xml;base64,' . base64_encode($svg->xml) . '" alt="' . self::esc($svg->title) . '"' . self::styleAttr($decls) . '>';
+
+        return '';
+    }
+
+    /** Positioned in the page section; a percentage of the page height is of the section's height. */
+    private function place(Place $n): string
+    {
+        $css = static fn (Length|Percent $v): string => $v instanceof Percent ? (string) $v : Css::pt($v->points);
+        $anchor = $n->anchorPoint();
+        $width = $n->boxWidth();
+        $decls = ['position' => 'absolute', 'left' => $css($n->x()), 'top' => $css($n->y())];
+        if ($width !== null) {
+            $decls['width'] = $css($width);
+        }
+        if ($anchor->across() !== 0.0 || $anchor->down() !== 0.0) {
+            $shift = static fn (float $f): string => $f === 0.0 ? '0' : '-' . ($f * 100) . '%';
+            $decls['transform'] = 'translate(' . $shift($anchor->across()) . ',' . $shift($anchor->down()) . ')';
+        }
+        $this->out .= '<div' . self::styleAttr($decls) . '>';
+
+        return '</div>';
+    }
+
+    /** A browser cannot draw a page of a PDF inline, so it is left out. */
+    private function pdfPage(Visit $at): string
+    {
+        $this->fidelity->dropped('PDF page', $at->path());
 
         return '';
     }

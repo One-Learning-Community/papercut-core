@@ -57,6 +57,8 @@ final readonly class Style
         'break-before' => ['breakBefore', 'bool'],
         'break-after' => ['breakAfter', 'bool'],
         'min-lines' => ['minLines', 'int>=1'],
+        'bookmark' => ['bookmark', 'bookmark'],
+        'bookmark-level' => ['bookmarkLevel', 'int>=1'],
     ];
 
     public function __construct(
@@ -98,6 +100,9 @@ final readonly class Style
         public ?bool $breakBefore = null,
         public ?bool $breakAfter = null,
         public ?int $minLines = null,
+        /** A bookmark title; '' turns off a heading's automatic bookmark. */
+        public ?string $bookmark = null,
+        public ?int $bookmarkLevel = null,
     ) {
         if ($fontWeight !== null && ($fontWeight < 1 || $fontWeight > 1000)) {
             throw InvalidValue::for('font weight', (string) $fontWeight);
@@ -146,6 +151,8 @@ final readonly class Style
         ?bool $breakBefore = null,
         ?bool $breakAfter = null,
         ?int $minLines = null,
+        ?string $bookmark = null,
+        ?int $bookmarkLevel = null,
     ): self {
         return new self(
             width: $width,
@@ -186,6 +193,8 @@ final readonly class Style
             breakBefore: $breakBefore,
             breakAfter: $breakAfter,
             minLines: $minLines,
+            bookmark: $bookmark,
+            bookmarkLevel: $bookmarkLevel,
         );
     }
 
@@ -251,6 +260,8 @@ final readonly class Style
             'bool' => self::parseBool($v),
             'bold' => self::parseBool($v) ? 700 : 400,
             'string' => self::str($v, 'string'),
+            // false (bound in Blade as :bookmark="false") turns a heading's bookmark off.
+            'bookmark' => $v === false ? '' : self::str($v, 'string'),
             default => throw new \LogicException(sprintf('Unknown attribute parser "%s".', $parser)),
         };
     }

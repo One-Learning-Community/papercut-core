@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Papercut\Layout;
 
-use Papercut\{Image, Node, OverflowMode};
-use Papercut\Backend\{Backend, ImageHandle};
+use Papercut\{Image, Node, OverflowMode, PdfPage};
+use Papercut\Backend\{Backend, ImageHandle, PdfPageHandle, PdfPageLoader};
 use Papercut\Style\{ComputedStyle, StyleResolver, Theme};
-use Papercut\Text\{FontRegistry, Itemizer};
+use Papercut\Text\{FontRegistry, Itemizer, SvgFonts};
 
 /**
  * Shared state for one layout run: fonts, theme, images, warnings, the
@@ -21,10 +21,17 @@ final class LayoutContext
     /** Open lists by kind, for depth-dependent markers. */
     private int $orderedLists = 0;
     private int $unorderedLists = 0;
+    /** @var array<string, PdfPageHandle> by source, page and password */
+    private array $pdfPages = [];
+
     /** @var array<string, ImageHandle> */
     private array $images = [];
+    /** @var array<string, SvgFonts> by family */
+    private array $svgFonts = [];
     /** Path of the deepest node that returned DoesNotFit under fresh constraints; the paginator resets it. */
     public private(set) ?string $lastFailurePath = null;
+    /** Off while laying out headers, footers and backgrounds, which repeat on every page. */
+    public bool $bookmarks = true;
     public readonly StyleResolver $styles;
 
     public function __construct(
@@ -98,6 +105,22 @@ final class LayoutContext
         $this->lastFailurePath = $path;
     }
 
+    /**
+     * @throws \Papercut\Exception\PdfUnreadable
+     * @throws \LogicException when the backend cannot draw pages of other PDFs
+     */
+    public function pdfPage(PdfPage $node): PdfPageHandle
+    {
+        $backend = $this->backend;
+        if (!$backend instanceof PdfPageLoader) {
+            throw new \LogicException(sprintf('%s cannot draw pages of other PDFs; use the default PhpPdfBackend.', $backend::class));
+        }
+        $source = $node->source();
+        $key = $source['kind'] . ':' . sha1($source['value']) . ':' . $node->pageNumber() . ':' . sha1($node->password());
+
+        return $this->pdfPages[$key] ??= $node->load($backend);
+    }
+
     public function image(Image $node): ImageHandle
     {
         $source = $node->source();
@@ -106,6 +129,14 @@ final class LayoutContext
             return $this->images['file:' . $value] ??= $this->backend->loadImageFile($value);
         }
         return $this->images['bytes:' . sha1($value)] ??= $this->backend->loadImageBytes($value);
+    }
+
+    /** Fonts for SVG text drawn in an element of this style; warnings name the element's path. */
+    public function svgFonts(ComputedStyle $style): SvgFonts
+    {
+        return $this->svgFonts[strtolower($style->fontFamily)] ??= new SvgFonts($this->fonts, $style->fontFamily, $this->fallbackFamilies, function (string $msg): void {
+            $this->warn($msg, withPath: false);
+        });
     }
 
     public function resolveStyle(Node $node, ComputedStyle $parent): ComputedStyle

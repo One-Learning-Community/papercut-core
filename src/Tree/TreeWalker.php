@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Papercut\Tree;
 
-use Papercut\{Component, Document, Link, ListItem, ListNode, Node, Page, Table, TableCell, TableRow, View};
+use Papercut\{Component, Document, Link, ListItem, ListNode, Node, Page, Place, Table, TableCell, TableRow, View};
 use Papercut\Exception\{InvalidValue, UnknownAttribute};
 use Papercut\Style\{ComputedStyle, StyleResolver};
 
 /**
  * Walks a Document's expanded node tree without laying it out: pages, then
- * regions (background, header, body, footer), then nodes, with computed styles
+ * regions (background, header, body, footer, overlay), then nodes, with computed styles
  * and paths. Paths match layout's in every region, so errors read the same
  * as from toPdf().
  */
@@ -49,6 +49,7 @@ final class TreeWalker
             [Region::Header, $page->headerNodes()],
             [Region::Body, $page->bodyNodes()],
             [Region::Footer, $page->footerNodes()],
+            [Region::Overlay, $page->overlayPlaces()],
         ];
     }
 
@@ -63,6 +64,9 @@ final class TreeWalker
             throw $e->within('at ' . $provisional);
         }
         $path = $parentPath . ' > ' . NodePath::segment($node, $style, $index);
+        if ($node instanceof Place && ($region !== Region::Overlay || $parentNode !== null)) {
+            throw new \LogicException(sprintf('A place only works in a page overlay; add it with Page::overlay(), not inside other content (at %s).', $path));
+        }
 
         $at = new Visit($path, $index, $parentNode, $inHeader, $region);
         if ($visitor->enter($node, $style, $at)) {
@@ -73,7 +77,7 @@ final class TreeWalker
 
     private function children(Node $node, ComputedStyle $style, string $path, TreeVisitor $visitor, Region $region, bool $inHeader): void
     {
-        if ($node instanceof View || $node instanceof Link || $node instanceof TableCell || $node instanceof ListItem) {
+        if ($node instanceof View || $node instanceof Link || $node instanceof TableCell || $node instanceof ListItem || $node instanceof Place) {
             foreach ($node->children() as $i => $child) {
                 $this->visit(Expander::expand($child), $style, $path, $i, $visitor, $region, $node, $inHeader);
             }

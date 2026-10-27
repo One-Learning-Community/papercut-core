@@ -224,6 +224,20 @@ trait HasStyle
         return $this->withStyle(new Style(keepTogether: $on));
     }
 
+    /**
+     * Adds an entry to the PDF's bookmarks panel that jumps to this block.
+     * Headings get one automatically; pass false to turn that off.
+     *
+     * @param int|null $level nesting depth from 1; null keeps a heading's own level, or 1
+     */
+    public function bookmark(string|false $title, ?int $level = null): static
+    {
+        if ($level !== null && $level < 1) {
+            throw \Papercut\Exception\InvalidValue::for('bookmark level', (string) $level)->because('levels start at 1');
+        }
+        return $this->withStyle(new Style(bookmark: $title === false ? '' : $title, bookmarkLevel: $level));
+    }
+
     public function keepWithNext(bool $on = true): static
     {
         return $this->withStyle(new Style(keepWithNext: $on));

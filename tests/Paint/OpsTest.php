@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Papercut\Tests\Paint;
 
 use Papercut\Backend\ImageHandle;
-use Papercut\Paint\{Clip, DocumentMeta, DrawImage, Line, Link, Opacity, PageDisplayList, Rect, TextRun};
-use Papercut\Tests\Support\FakeFont;
+use Papercut\Paint\{Clip, DocumentMeta, DrawImage, DrawSvg, Line, Link, Opacity, PageDisplayList, Rect, TextRun};
+use Papercut\Text\{FontRegistry, SvgFonts};
+use Papercut\Vector\SvgDocument;
+use Papercut\Tests\Support\{FakeBackend, FakeFont};
 use Papercut\Value\Color;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -76,6 +78,12 @@ final class OpsTest extends TestCase
         yield 'clip inf' => [static fn () => new Clip(0, 0, INF, 1, [])];
         yield 'link nan' => [static fn () => new Link(NAN, 0, 1, 1, 'u')];
         yield 'image nan' => [static fn () => new DrawImage(0, NAN, 1, 1, self::image())];
+        yield 'svg inf' => [static fn () => new DrawSvg(0, 0, INF, 1, SvgDocument::parse('<svg width="1" height="1"/>'), self::svgFonts())];
+    }
+
+    private static function svgFonts(): SvgFonts
+    {
+        return new SvgFonts(FontRegistry::withDefaults(new FakeBackend()), 'Inter');
     }
 
     /** @param \Closure(): object $make */

@@ -4,38 +4,52 @@ declare(strict_types=1);
 
 namespace Papercut\Backend\PhpPdf;
 
-use Dskripchenko\PhpPdf\Font\Ttf\TtfFile;
 use Dskripchenko\PhpPdf\Image\PdfImage;
 use Dskripchenko\PhpPdf\Pdf\Document as PdfDocument;
+use Dskripchenko\PhpPdf\Pdf\Merge\{PageImporter, PdfSource};
+use Dskripchenko\PhpPdf\Pdf\PdfFormXObject;
+use Dskripchenko\PhpPdf\Pdf\{Encryption as PdfEncryption, EncryptionAlgorithm};
 use Dskripchenko\PhpPdf\Pdf\Page as PdfPage;
 use Dskripchenko\PhpPdf\Pdf\PdfFont;
+use Dskripchenko\PhpPdf\Svg\SvgRenderer;
 use Papercut\Backend\Backend;
 use Papercut\Backend\FontHandle;
 use Papercut\Backend\ImageHandle;
 use Papercut\Backend\ImageFormat;
+use Papercut\Backend\{PdfPageHandle, PdfPageLoader};
 use Papercut\Exception\FontNotFound;
 use Papercut\Exception\ImageUnreadable;
-use Papercut\Paint\{Clip, DocumentMeta, DrawImage, Line, Link, Op, Opacity, PageDisplayList, Rect, TextRun};
+use Papercut\Exception\PdfUnreadable;
+use Papercut\Paint\{Bookmark, Clip, DocumentMeta, DrawImage, DrawPdfPage, DrawSvg, Line, Link, Op, Opacity, PageDisplayList, Rect, TextRun};
 use Papercut\Text\CachedFont;
 use Papercut\Value\Color;
 
-final class PhpPdfBackend implements Backend
+final class PhpPdfBackend implements Backend, PdfPageLoader
 {
+    /** The document being rendered, for outline entries. */
+    private ?PdfDocument $doc = null;
+    private int $outlineLevel = 0;
+    /** @var array<string, PdfFormXObject> pages of other PDFs imported into the document being rendered, by handle id */
+    private array $forms = [];
     private const array TEXT_STATE_PROPERTIES = ['lastFillR', 'lastFillG', 'lastFillB', 'lastCharSpacing'];
 
     /** @var array<string, PhpPdfFont> */
     private array $fonts = [];
-    private readonly KerningCache $kerning;
+    private readonly FontStateCache $fontCache;
     private readonly GdImageConverter $gd;
 
     /**
-     * $kerningCacheDir: where GPOS pair-kerning tables are cached across processes
-     * (null = KerningCache::defaultDir(), false = no disk cache).
+     * $cacheDir: where parsed fonts are kept across processes
+     * (null = FontStateCache::defaultDir(), false = no disk cache).
      * $gd: converts WebP, GIF, BMP and AVIF (null = use GD when it is loaded).
+     * $fontCacheFormat: FontStateCache::SERIALIZE, or FontStateCache::PHP to let opcache hold the fonts.
      */
-    public function __construct(string|false|null $kerningCacheDir = null, ?GdImageConverter $gd = null)
-    {
-        $this->kerning = new KerningCache($kerningCacheDir === false ? null : ($kerningCacheDir ?? KerningCache::defaultDir()));
+    public function __construct(
+        string|false|null $cacheDir = null,
+        ?GdImageConverter $gd = null,
+        string $fontCacheFormat = FontStateCache::SERIALIZE,
+    ) {
+        $this->fontCache = new FontStateCache($cacheDir === false ? null : ($cacheDir ?? FontStateCache::defaultDir()), $fontCacheFormat);
         $this->gd = $gd ?? GdImageConverter::detect();
     }
 
@@ -49,12 +63,11 @@ final class PhpPdfBackend implements Backend
             return $this->fonts[$real];
         }
         try {
-            $font = new PdfFont(TtfFile::fromFile($real));
+            $font = new PdfFont($this->fontCache->load($real));
             $font->ttf()->unitsPerEm();
         } catch (\Throwable $e) {
             throw new FontNotFound('Font file is not a valid TrueType/OpenType font: ' . $path, 0, $e);
         }
-        $this->kerning->prime($font->ttf(), $real);
         return $this->fonts[$real] = new PhpPdfFont($font, sha1($real));
     }
 
@@ -91,6 +104,22 @@ final class PhpPdfBackend implements Backend
         return new PhpPdfImage(PdfImage::fromBytes($embed), sha1($bytes));
     }
 
+    public function loadPdfPage(string $bytes, int $page, #[\SensitiveParameter] string $password = ''): PdfPageHandle
+    {
+        try {
+            $document = PdfSource::fromBytes($bytes, $password)->document();
+            $count = count($document->pages());
+        } catch (\Throwable $e) {
+            throw new PdfUnreadable('Cannot read PDF: ' . $e->getMessage(), 0, $e);
+        }
+        if ($page < 1 || $page > $count) {
+            throw new PdfUnreadable(sprintf('Cannot draw page %d of the PDF: it has %d page%s', $page, $count, $count === 1 ? '' : 's'));
+        }
+        [$w, $h] = PageImporter::pageSize($document, $page - 1);
+
+        return new PhpPdfPage($document, $page - 1, $w, $h, sha1($bytes) . ':' . $page);
+    }
+
     public function render(DocumentMeta $meta, array $pages): string
     {
         if ($pages === []) {
@@ -100,6 +129,9 @@ final class PhpPdfBackend implements Backend
             $font->pdfFont()->reset();
         }
         $doc = PdfDocument::new();
+        $this->doc = $doc;
+        $this->outlineLevel = 0;
+        $this->forms = [];
         $doc->metadata(
             title: $meta->title,
             author: $meta->author,
@@ -112,11 +144,20 @@ final class PhpPdfBackend implements Backend
         if ($meta->lang !== null) {
             $doc->setLang($meta->lang);
         }
-        foreach ($pages as $page) {
-            $pdfPage = $doc->addPage(customDimensionsPt: [$page->width, $page->height]);
-            $this->drawOps($pdfPage, $page->height, $page->ops);
+        if ($meta->encryption !== null) {
+            $e = $meta->encryption;
+            $doc->encrypt($e->userPassword, $e->ownerPassword, self::permissions($e), EncryptionAlgorithm::Aes_256_R6);
         }
-        return $doc->toBytes();
+        try {
+            foreach ($pages as $page) {
+                $pdfPage = $doc->addPage(customDimensionsPt: [$page->width, $page->height]);
+                $this->drawOps($pdfPage, $page->height, $page->ops);
+            }
+            return $doc->toBytes();
+        } finally {
+            $this->doc = null;
+            $this->forms = [];
+        }
     }
 
     /** @param list<Op> $ops */
@@ -128,12 +169,34 @@ final class PhpPdfBackend implements Backend
                 $op instanceof Rect => $this->drawRect($p, $h, $op, $inherited),
                 $op instanceof Line => $this->drawLine($p, $h, $op, $inherited),
                 $op instanceof DrawImage => $p->drawImage($this->pdfImage($op), $op->x, $h - $op->y - $op->height, $op->width, $op->height),
+                $op instanceof DrawSvg => $this->wrapped($p, fn () => $this->drawSvg($p, $h, $op)),
+                $op instanceof DrawPdfPage => $this->drawPdfPage($p, $h, $op),
                 $op instanceof Clip => $this->wrapped($p, fn () => $p->withClipRect($op->x, $h - $op->y - $op->height, $op->width, $op->height, fn () => $this->drawOps($p, $h, $op->ops, $inherited))),
                 $op instanceof Opacity => $this->drawOpacity($p, $h, $op, $inherited),
+                $op instanceof Bookmark => $this->bookmark($p, $h, $op),
                 $op instanceof Link => $p->addExternalLink($op->x, $h - $op->y - $op->height, $op->width, $op->height, $op->uri),
                 default => throw new \LogicException('Unsupported op ' . $op::class),
             };
         }
+    }
+
+    /** Screen-reader access is always granted; printing allows high resolution too. */
+    private static function permissions(\Papercut\Export\Encryption $e): int
+    {
+        return PdfEncryption::PERM_ACCESSIBILITY
+            | ($e->print ? PdfEncryption::PERM_PRINT | PdfEncryption::PERM_PRINT_HIGH : 0)
+            | ($e->copy ? PdfEncryption::PERM_COPY : 0)
+            | ($e->modify ? PdfEncryption::PERM_MODIFY : 0)
+            | ($e->annotate ? PdfEncryption::PERM_ANNOTATE | PdfEncryption::PERM_FILL_FORMS : 0)
+            | ($e->assemble ? PdfEncryption::PERM_ASSEMBLE : 0);
+    }
+
+    /** Nests under the previous entry at most one level deeper, so an h3 straight after an h1 sits under it. */
+    private function bookmark(PdfPage $p, float $h, Bookmark $b): void
+    {
+        $level = min($b->level, $this->outlineLevel + 1);
+        $this->outlineLevel = $level;
+        $this->doc?->registerOutlineEntry($level, $b->title, $p, $b->x, $h - $b->y);
     }
 
     private function drawText(PdfPage $p, float $h, TextRun $t, float $inherited): void
@@ -144,6 +207,23 @@ final class PhpPdfBackend implements Backend
         $font = $this->pdfFont($t->font);
         [$r, $g, $b] = $t->color->toUnitRgb();
         $this->withAlpha($p, $t->color, $inherited, fn () => $p->showEmbeddedText($t->text, $t->x, $h - $t->baseline, $font, $t->size, $r, $g, $b, $t->letterSpacing));
+    }
+
+    /**
+     * php-pdf draws the paths. Text goes through our font choice, which always answers, so
+     * php-pdf never falls back to an unembedded base-14 font.
+     */
+    private function drawSvg(PdfPage $p, float $h, DrawSvg $op): void
+    {
+        SvgRenderer::render(
+            $op->svg->xml,
+            $p,
+            $op->x,
+            $h - $op->y - $op->height,
+            $op->width,
+            $op->height,
+            fn (?string $family, bool $bold, bool $italic, string $text): PdfFont => $this->pdfFont($op->fonts->resolve($family, $bold, $italic, $text)),
+        );
     }
 
     private function drawRect(PdfPage $p, float $h, Rect $o, float $inherited): void
@@ -235,6 +315,20 @@ final class PhpPdfBackend implements Backend
             throw new \LogicException('PhpPdfBackend can only draw fonts it loaded; got ' . $inner::class);
         }
         return $inner->pdfFont();
+    }
+
+    /** Each page is imported once per document, however many times it is drawn. */
+    private function drawPdfPage(PdfPage $p, float $h, DrawPdfPage $op): void
+    {
+        $page = $op->page;
+        if (!$page instanceof PhpPdfPage) {
+            throw new \LogicException('PhpPdfBackend can only draw PDF pages it loaded; got ' . $page::class);
+        }
+        if ($this->doc === null || $op->width <= 0.0 || $op->height <= 0.0) {
+            return;
+        }
+        $form = $this->forms[$page->id()] ??= PageImporter::intoDocument($this->doc, $page->document(), $page->index());
+        $p->useFormXObject($form, $op->x, $h - $op->y - $op->height, $op->width, $op->height);
     }
 
     private function pdfImage(DrawImage $op): PdfImage

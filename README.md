@@ -39,11 +39,14 @@ Output: `$document->toPdf()` returns an `Output`: `->save($path)`, `->bytes()` (
 | Element | Purpose |
 |---|---|
 | `Document::make(Page ...)` | Root. Metadata: `title`, `author`, `subject`, `keywords`, `lang`, `createdAt`. |
-| `Page::a4()` (also `a3 a5 a6 letter legal`, `size($w, $h)`, and `named()` for those plus `a0 a1 a2 b4 b5 tabloid executive`) | A page. `landscape()`, `margin()`, `header()`, `footer()`, `background()`, `body()`. |
+| `Page::a4()` (also `a3 a5 a6 letter legal`, `size($w, $h)`, and `named()` for those plus `a0 a1 a2 b4 b5 tabloid executive`) | A page. `landscape()`, `margin()`, `header()`, `footer()`, `background()`, `overlay()`, `body()`. `Page::template($pdfPage)` sizes a page from a [PDF template](#pdf-templates). |
 | `Row::make(...)`, `Column::make(...)` | Flex containers (horizontal, vertical). |
 | `Spacer::flex()`, `Spacer::size($length)` | Flexible or fixed gap. |
 | `Text::make()`, `h1`-`h4`, `p`, `markup()`, `spans()` | Text, with inline spans. |
 | `Image::file()`, `bytes()` | PNG and JPEG; WebP, GIF, BMP and AVIF with `ext-gd`. `fit()` modes. Images shrink to fit the page width, and an image taller than an empty page shrinks to fit it, unless its height is set explicitly. |
+| `Svg::file()`, `fromString()` | An [SVG](#svg) drawn as vector paths, sized like an image. |
+| `PdfPage::file()`, `bytes()` | A page of an existing [PDF](#pdf-templates), drawn as it is and sized like an image. |
+| `Place::at($x, $y, ...)` | Content at a point on the page, for `Page::overlay()`. |
 | `ListNode::ordered()`, `unordered()` | Numbered or bulleted [lists](#lists) of `ListItem`s. |
 | `Markup::html()`, `text()`, `flatten()` | [HTML and plain text](#markup-input) converted to nodes. |
 | `Link::to($uri, ...$children)` | A clickable region around children. |
@@ -99,13 +102,13 @@ use Papercut\Style\{Style, Theme};
 use Papercut\Value\Color;
 use function Papercut\{mm, pt};
 
-$theme = Theme::default()->withStyle('callout', Style::make(color: Color::parse('indigo-600'), fontWeight: 700));
+$theme = Theme::default()->withStyle('highlight', Style::make(color: Color::parse('indigo-600'), fontWeight: 700));
 
 $document = Document::make(
     Page::a4()->margin(mm(20))->body(
         Column::make(
             Text::make('Plain'),
-            Text::make('Named style')->apply('callout'),
+            Text::make('Named style')->apply('highlight'),
         )->gap(pt(6)),
     ),
 );
@@ -365,6 +368,98 @@ $document = Document::make(
 );
 ```
 
+## Bookmarks
+
+Headings `h1` to `h4` become entries in the PDF's bookmarks panel, nested by level. Any component can add one with `bookmark($title, $level = null)`, and `bookmark(false)` takes a heading out. Headers, footers and backgrounds never add bookmarks. `new PdfOptions(bookmarks: false)` leaves the panel empty.
+
+```php
+use Papercut\{Column, Document, Page, Text};
+
+$document = Document::make(Page::a4()->body(Column::make(
+    Text::h1('Annual report'),
+    Text::h2('A long heading that reads badly in a sidebar')->bookmark('Summary'),
+    Column::make(Text::make('…'))->bookmark('Appendix', 1),
+)));
+```
+
+## Encryption
+
+`new PdfOptions(encryption: Encryption::password('secret'))` encrypts the PDF with AES-256 so it opens only with that password; readers may print and copy but not edit. `new Encryption($userPassword, $ownerPassword, print:, copy:, modify:, annotate:, assemble:)` sets the permissions. An empty user password lets anyone open the document while the permissions apply. Without an owner password a random one is generated, so the permissions cannot be lifted. Screen-reader access is always allowed. Signing and merging are left to php-pdf's `PdfSigner` and `PdfMerger`, which work on Papercut's output.
+
+## QR codes
+
+`QrCode::make($value, ErrorCorrection $level = Medium)` draws a QR code as vector squares in the text color. It is square: `width()` (or `height()`) sets the side, 25mm by default, quiet zone included (`quietZone(n)`, 4 modules by default). php-pdf's encoder holds up to 213 bytes at Medium; implement `Papercut\Barcode\QrEncoder` to use another, or pass a grid to `QrCode::fromModules()`. HTML exports draw it as an inline SVG.
+
+```php
+use Papercut\{Document, Page, QrCode};
+use function Papercut\mm;
+
+$document = Document::make(Page::a4()->body(QrCode::make('https://acme.test/pay/INV-142')->width(mm(30))));
+```
+
+With the optional `bacon/bacon-qr-code` package installed, you can style a code: `shape(QrShape::Rounded|Dots)`, `eyes(QrEyes::Dot|Pointy)`, `eyeColor($color)` and `gradient($from, $to, QrGradient $type = Diagonal)`. Papercut still encodes the modules, and Bacon draws them as an SVG. Without the package, styling throws `MissingPackage` with the `composer require` command. Dots and rounded modules are harder to scan, so they raise the error correction to `Quartile` (up to 151 bytes), re-encoding the text, unless it is already `High`; `errorCorrection()` won't take such a code lower. `new BaconQrEncoder()` (in `Papercut\Barcode\Bacon`) encodes up to 2,953 bytes when passed as the third argument to `make()`. HTML exports show a styled code as an SVG image.
+
+```php
+use Papercut\{Document, Page, QrCode};
+use Papercut\Barcode\{QrEyes, QrShape};
+use function Papercut\mm;
+
+$qr = QrCode::make('https://acme.test/pay/INV-142')
+    ->shape(QrShape::Dots)
+    ->eyes(QrEyes::Dot)
+    ->eyeColor('rose-600')
+    ->gradient('indigo-600', 'cyan-700')
+    ->width(mm(35));
+$document = Document::make(Page::a4()->body($qr));
+```
+
+## SVG
+
+`Svg::file($path)` and `Svg::fromString($markup)` draw an SVG as vector paths, so it stays sharp at any size. It is sized like an image: the SVG's `width` and `height` (or its `viewBox`, one unit to a pixel) give the natural size, setting one side keeps the aspect ratio, and it shrinks to fit the page width. With both sides set, the SVG's `preserveAspectRatio` places the drawing in the box, and anything outside the box is cut off. An SVG never splits across pages.
+
+Paths (arcs included), basic shapes, groups with nested transforms and inherited fill and stroke, `<use>`, `<style>` rules, opacity, `fill-rule="evenodd"`, and linear and radial gradients on any shape are drawn. `<clipPath>`, `<mask>`, `<filter>`, `<pattern>`, `<image>`, `<marker>`, `<symbol>`, `<textPath>` and `<tspan>` are not drawn yet, and a warning names any the SVG uses. `<text>` is set in the document's embedded fonts: a `font-family` you registered is used, otherwise the SVG element's own family.
+
+Untrusted SVG is safe to draw. Papercut never loads files, DTDs or URLs named in an SVG, refuses one that declares entities, removes scripts and event handlers, and refuses one over 10 MB or over a million units of drawing work, with each `<use>` counted (one per path point, 15 per circle or ellipse, 5 per other element; `ImageUnreadable`). HTML exports show it as an `<img>` with a `data:` URI, never inline, with the SVG's `<title>` as the alt text.
+
+```php
+use Papercut\{Document, Page, Svg};
+use function Papercut\mm;
+
+$ring = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><title>A ring</title>'
+    . '<path fill="#4f46e5" fill-rule="evenodd" d="M50 10 A40 40 0 1 1 49.99 10 Z M50 30 A20 20 0 1 1 49.99 30 Z"/></svg>';
+
+$document = Document::make(Page::a4()->body(Svg::fromString($ring)->width(mm(30))));
+```
+
+
+## PDF templates
+
+`Page::template(PdfPage::file($path))` makes a page the size of a page of an existing PDF and draws that page behind everything else on it, so you can fill in a certificate or a letterhead. `PdfPage::file()` and `PdfPage::bytes()` take a `page` number, from 1, and a `password` for a protected PDF. The PDF is read when you call `Page::template()`, and a missing file, a file that isn't a PDF, a wrong password or a missing page throws `PdfUnreadable`. The template is drawn as it is, with its text and vector artwork kept sharp, and it's stored once however many pages use it. An encrypted document encrypts the template too.
+
+`Page::overlay(Place ...)` puts content at points on the page, over everything else. `Place::at($x, $y, ...$nodes)` takes lengths from the page's top-left corner or percentages of its width and height, and `anchor()` picks which point of the content sits there, from `Anchor::TopLeft` (the default) to `Anchor::BottomRight`. Without `width()`, a place is as wide as its content, up to the page width; with one, a length or a percentage of the page width, percentages inside the place are of its width. The overlay repeats on every page the page template makes. A `Place` anywhere else throws a `LogicException`.
+
+`PdfPage` also works anywhere in your content, like an image. HTML exports leave PDF pages and templates out and report them as dropped, and position places with CSS.
+
+```php
+use Papercut\{Column, Document, Page, PdfPage, Place, QrCode, Text};
+use Papercut\Style\Anchor;
+use function Papercut\{mm, percent, pt};
+
+// Any PDF works as a template; this one is made with Papercut.
+$template = Document::make(Page::a4()->landscape()->margin(mm(15))->body(
+    Column::make(Text::make('Certificate of Completion')->size(pt(32))->bold()->center())
+        ->border(pt(4), '#1e3a8a')->padding(mm(12)),
+))->toPdf()->bytes();
+
+$document = Document::make(
+    Page::template(PdfPage::bytes($template))->overlay(
+        Place::at('50%', '45%', Text::make('Ada Lovelace')->size(pt(36))->bold())->anchor(Anchor::Top),
+        Place::at('85%', '80%', QrCode::make('https://example.com/verify/123')->width(percent(100)))
+            ->width('12%')->anchor(Anchor::Center),
+    ),
+);
+```
+
 ## Images and links
 
 ```php
@@ -463,14 +558,15 @@ A source that answers with an unsafe URL (a scheme other than http or https, a p
 
 **Limits.** The font stylesheets are built from the families and weights the document uses. Google rejects the stylesheet of a family it does not have, or of a weight it does not offer, and the browser then falls back silently. The library cannot see that, because it never fetches the stylesheet.
 
-## Kerning cache
+## Font cache
 
-Parsing a font's GPOS pair-kerning table costs tens of milliseconds, so the default backend stores it on disk and
-reads it back in later processes. Each font face gets one file of roughly 5-6 MB (the pair table, serialised) in
+Where every request is a new process (PHP-FPM), each font face would be parsed again on every request. The default
+backend keeps each parsed face in a file instead, and later processes restore it in a fraction of the time (Inter:
+1.7 ms parsed, 0.2 ms restored). Each face gets one file of a few hundred KB in
 `sys_get_temp_dir()/papercut-cache-<uid>`. The key covers the font's path, mtime and size plus the php-pdf version,
 so an updated font or library simply gets a new entry. Entries unused for 30 days are pruned. Any problem (an
-unwritable directory, a symlinked or foreign-owned one, a corrupt file) falls back silently to an in-memory parse;
-output is identical either way.
+unwritable directory, a symlinked or foreign-owned one, a damaged file) falls back silently to parsing; output is
+identical either way.
 
 ```php
 use Papercut\{Document, Page, Text};
@@ -479,6 +575,18 @@ use Papercut\Export\PdfOptions;
 $document = Document::make(Page::a4()->body(Text::make('Hello')));
 $options = new PdfOptions(cacheDir: '/var/cache/myapp/papercut'); // your own directory
 $options = new PdfOptions(cacheDir: false);                       // no disk cache
+```
+
+A service that renders PDFs all day can let opcache hold the parsed fonts in shared memory, at the cost of opcache
+memory for every face ever cached:
+
+```php
+use Papercut\{Document, Page, Text};
+use Papercut\Backend\PhpPdf\{FontStateCache, PhpPdfBackend};
+use Papercut\Export\PdfOptions;
+
+$document = Document::make(Page::a4()->body(Text::make('Hello')));
+$options = new PdfOptions(backend: new PhpPdfBackend(fontCacheFormat: FontStateCache::PHP));
 ```
 
 ## Errors

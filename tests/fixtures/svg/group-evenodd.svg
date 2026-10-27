@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <title>fill-rule set on a group and inherited by its path</title>
+  <g fill-rule="evenodd">
+    <path fill="#111827" d="M5 5 H95 V95 H5 Z M25 25 H75 V75 H25 Z"/>
+  </g>
+</svg>

@@ -155,6 +155,6 @@ final class FontRegistryTest extends TestCase
             \Papercut\Text::make('Brand italic')->font('Brand')->italic(),
         ))->createdAt(new \DateTimeImmutable('2026-01-01T00:00:00Z'));
         $bytes = $doc->toPdf(new \Papercut\Export\PdfOptions(fonts: $set))->bytes();
-        $this->assertSame('7c0493dc227e8b8c347a1d45a6b81cd88b026cf1', sha1($bytes));
+        $this->assertSame('b8a8f53d9ae21c5f8cb35a1b3bf644a583b48901', sha1($bytes));
     }
 }

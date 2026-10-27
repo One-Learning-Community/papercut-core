@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Papercut\Layout;
 
-use Papercut\{Column, Document, OverflowMode, Page};
+use Papercut\{Column, Document, OverflowMode, Page, View};
+use Papercut\Value\{Length, Percent};
 use Papercut\Exception\LayoutOverflow;
 use Papercut\Style\ComputedStyle;
 
@@ -78,11 +79,18 @@ final class Paginator
 
         $background = null;
         if ($page->backgroundNodes() !== []) {
-            $background = $this->engine->layout(Column::make(...$page->backgroundNodes()), $root, new Constraints($w, null, true, $h), pathName: 'background')->fragment;
+            $background = $this->withoutBookmarks(fn (): ?Fragment => $this->engine->layout(Column::make(...$page->backgroundNodes()), $root, new Constraints($w, null, true, $h), pathName: 'background')->fragment);
         }
 
         /** @var list<array{x: float, y: float, fragment: Fragment}> $before */
         $before = [];
+        $template = $page->templatePage();
+        if ($template !== null) {
+            $fragment = $this->engine->layout($template, $root, new Constraints($w, null, true, $h), pathName: 'template')->fragment;
+            if ($fragment !== null) {
+                $before[] = ['x' => 0.0, 'y' => 0.0, 'fragment' => $fragment];
+            }
+        }
         if ($background !== null) {
             $before[] = ['x' => 0.0, 'y' => 0.0, 'fragment' => $background];
         }
@@ -90,6 +98,7 @@ final class Paginator
             $before[] = ['x' => $left, 'y' => $top, 'fragment' => $header];
         }
         $after = $footer === null ? [] : [['x' => $left, 'y' => $h - $m->bottom->points - $footer->height, 'fragment' => $footer]];
+        $after = [...$after, ...$this->overlay($page, $root, $w, $h)];
         $emit = function (Fragment $body) use (&$out, $w, $h, $before, $after, $left, $bodyY): void {
             if (count($out) >= self::MAX_PAGES) {
                 throw new LayoutOverflow('document', sprintf('more than %d pages', self::MAX_PAGES));
@@ -141,12 +150,67 @@ final class Paginator
         return $clip;
     }
 
+    /**
+     * Each place, laid out once and put with its anchor at its point on the page.
+     *
+     * @return list<array{x: float, y: float, fragment: Fragment}>
+     */
+    private function overlay(Page $page, ComputedStyle $root, float $w, float $h): array
+    {
+        $layers = [];
+        $this->ctx->pushPath('overlay');
+        try {
+            foreach ($page->overlayPlaces() as $i => $place) {
+                $box = View::make(...$place->children());
+                $given = $place->boxWidth();
+                $width = $given === null
+                    ? min($w, $this->engine->intrinsic($box, $root)['max'])
+                    : max(0.0, self::resolve($given, $w));
+                $fragment = $this->withoutBookmarks(fn (): ?Fragment => $this->engine->layout($box, $root, new Constraints($width, null, true), pathName: sprintf('place[%d]', $i))->fragment);
+                if ($fragment === null) {
+                    continue;
+                }
+                $anchor = $place->anchorPoint();
+                $layers[] = [
+                    'x' => self::resolve($place->x(), $w) - $anchor->across() * $fragment->width,
+                    'y' => self::resolve($place->y(), $h) - $anchor->down() * $fragment->height,
+                    'fragment' => $fragment,
+                ];
+            }
+        } finally {
+            $this->ctx->popPath();
+        }
+
+        return $layers;
+    }
+
+    private static function resolve(Length|Percent $v, float $basis): float
+    {
+        return $v instanceof Percent ? $v->resolve($basis) : $v->points;
+    }
+
     /** @param list<\Papercut\Node|\Papercut\Component> $nodes */
     private function slot(array $nodes, ComputedStyle $root, float $width, string $pathName): ?Fragment
     {
         if ($nodes === []) {
             return null;
         }
-        return $this->engine->layout(Column::make(...$nodes), $root, new Constraints($width, null, true), pathName: $pathName)->fragment;
+        return $this->withoutBookmarks(fn (): ?Fragment => $this->engine->layout(Column::make(...$nodes), $root, new Constraints($width, null, true), pathName: $pathName)->fragment);
+    }
+
+    /**
+     * Repeating bands would add the same bookmark on every page.
+     *
+     * @param \Closure(): ?Fragment $layout
+     */
+    private function withoutBookmarks(\Closure $layout): ?Fragment
+    {
+        $was = $this->ctx->bookmarks;
+        $this->ctx->bookmarks = false;
+        try {
+            return $layout();
+        } finally {
+            $this->ctx->bookmarks = $was;
+        }
     }
 }

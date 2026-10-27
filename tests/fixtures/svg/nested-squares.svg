@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <title>Three nested squares in one path: ring, gap, centre</title>
+  <path fill="#111827" fill-rule="evenodd" d="M5 5 H95 V95 H5 Z M20 20 H80 V80 H20 Z M35 35 H65 V65 H35 Z"/>
+</svg>

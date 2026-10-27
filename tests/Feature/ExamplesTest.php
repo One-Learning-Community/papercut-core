@@ -13,7 +13,7 @@ final class ExamplesTest extends TestCase
     /** @return array<string, array{string, int, int}> name, min pages, max pages */
     public static function examples(): array
     {
-        return ['invoice' => ['invoice', 1, 1], 'transcript' => ['transcript', 2, \PHP_INT_MAX], 'report' => ['report', 2, \PHP_INT_MAX]];
+        return ['invoice' => ['invoice', 1, 1], 'transcript' => ['transcript', 2, \PHP_INT_MAX], 'report' => ['report', 2, \PHP_INT_MAX], 'responses' => ['responses', 1, 1]];
     }
 
     #[DataProvider('examples')]

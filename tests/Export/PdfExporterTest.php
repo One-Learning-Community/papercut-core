@@ -6,7 +6,7 @@ namespace Papercut\Tests\Export;
 
 use Papercut\{Document, Image, OverflowMode, Page, Text};
 use Dskripchenko\PhpPdf\Font\Ttf\TtfFile;
-use Papercut\Backend\PhpPdf\KerningCache;
+use Papercut\Backend\PhpPdf\FontStateCache;
 use Papercut\Exception\LayoutOverflow;
 use Papercut\Export\{ExportOptions, PdfExporter, PdfOptions};
 use Papercut\Style\Theme;
@@ -63,7 +63,7 @@ final class PdfExporterTest extends TestCase
         self::assertNotSame([], $warnings);
     }
 
-    public function test_cache_dir_controls_where_the_kerning_cache_is_written(): void
+    public function test_cache_dir_controls_where_the_font_cache_is_written(): void
     {
         $base = (string) realpath(sys_get_temp_dir()) . '/papercut-cachedir-' . getmypid() . '-' . bin2hex(random_bytes(4));
         $fontDir = $base . '-fonts';
@@ -77,11 +77,11 @@ final class PdfExporterTest extends TestCase
             ->toPdf(new PdfOptions(fonts: new FontSet([new FontFace($family, $fontDir . '/' . $file)]), cacheDir: $cacheDir))
             ->bytes();
         try {
-            $before = glob(KerningCache::defaultDir() . '/kern-*') ?: [];
+            $before = glob(FontStateCache::defaultDir() . '/font-*') ?: [];
             $render('Off', 'Off.ttf', false);
-            self::assertSame($before, glob(KerningCache::defaultDir() . '/kern-*') ?: [], 'cacheDir: false must not fall back to the default directory');
+            self::assertSame($before, glob(FontStateCache::defaultDir() . '/font-*') ?: [], 'cacheDir: false must not fall back to the default directory');
             $render('On', 'On.ttf', $on);
-            self::assertNotSame([], glob($on . '/kern-*'));
+            self::assertNotSame([], glob($on . '/font-*'));
         } finally {
             foreach ([$on] as $d) {
                 array_map('unlink', glob($d . '/*') ?: []);

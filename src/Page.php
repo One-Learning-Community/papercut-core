@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Papercut;
 
+use Papercut\Backend\{DefaultBackend, PdfPageLoader};
 use Papercut\Exception\InvalidValue;
 use Papercut\Style\Style;
 use Papercut\Value\{Edges, Length};
@@ -37,10 +38,13 @@ final class Page implements Node
     private array $header = [];
     /** @var list<Node|Component> */
     private array $footer = [];
+    private ?PdfPage $template = null;
     /** @var list<Node|Component> */
     private array $background = [];
     /** @var list<Node|Component> */
     private array $body = [];
+    /** @var list<Place> */
+    private array $overlay = [];
 
     private function __construct(private float $w, private float $h)
     {
@@ -83,6 +87,30 @@ final class Page implements Node
     public static function legal(): self
     {
         return self::preset('legal');
+    }
+
+    /**
+     * A page the size of a page of another PDF, with that page drawn behind everything else
+     * on it, background included, as for a certificate or a letterhead. The PDF is read now,
+     * to learn its size.
+     *
+     * @param PdfPageLoader|null $loader reads the PDF (null = the default backend)
+     * @throws \Papercut\Exception\PdfUnreadable
+     */
+    public static function template(PdfPage $pdf, ?PdfPageLoader $loader = null): self
+    {
+        if ($loader === null) {
+            $backend = DefaultBackend::make(false);
+            if (!$backend instanceof PdfPageLoader) {
+                throw new \LogicException(sprintf('%s cannot draw pages of other PDFs.', $backend::class));
+            }
+            $loader = $backend;
+        }
+        $handle = $pdf->load($loader);
+        $page = new self($handle->widthPt(), $handle->heightPt());
+        $page->template = $pdf->width(Length::points($handle->widthPt()))->height(Length::points($handle->heightPt()));
+
+        return $page;
     }
 
     public static function size(Length $w, Length $h): self
@@ -183,6 +211,17 @@ final class Page implements Node
         return $clone;
     }
 
+    /**
+     * Content placed at points on the page, drawn over everything else, on every page this
+     * template makes. Margins do not apply: positions are from the page's top-left corner.
+     */
+    public function overlay(Place ...$places): self
+    {
+        $clone = clone $this;
+        $clone->overlay = [...$this->overlay, ...array_values($places)];
+        return $clone;
+    }
+
     public function body(Node|Component|string ...$nodes): self
     {
         $clone = clone $this;
@@ -251,6 +290,18 @@ final class Page implements Node
     public function backgroundNodes(): array
     {
         return $this->background;
+    }
+
+    /** The page of another PDF drawn behind this one, from template(). */
+    public function templatePage(): ?PdfPage
+    {
+        return $this->template;
+    }
+
+    /** @return list<Place> */
+    public function overlayPlaces(): array
+    {
+        return $this->overlay;
     }
 
     /** @return list<Node|Component> */

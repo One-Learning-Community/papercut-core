@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Papercut\Tests\Feature;
 
 use Papercut\Document;
+use Papercut\Export\PdfOptions;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -12,6 +13,8 @@ use PHPUnit\Framework\TestCase;
  * Pins the exact PDF bytes of v0.1. Phase 0 of the multi-format refactor must not change them.
  *
  * Record (only on unchanged v0.1 code): UPDATE_GOLDEN=1 vendor/bin/phpunit --filter GoldenBytesTest
+ * A php-pdf upgrade can change the font objects alone (php-pdf 1.26: subset tags, CIDSet, checksums).
+ * Re-record then, after checking that the drawing itself is unchanged: delete the changed keys and record.
  */
 final class GoldenBytesTest extends TestCase
 {
@@ -63,19 +66,16 @@ final class GoldenBytesTest extends TestCase
             return $this->pdfBytes($document->createdAt(new \DateTimeImmutable('2026-01-01T00:00:00Z')));
         }
 
-        $root = dirname(__DIR__, 4);
-        $pdfPath = "$root/examples/core/$id.pdf";
-        @unlink($pdfPath);
-        exec(sprintf('cd %s && %s -d xdebug.mode=off examples/core/%s.php 2>&1', escapeshellarg($root), escapeshellarg(PHP_BINARY), $id), $output, $code);
-        self::assertSame(0, $code, implode("\n", $output));
-        self::assertFileExists($pdfPath);
+        $document = require dirname(__DIR__, 4) . "/examples/core/documents/$id.php";
+        self::assertInstanceOf(Document::class, $document);
 
-        return (string) file_get_contents($pdfPath);
+        return $this->pdfBytes($document);
     }
 
+    /** v0.1 had no bookmarks; with them off, everything that is drawn must still match its bytes. BookmarksTest covers the outline. */
     private function pdfBytes(Document $d): string
     {
-        return $d->toPdf()->bytes();
+        return $d->toPdf(new PdfOptions(bookmarks: false))->bytes();
     }
 
     public function test_golden_keys_match_the_cases_exactly(): void

@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Papercut\Layout;
 
-use Papercut\{Component, Image, Link, ListNode, Node, OverflowMode, PageBreak, PageNumber, Spacer, Table, TableCell, Text, View};
+use Papercut\{Component, Image, Link, ListNode, Node, OverflowMode, PageBreak, PageNumber, PdfPage, Place, QrCode, Spacer, Svg, Table, TableCell, Text, View};
 use Papercut\Exception\{InvalidValue, UnknownAttribute};
+use Papercut\Paint\Bookmark;
 use Papercut\Style\{ComputedStyle, Direction};
 use Papercut\Tree\{Expander, NodePath};
 
@@ -40,6 +41,10 @@ final class LayoutEngine
         $this->layouters[Text::class] = new TextLayouter();
         $this->layouters[Link::class] = new LinkLayouter($this->block);
         $this->layouters[Image::class] = new ImageLayouter();
+        $this->layouters[QrCode::class] = new QrCodeLayouter();
+        $this->layouters[Svg::class] = new SvgLayouter();
+        $this->layouters[PdfPage::class] = new PdfPageLayouter();
+        $this->layouters[Place::class] = new PlaceLayouter();
         $this->table = new TableLayouter($this->block);
         $this->layouters[Table::class] = $this->table;
         $this->layouters[TableCell::class] = $this->table;
@@ -83,6 +88,12 @@ final class LayoutEngine
             $style = $this->enter($node, $parent, $index, $pathName);
             $layouter = $this->layouterFor($node, $style);
             $result = $layouter->layout($node, $style, $c, $token, $this);
+            if ($token === null && $this->ctx->bookmarks && $result->fragment !== null) {
+                $bookmark = self::bookmark($node, $style);
+                if ($bookmark !== null) {
+                    $result->fragment->addOp($bookmark);
+                }
+            }
             if ($result->status === Status::DoesNotFit && $c->fresh) {
                 $clipped = $c->height !== null && $this->ctx->overflow === OverflowMode::Clip
                     ? $this->clipped($layouter, $node, $style, $c, $token)
@@ -186,6 +197,26 @@ final class LayoutEngine
         $this->ctx->popPath();
         $this->ctx->pushPath($pathName ?? NodePath::segment($node, $style, $index));
         return $style;
+    }
+
+    /** A heading's automatic bookmark, or the one set with bookmark(); placed on the block's first fragment only. */
+    private static function bookmark(Node $node, ComputedStyle $style): ?Bookmark
+    {
+        $heading = $node instanceof Text && in_array($node->preset(), ['h1', 'h2', 'h3', 'h4'], true) ? (int) substr((string) $node->preset(), 1) : null;
+        $title = $style->bookmark ?? ($heading !== null ? self::plainText($node) : null);
+        $title = $title === null ? '' : trim((string) preg_replace('/\s+/u', ' ', $title));
+        if ($title === '') {
+            return null;
+        }
+        return new Bookmark($style->bookmarkLevel ?? $heading ?? 1, $title, 0.0, 0.0);
+    }
+
+    private static function plainText(Node $node): string
+    {
+        if (!$node instanceof Text) {
+            return '';
+        }
+        return implode('', array_map(static fn (\Papercut\Span $s): string => $s->lineBreak ? ' ' : $s->text, $node->spanList()));
     }
 
     private function layouterFor(Node $node, ComputedStyle $style): Layouter

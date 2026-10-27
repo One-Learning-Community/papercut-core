@@ -10,4 +10,5 @@ enum Region: string
     case Body = 'body';
     case Footer = 'footer';
     case Background = 'background';
+    case Overlay = 'overlay';
 }

@@ -29,6 +29,24 @@ final class ArchitectureTest extends TestCase
         self::assertSame([], $offenders, 'Only src/Backend/PhpPdf may reference Dskripchenko\\*');
     }
 
+    public function test_only_the_bacon_adapter_imports_bacon_qr_code(): void
+    {
+        $src = realpath(__DIR__ . '/../src');
+        self::assertIsString($src);
+        $offenders = [];
+        $it = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($src, \FilesystemIterator::SKIP_DOTS));
+        foreach ($it as $file) {
+            $path = $file->getPathname();
+            if ($file->getExtension() !== 'php' || str_starts_with($path, $src . '/Barcode/Bacon/')) {
+                continue;
+            }
+            if (stripos((string) file_get_contents($path), 'BaconQrCode') !== false) {
+                $offenders[] = substr($path, strlen($src) + 1);
+            }
+        }
+        self::assertSame([], $offenders, 'Only src/Barcode/Bacon may reference BaconQrCode\\*, since the package is optional');
+    }
+
     public function test_tree_and_style_do_not_depend_on_layout_or_backend(): void
     {
         $src = realpath(__DIR__ . '/../src');

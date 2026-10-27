@@ -28,13 +28,15 @@
         "ext-dom": "*",
         "ext-mbstring": "*",
         "ext-zlib": "*",
-        "dskripchenko/php-pdf": "^1.24"
+        "dskripchenko/php-pdf": "^1.26"
     },
     "require-dev": {
+        "bacon/bacon-qr-code": "^3.1",
         "phpstan/phpstan": "^2.3",
         "phpunit/phpunit": "^13.4"
     },
     "suggest": {
+        "bacon/bacon-qr-code": "Draw styled QR codes: dotted or rounded modules, eye shapes and colors, gradients",
         "ext-gd": "Read WebP, GIF, BMP and AVIF images (PNG and JPEG work without it)"
     },
     "autoload": {

@@ -10,8 +10,8 @@ use Papercut\Backend\PhpPdf\PhpPdfBackend;
 final class DefaultBackend
 {
     /** The backend every exporter uses unless told otherwise: a new PhpPdfBackend. */
-    public static function make(string|false|null $kerningCacheDir = null): Backend
+    public static function make(string|false|null $cacheDir = null): Backend
     {
-        return new PhpPdfBackend($kerningCacheDir);
+        return new PhpPdfBackend($cacheDir);
     }
 }

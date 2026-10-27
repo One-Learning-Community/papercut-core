@@ -52,6 +52,9 @@ final readonly class ComputedStyle
         public bool $breakBefore,
         public bool $breakAfter,
         public int $minLines,
+        /** Not inherited. '' means no bookmark, even for a heading. */
+        public ?string $bookmark = null,
+        public ?int $bookmarkLevel = null,
     ) {
     }
 
@@ -153,6 +156,8 @@ final readonly class ComputedStyle
             breakBefore: $style->breakBefore ?? false,
             breakAfter: $style->breakAfter ?? false,
             minLines: $style->minLines ?? $this->minLines,
+            bookmark: $style->bookmark,
+            bookmarkLevel: $style->bookmarkLevel,
         );
     }
 
