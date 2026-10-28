@@ -563,6 +563,12 @@ A source that answers with an unsafe URL (a scheme other than http or https, a p
 
 **Limits.** The font stylesheets are built from the families and weights the document uses. Google rejects the stylesheet of a family it does not have, or of a weight it does not offer, and the browser then falls back silently. The library cannot see that, because it never fetches the stylesheet.
 
+## Word export (experimental)
+
+The optional, experimental [`papercut/docx`](../docx/README.md) package exports any document as a Word file:
+`$document->export(new \Papercut\Docx\DocxExporter())->save('invoice.docx')`. Word, LibreOffice and Google Docs
+paginate it themselves; what Word can't show is reported, as with HTML export.
+
 ## Font cache
 
 Where every request is a new process (PHP-FPM), each font face would be parsed again on every request. The default

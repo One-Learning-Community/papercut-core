@@ -66,4 +66,22 @@ final class ArchitectureTest extends TestCase
         }
         self::assertSame([], $offenders, 'src/Tree and src/Style must not reference Papercut\\Layout or Papercut\\Backend');
     }
+
+    public function test_core_never_imports_the_docx_package(): void
+    {
+        $src = realpath(__DIR__ . '/../src');
+        self::assertIsString($src);
+        $offenders = [];
+        $it = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($src, \FilesystemIterator::SKIP_DOTS));
+        foreach ($it as $file) {
+            if ($file->getExtension() !== 'php') {
+                continue;
+            }
+            $code = (string) file_get_contents($file->getPathname());
+            if (str_contains($code, 'Papercut\\Docx') || str_contains($code, 'PhpDocx')) {
+                $offenders[] = substr($file->getPathname(), strlen($src) + 1);
+            }
+        }
+        self::assertSame([], $offenders, 'Core must not depend on papercut/docx or php-docx');
+    }
 }
