@@ -11,7 +11,7 @@ There is no browser and no CSS cascade.
 
 **Documentation:** [one-learning-community.github.io/papercut](https://one-learning-community.github.io/papercut/guide/)
 
-> **Status: 0.2, pre-release.** Not yet published to Packagist. Using Laravel? See
+> **Status: 0.3, early release.** Before 1.0 a minor version may change the API. Using Laravel? See
 > [`papercut/laravel`](../laravel) for the Blade front end of this same engine.
 
 ## Requirements
