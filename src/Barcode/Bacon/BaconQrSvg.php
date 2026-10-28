@@ -8,7 +8,7 @@ use BaconQrCode\Common\{ErrorCorrectionLevel, Mode, Version};
 use BaconQrCode\Encoder\{ByteMatrix, QrCode};
 use BaconQrCode\Renderer\Color\{Alpha, ColorInterface, Rgb};
 use BaconQrCode\Renderer\Eye\{PointyEye, SimpleCircleEye, SquareEye};
-use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\Image\{ImageBackEndInterface, ImagickImageBackEnd, SvgImageBackEnd};
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\Module\{DotsModule, RoundnessModule, SquareModule};
 use BaconQrCode\Renderer\RendererStyle\{EyeFill, Fill, Gradient, GradientType, RendererStyle};
@@ -50,6 +50,31 @@ final class BaconQrSvg
      */
     public static function svg(array $modules, int $quietZone, ErrorCorrection $level, QrDesign $design, Color $color): string
     {
+        $size = count($modules);
+
+        return self::render($modules, $quietZone, $level, $design, $color, $size + 2 * $quietZone, new SvgImageBackEnd());
+    }
+
+    /**
+     * The code as a square PNG $pixels across, quiet zone included and see-through, drawn by
+     * Imagick: for formats that take pictures rather than vectors.
+     *
+     * @param non-empty-list<non-empty-list<bool>> $modules
+     * @param positive-int $pixels
+     * @throws \RuntimeException when the imagick extension is not loaded
+     */
+    public static function png(array $modules, int $quietZone, ErrorCorrection $level, QrDesign $design, Color $color, int $pixels): string
+    {
+        if (!extension_loaded('imagick')) {
+            throw new \RuntimeException('Styled QR codes as pictures need the Imagick extension (ext-imagick).');
+        }
+
+        return self::render($modules, $quietZone, $level, $design, $color, $pixels, new ImagickImageBackEnd('png'));
+    }
+
+    /** @param non-empty-list<non-empty-list<bool>> $modules */
+    private static function render(array $modules, int $quietZone, ErrorCorrection $level, QrDesign $design, Color $color, int $pixels, ImageBackEndInterface $backend): string
+    {
         self::require();
         $size = count($modules);
         self::checkSize($size);
@@ -62,9 +87,9 @@ final class BaconQrSvg
         // Only the matrix is drawn; mode and mask are what the grid already holds, not re-chosen.
         $code = new QrCode(Mode::BYTE(), self::level($level), Version::getVersionForNumber(intdiv($size - 17, 4)), 0, $matrix);
 
-        $style = new RendererStyle($size + 2 * $quietZone, $quietZone, self::module($design->shape), self::eye($design->eyes), self::fill($design, $color));
+        $style = new RendererStyle($pixels, $quietZone, self::module($design->shape), self::eye($design->eyes), self::fill($design, $color));
 
-        return (new ImageRenderer($style, new SvgImageBackEnd()))->render($code);
+        return (new ImageRenderer($style, $backend))->render($code);
     }
 
     private static function fill(QrDesign $design, Color $color): Fill
