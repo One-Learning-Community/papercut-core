@@ -7,11 +7,11 @@
 
 Component-based, page-aware PDF layout engine for modern PHP. Build documents from typed, immutable
 components with flexbox-style layout and page-aware pagination; a pure-PHP engine turns the tree into a PDF.
-There is no browser, no HTML parser and no CSS cascade.
+There is no browser and no CSS cascade.
 
 **Documentation:** [one-learning-community.github.io/papercut](https://one-learning-community.github.io/papercut/guide/)
 
-> **Status: v0.1, pre-release.** Not yet published to Packagist. Using Laravel? See
+> **Status: 0.2, pre-release.** Not yet published to Packagist. Using Laravel? See
 > [`papercut/laravel`](../laravel) for the Blade front end of this same engine.
 
 ## Requirements
@@ -518,8 +518,8 @@ $options = new PdfOptions(fonts: $fonts);
 ```
 
 The backend shapes and reorders text within a single drawn run (kerning, ligatures). Right-to-left and bidirectional
-paragraph layout (direction, reordering across line breaks, direction-aware alignment) is unsupported and untested
-in v0.1, and so is HarfBuzz shaping.
+paragraph layout (direction, reordering across line breaks, direction-aware alignment) is not supported yet, and
+neither is HarfBuzz shaping.
 
 ## Fonts in HTML
 
@@ -634,7 +634,14 @@ $document = Document::make(Page::a4()->margin(mm(20))->body(Column::make($text)-
 
 Runnable scripts in [`examples/core`](../../examples/core): an invoice, a multi-page transcript and a report.
 
+## Credits
+
+Every PDF Papercut makes is written by [`dskripchenko/php-pdf`](https://github.com/dskripchenko/php-pdf), by Denis Skripchenko. Papercut lays out and paginates the
+document; php-pdf parses, subsets and embeds the fonts, applies kerning, embeds images, draws SVG, encodes QR codes,
+encrypts, and reads the PDFs used as page templates. When Papercut needed more, the maintainer added it upstream.
+Thank you.
+
 ## License
 
 MIT. Bundled Inter font: SIL Open Font License 1.1 (`resources/fonts/Inter/LICENSE.txt`).
-Color palette derived from Tailwind CSS (MIT). See [`NOTICE.md`](../../NOTICE.md).
+Color palette derived from Tailwind CSS (MIT). php-pdf: MIT. See [`NOTICE.md`](../../NOTICE.md).
