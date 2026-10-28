@@ -9,6 +9,8 @@ Component-based, page-aware PDF layout engine for modern PHP. Build documents fr
 components with flexbox-style layout and page-aware pagination; a pure-PHP engine turns the tree into a PDF.
 There is no browser, no HTML parser and no CSS cascade.
 
+**Documentation:** [one-learning-community.github.io/papercut](https://one-learning-community.github.io/papercut/guide/)
+
 > **Status: v0.1, pre-release.** Not yet published to Packagist. Using Laravel? See
 > [`papercut/laravel`](../laravel) for the Blade front end of this same engine.
 
