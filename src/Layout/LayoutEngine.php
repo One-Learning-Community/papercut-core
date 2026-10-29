@@ -95,7 +95,7 @@ final class LayoutEngine
                 }
             }
             if ($result->status === Status::DoesNotFit && $c->fresh) {
-                $clipped = $c->height !== null && $this->ctx->overflow === OverflowMode::Clip
+                $clipped = $c->height !== null && $this->ctx->overflow === OverflowMode::Clip && $this->ctx->clipInPlace
                     ? $this->clipped($layouter, $node, $style, $c, $token)
                     : null;
                 if ($clipped !== null) {

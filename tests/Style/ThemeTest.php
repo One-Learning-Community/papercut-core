@@ -6,7 +6,7 @@ namespace Papercut\Tests\Style;
 
 use Papercut\Exception\UnknownAttribute;
 use Papercut\Decorator\DefaultStyles;
-use Papercut\Style\{Style, Theme};
+use Papercut\Style\{ComputedStyle, Style, Theme};
 
 use function Papercut\pt;
 use Papercut\Value\Color;
@@ -105,5 +105,28 @@ final class ThemeTest extends TestCase
     {
         $this->expectException(UnknownAttribute::class);
         Theme::default()->named('  ');
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function invalidMonoFamilies(): iterable
+    {
+        yield 'empty' => [''];
+        yield 'blank' => ['  '];
+        yield 'keyword' => ['monospace'];
+        yield 'keyword in capitals' => ['MonoSpace'];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidMonoFamilies')]
+    public function test_mono_family_rejects_empty_and_the_keyword(string $family): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('mono family must name a real font family');
+        Theme::default()->with(monoFamily: $family);
+    }
+
+    public function test_default_mono_family_has_one_name(): void
+    {
+        self::assertSame(Theme::DEFAULT_MONO_FAMILY, Theme::default()->monoFamily);
+        self::assertSame(Theme::DEFAULT_MONO_FAMILY, ComputedStyle::root(Theme::default())->monoFamily);
     }
 }

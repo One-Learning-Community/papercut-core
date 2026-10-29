@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Papercut\Decorator;
 
 use Papercut\{Component, Node, Row, View};
-use Papercut\Concerns\HasStyle;
+use Papercut\Concerns\{HasStyle, HasVariants};
 use Papercut\Style\Justify;
 use Papercut\Value\Length;
 
@@ -21,6 +21,7 @@ use Papercut\Value\Length;
 final class ChoiceList implements Decorator
 {
     use HasStyle;
+    use HasVariants;
 
     /** @var list<ChoiceOption> */
     private array $options = [];
@@ -71,26 +72,32 @@ final class ChoiceList implements Decorator
         return $this->options;
     }
 
+    /** @return list<string> */
+    public function partNames(): array
+    {
+        return ['choice', 'choice.option', 'choice.marker', 'choice.marker.radio', 'choice.marker.selected', 'choice.mark', 'choice.mark.radio', 'choice.label.selected'];
+    }
+
     public function render(): View
     {
         $rows = [];
         foreach ($this->options as $option) {
             $rows[] = Row::make($this->marker($option->selected), $this->label($option))
-                ->apply('choice.option')
+                ->apply($this->part('choice.option'))
                 ->keepTogether(true);
         }
 
         return View::make(...$rows)
-            ->apply(trim('choice ' . ($this->styleName() ?? '')))
+            ->apply(trim($this->part('choice') . ' ' . ($this->styleName() ?? '')))
             ->apply($this->style());
     }
 
     private function marker(bool $selected): View
     {
-        $name = 'choice.marker' . ($this->radio ? ' choice.marker.radio' : '') . ($selected ? ' choice.marker.selected' : '');
+        $name = $this->part('choice.marker') . ($this->radio ? ' ' . $this->part('choice.marker.radio') : '') . ($selected ? ' ' . $this->part('choice.marker.selected') : '');
         $marker = View::make();
         if ($selected) {
-            $marker = View::make(View::make()->apply('choice.mark' . ($this->radio ? ' choice.mark.radio' : '')));
+            $marker = View::make(View::make()->apply($this->part('choice.mark') . ($this->radio ? ' ' . $this->part('choice.mark.radio') : '')));
         }
         // A slot one line tall centres the marker on the label's first line at any font size or line height.
         return View::make($marker->apply($name))->height(Length::lh(1))->justify(Justify::Center)->shrink(0);
@@ -100,7 +107,7 @@ final class ChoiceList implements Decorator
     {
         $label = View::make($option->label)->grow(1)->shrink(1);
         if ($this->emphasizeSelected && $option->selected) {
-            $label = $label->apply('choice.label.selected');
+            $label = $label->apply($this->part('choice.label.selected'));
         }
         return $label;
     }

@@ -6,7 +6,7 @@ namespace Papercut\Decorator;
 
 use InvalidArgumentException;
 use Papercut\{Component, Node, Text, View};
-use Papercut\Concerns\HasStyle;
+use Papercut\Concerns\{HasStyle, HasVariants};
 
 /**
  * A toned aside box (note, tip, warning, danger or a theme-defined tone) with an optional title.
@@ -14,6 +14,7 @@ use Papercut\Concerns\HasStyle;
 final class Callout implements Decorator
 {
     use HasStyle;
+    use HasVariants;
 
     /** @var list<Node|Component> */
     private array $children;
@@ -41,6 +42,9 @@ final class Callout implements Decorator
         if (preg_match('/\s/', $tone) === 1) {
             throw new InvalidArgumentException("Callout tone must be a single word, got '$tone'.");
         }
+        if (str_contains($tone, '?')) {
+            throw new InvalidArgumentException("Callout tone must not contain '?', got '$tone'.");
+        }
         $clone = clone $this;
         $clone->tone = $tone;
         return $clone;
@@ -58,11 +62,23 @@ final class Callout implements Decorator
         return $clone;
     }
 
+    /** @return list<string> */
+    protected function toneNames(): array
+    {
+        return ['note', 'tip', 'warning', 'danger'];
+    }
+
+    /** @return list<string> */
+    public function partNames(): array
+    {
+        return ['callout', 'callout.title'];
+    }
+
     public function render(): View
     {
         $parts = [];
         if ($this->title !== null) {
-            $names = 'callout.title callout.title.' . $this->tone;
+            $names = $this->part('callout.title', $this->tone);
             $parts[] = is_string($this->title)
                 ? Text::make($this->title)->apply($names)->keepWithNext(true)
                 : View::make($this->title)->apply($names)->keepWithNext(true);
@@ -71,7 +87,7 @@ final class Callout implements Decorator
 
         return View::make(...$parts)
             ->htmlTag('aside')
-            ->apply(trim('callout callout.' . $this->tone . ' ' . ($this->styleName() ?? '')))
+            ->apply(trim($this->part('callout', $this->tone) . ' ' . ($this->styleName() ?? '')))
             ->apply($this->style());
     }
 }

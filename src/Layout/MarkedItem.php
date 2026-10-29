@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Papercut\Layout;
 
 use Papercut\{ListItem, Styled, Text, View};
-use Papercut\Style\Style;
+use Papercut\Style\{ListEntry, Style};
 
 /**
  * A ListItem paired with its marker label, the list's gutter width and the
@@ -15,7 +15,7 @@ use Papercut\Style\Style;
  *
  * @internal
  */
-final class MarkedItem implements Styled
+final class MarkedItem implements Styled, ListEntry
 {
     /** The item's children as a column; the item's computed style is applied to it directly. */
     public readonly View $content;

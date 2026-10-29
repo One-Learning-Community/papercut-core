@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Papercut;
 
 use Papercut\Concerns\HasStyle;
+use Papercut\Style\ListEntry;
 
 /**
  * One item of a ListNode; its children lay out like a column View beside the marker.
  */
-final class ListItem implements Styled
+final class ListItem implements Styled, ListEntry
 {
     use HasStyle;
 

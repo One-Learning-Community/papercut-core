@@ -26,6 +26,13 @@ final class HtmlFontsTest extends TestCase
         self::assertStringContainsString('font-family:&quot;Inter&quot;, system-ui, sans-serif', $html);
     }
 
+    public function test_monospace_child_in_a_sans_root_gets_a_monospace_stack(): void
+    {
+        $html = $this->doc('Cousine')->toHtml()->bytes();
+        self::assertStringContainsString('font-family:&quot;Cousine&quot;, monospace', $html);
+        self::assertStringContainsString('font-family:&quot;Inter&quot;, system-ui, sans-serif', $html);
+    }
+
     public function test_embed_emits_only_used_families(): void
     {
         $extra = new FontFace('Other', __DIR__ . '/../../resources/fonts/Inter/Inter-Regular.ttf');

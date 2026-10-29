@@ -31,7 +31,7 @@ final class BlockLayouter implements Layouter
         $contentWidth = BoxGeometry::contentWidth($style, $c->width);
 
         $fixed = $first ? BoxGeometry::explicitHeight($style, $c) : null;
-        $stretch = $first && $fixed === null ? BoxGeometry::clampHeight($style, $c, $c->definiteHeight) : null;
+        $stretch = $fixed === null ? BoxGeometry::clampHeight($style, $c, $c->definiteHeight) : null;
         if ($first && $fixed === null) {
             // min-height is a minimum fill, like a stretch: the box grows to it but can still split.
             $floor = BoxGeometry::minimumFill($style, $c);
@@ -41,6 +41,10 @@ final class BlockLayouter implements Layouter
             if ($floor !== null) {
                 $stretch = max($stretch ?? 0.0, $floor);
             }
+        }
+        if ($stretch !== null && $c->fill !== null) {
+            // A cell in a shared slice cannot grow past it: a min-height beyond the slice is cut to it.
+            $stretch = min($stretch, $c->fill);
         }
         if ($fixed !== null && $c->height !== null && $fixed > $c->height + self::EPSILON) {
             return LayoutResult::doesNotFit();
@@ -111,7 +115,7 @@ final class BlockLayouter implements Layouter
             if ($res->status === Status::DoesNotFit || $res->fragment === null) {
                 if ($monolithic) {
                     // unbounded and fresh: cannot happen for well-behaved layouters, but never drop content silently
-                    $engine->context()->warn(sprintf('Content dropped inside fixed-height box: %s[%d]', $child->debugName(), $i));
+                    $engine->context()->warnOnce(sprintf('Content dropped inside fixed-height box: %s[%d]', $child->debugName(), $i));
                     continue;
                 }
                 if ($placed === []) {
@@ -195,14 +199,17 @@ final class BlockLayouter implements Layouter
         }
 
         $contentHeight = $cursor;
-        $target = $fixed ?? ($breakAt === null ? $stretch : null);
+        // A box that breaks fills the slice it was given (fill); one that ends is stretched (definiteHeight).
+        $last = $breakAt === null && !$c->open;
+        $target = $fixed ?? ($breakAt === null ? $stretch : $c->fill);
         if ($target !== null) {
-            $inner = max(0.0, $target - BoxGeometry::topEdge($style) - BoxGeometry::bottomEdge($style));
+            $inner = max(0.0, $target - ($first ? BoxGeometry::topEdge($style) : 0.0) - ($last ? BoxGeometry::bottomEdge($style) : 0.0));
             $contentHeight = $fixed !== null ? $inner : max($cursor, $inner);
-            $placed = self::distribute($placed, $contentHeight - $cursor, $style, $engine);
+            if ($breakAt === null) {
+                $placed = self::distribute($placed, $contentHeight - $cursor, $style, $engine);
+            }
         }
 
-        $last = $breakAt === null;
         if ($fixed === null && $first && $last) {
             $contentHeight = BoxGeometry::capContent($style, $c, $contentHeight);
         }

@@ -18,6 +18,11 @@ final class Stylesheet
         $m = $page === null ? '0pt' : self::margins($page->margins());
         $pageRule = $o->fullPage() ? '@page{size:' . Css::pt($w) . ' ' . Css::pt($h) . ';margin:' . $m . '}' : null;
 
+        if ($pageRule !== null && $page !== null && $page->mirrorsMargins()) {
+            $e = $page->margins();
+            $pageRule .= '@page :left{margin:' . Css::pt($e->top->points) . ' ' . Css::pt($e->left->points) . ' ' . Css::pt($e->bottom->points) . ' ' . Css::pt($e->right->points) . '}';
+        }
+
         return $fontFaces . implode("\n", [
             '.papercut{background:#e5e7eb;padding:24px 0}',
             '.papercut *,.papercut *::before,.papercut *::after{box-sizing:border-box}',

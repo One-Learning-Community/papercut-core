@@ -86,4 +86,12 @@ final class HtmlListsTest extends TestCase
         self::assertStringContainsString('list-style-type:lower-alpha', $this->style($this->xpath($html, '//ol/li/ol')[0]));
         self::assertStringContainsString('list-style-type:decimal', $this->style($this->xpath($html, '//ol')[2]));
     }
+
+    public function test_top_level_list_has_bottom_margin_nested_has_none(): void
+    {
+        $html = $this->html($this->body(ListNode::unordered('a', ListItem::make('b', ListNode::unordered('c')))));
+        self::assertStringContainsString('margin:0pt 0pt 6pt 0pt', $this->style($this->xpath($html, '//ul')[0]));
+        self::assertStringNotContainsString('6pt', $this->style($this->xpath($html, '//ul/li/ul')[0]));
+        self::assertStringContainsString('margin:0', $this->style($this->xpath($html, '//ul/li/ul')[0]));
+    }
 }

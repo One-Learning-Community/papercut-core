@@ -187,7 +187,7 @@ final class FlexLayouter implements Layouter
             $child = Expander::expand($child);
             if ($child instanceof PageBreak) {
                 if ($warn) {
-                    $engine->context()->warn('PageBreak inside a row is ignored');
+                    $engine->context()->warnOnce('PageBreak inside a row is ignored');
                 }
                 continue;
             }

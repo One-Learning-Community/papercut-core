@@ -83,7 +83,7 @@ final class ContentParityTest extends TestCase
     }
 
     /**
-     * textContent with a space around every block-level element, as a browser would lay it out (only span and a are
+     * textContent with a space around every block-level element, as a browser would lay it out (only span, code and a are
      * inline). List items get the marker the browser draws from CSS, since the PDF draws it as text.
      */
     private function textOf(\Dom\Node $node): string
@@ -94,7 +94,7 @@ final class ContentParityTest extends TestCase
             if ($child instanceof \Dom\Text) {
                 $text .= $child->data;
             } elseif ($child instanceof \Dom\Element) {
-                $inline = in_array($child->localName, ['span', 'a'], true);
+                $inline = in_array($child->localName, ['span', 'a', 'code'], true);
                 $marker = '';
                 if ($child->localName === 'li' && $node instanceof \Dom\Element) {
                     $number = $child->hasAttribute('value') ? (int) $child->getAttribute('value') : $number;

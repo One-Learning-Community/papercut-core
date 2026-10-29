@@ -349,4 +349,14 @@ final class HtmlExporterTest extends TestCase
     {
         self::assertStringNotContainsString('@page', $this->html($this->simple()));
     }
+
+    public function test_list_ending_a_cell_has_no_bottom_margin_but_a_followed_list_keeps_it(): void
+    {
+        $cell = \Papercut\TableCell::make(Text::make('P'), \Papercut\ListNode::unordered('A'), \Papercut\ListNode::unordered('B'));
+        $html = $this->html(Document::make(Page::a4()->body(\Papercut\Table::make()->columns('1fr')->row($cell))));
+        $styles = array_map(fn (\Dom\Node $n): string => $this->attr($n, 'style'), $this->xpath($html, '//ul'));
+        self::assertCount(2, $styles);
+        self::assertStringContainsString('margin:0pt 0pt 6pt 0pt', $styles[0]);
+        self::assertStringContainsString('margin:0;', $styles[1]);
+    }
 }

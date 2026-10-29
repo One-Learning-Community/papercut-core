@@ -11,8 +11,8 @@ use Papercut\Barcode\Bacon\BaconQrSvg;
 use Papercut\Barcode\ModuleRects;
 use Papercut\Exception\InvalidValue;
 use Papercut\Export\{Fidelity, HtmlOptions};
-use Papercut\Layout\WidthResolver;
-use Papercut\Style\{ComputedStyle, Justify, ListMarker};
+use Papercut\Layout\{GridCell, TableGrid, WidthResolver};
+use Papercut\Style\{ComputedStyle, Justify, ListMarker, StyleName};
 use Papercut\Text\FontStyle;
 use Papercut\Value\{Auto, Fr, Length, Percent};
 use Papercut\Tree\{Region, TreeVisitor, Visit};
@@ -22,7 +22,10 @@ final class HtmlWriter implements TreeVisitor
 {
     private string $out = '';
     private readonly int $pageCount;
+    private readonly \Papercut\Style\Theme $theme;
     private ?Page $page = null;
+    /** Output held back while a hidden region is walked; null outside one. */
+    private ?string $held = null;
 
     /** @var list<ComputedStyle> */
     private array $styles = [];
@@ -30,6 +33,9 @@ final class HtmlWriter implements TreeVisitor
     private array $closers = [];
     /** @var list<?string> the open thead/tbody of each open table */
     private array $sections = [];
+
+    /** @var \WeakMap<TableRow, list<GridCell>>|null grid placements of the rows being written */
+    private ?\WeakMap $rowPlacements = null;
     /** @var \WeakMap<TableCell, true> cells laid out as plain columns because no row holds them */
     private \WeakMap $strays;
     /** @var array<string,true> */
@@ -57,6 +63,7 @@ final class HtmlWriter implements TreeVisitor
     ) {
         $this->strays = new \WeakMap();
         $this->pageCount = count($doc->pages());
+        $this->theme = $options->theme();
     }
 
     public static function esc(string $s): string
@@ -111,6 +118,12 @@ final class HtmlWriter implements TreeVisitor
         if ($page->headerNodes() !== [] || $page->footerNodes() !== []) {
             $this->fidelity->approximated('header and footer once per page', $path);
         }
+        if ($page->evenHeaderNodes() !== null || $page->evenFooterNodes() !== null) {
+            $this->fidelity->approximated('even-page header and footer', $path);
+        }
+        if ($this->firstFooterReplacesFooter($page)) {
+            $this->fidelity->approximated('first-page footer', $path);
+        }
         if ($page->templatePage() !== null) {
             $this->fidelity->dropped('PDF page template', $path);
         }
@@ -140,24 +153,66 @@ final class HtmlWriter implements TreeVisitor
         $this->edges = [];
         $m = $this->page?->margins();
         $this->regionWidth = $this->page === null || $m === null ? 0.0 : max(0.0, $this->page->width() - $m->left->points - $m->right->points);
-        $this->recordFont($root, null);
-        $style = match ($region) {
-            Region::Header => ' style="margin-bottom:' . Css::pt($this->page?->headerGapLength()->points ?? 0.0) . '"',
-            Region::Footer => ' style="margin-top:' . Css::pt($this->page?->footerGapLength()->points ?? 0.0) . '"',
-            Region::Overlay => ' style="position:absolute;inset:0"',
+        $style = match (true) {
+            $region->isHeader() => ' style="margin-bottom:' . Css::pt($this->page?->headerGapLength()->points ?? 0.0) . '"',
+            $region->isFooter() => ' style="margin-top:' . Css::pt($this->page?->footerGapLength()->points ?? 0.0) . '"',
+            $region === Region::Overlay => ' style="position:absolute;inset:0"',
             default => '',
         };
-        $this->out .= '<div class="pc-' . $region->value . '"' . $style . '>';
+        if (!$this->shown($region)) {
+            $this->held = $this->out;
+        } else {
+            $this->recordFont($root, null);
+        }
+        $class = $region->isHeader() ? 'header' : ($region->isFooter() ? 'footer' : $region->value);
+        $this->out .= '<div class="pc-' . $class . '"' . $style . '>';
+    }
+
+    /**
+     * One HTML run shows its top: the first-page header if set, else the normal one; and its bottom: the
+     * normal footer, or the first-page footer when the page has no normal one.
+     */
+    private function shown(Region $region): bool
+    {
+        $first = $this->page?->firstHeaderNodes();
+        $firstFooter = $this->page?->firstFooterNodes() ?? [];
+        $onlyFirstFooter = $firstFooter !== [] && $this->page->footerNodes() === [];
+
+        return match ($region) {
+            Region::Header => $first === null,
+            Region::FirstHeader => $first !== null && $first !== [],
+            Region::Footer => !$onlyFirstFooter,
+            Region::FirstFooter => $onlyFirstFooter,
+            Region::EvenHeader, Region::EvenFooter => false,
+            default => true,
+        };
+    }
+
+    /** A first-page footer the single HTML run cannot show: the page's normal footer (or none) is shown instead. */
+    private function firstFooterReplacesFooter(Page $page): bool
+    {
+        $first = $page->firstFooterNodes();
+
+        return $first !== null && $page->footerNodes() !== [];
     }
 
     public function leaveRegion(Region $region): void
     {
-        $this->out .= '</div>';
+        if ($this->held !== null) {
+            $this->out = $this->held;
+            $this->held = null;
+        } else {
+            $this->out .= '</div>';
+        }
         $this->styles = [];
     }
 
     public function enter(Node $node, ComputedStyle $style, Visit $at): bool
     {
+        // A hidden region is not walked: it loads no images, records no fonts and raises no notes.
+        if ($this->held !== null) {
+            return false;
+        }
         $parent = end($this->styles);
         \assert($parent instanceof ComputedStyle);
         $closer = match (true) {
@@ -188,6 +243,9 @@ final class HtmlWriter implements TreeVisitor
 
     public function leave(Node $node, ComputedStyle $style, Visit $at): void
     {
+        if ($this->held !== null) {
+            return;
+        }
         array_pop($this->styles);
         array_pop($this->edges);
         if ($node instanceof Link) {
@@ -208,7 +266,7 @@ final class HtmlWriter implements TreeVisitor
     {
         $this->recordFont($s, $path);
 
-        return Css::text($s, $parent, $this->options->fonts()->fallbacks);
+        return Css::text($s, $parent, $this->options->fonts()->fallbacks, $this->options->fonts());
     }
 
     private function view(View $n, ComputedStyle $s, ComputedStyle $parent, Visit $at): string
@@ -261,8 +319,17 @@ final class HtmlWriter implements TreeVisitor
     private function text(Text $t, ComputedStyle $s, ComputedStyle $parent, Visit $at): string
     {
         $override = self::overridesDecoration($s, $parent);
-        $tag = in_array($t->preset(), ['h1', 'h2', 'h3', 'h4'], true) ? $t->preset() : 'p';
+        $pre = StyleName::leads($t->styleName(), 'pre');
+        $tag = match (true) {
+            $pre => 'pre',
+            in_array($t->preset(), ['h1', 'h2', 'h3', 'h4'], true) => $t->preset(),
+            default => 'p',
+        };
         $decls = [...Css::box($s), ...$this->textCss($s, $parent, $at->path()), ...($this->parentIsFlex($at) ? Css::flexItem($s) : []), ...Css::pagination($s, $parent)];
+        if ($pre) {
+            // The browser's own pre rules (margin, font, tab width, white-space: pre) are replaced by the style's; long lines wrap like the PDF's.
+            $decls = ['margin' => '0', 'overflow-wrap' => 'anywhere', 'tab-size' => '4', ...$this->fontCss($s), ...$decls, 'white-space' => $s->whiteSpace->value];
+        }
         $this->out .= '<' . $tag . self::styleAttr($decls) . '>';
         $nested = false;
         foreach ($t->spanList() as $span) {
@@ -285,21 +352,28 @@ final class HtmlWriter implements TreeVisitor
             $this->out .= '<br>';
             return false;
         }
-        $style = $text->child($span->style);
+        $own = $this->theme->spanStyle($span);
+        $style = $text->child($own);
         $diff = $this->textCss($style, $text, $path);
-        if ($span->style->background !== null && !$span->style->background->isTransparent()) {
-            $diff['background-color'] = Css::color($span->style->background);
+        if ($own->background !== null && !$own->background->isTransparent()) {
+            $diff['background-color'] = Css::color($own->background);
         }
         $body = self::esc($span->text);
-        if ($diff !== []) {
-            $body = '<span' . self::styleAttr($diff) . '>' . $body . '</span>';
+        $code = StyleName::leads($span->styleName, 'code');
+        if ($code) {
+            $diff = [...$this->fontCss($style), ...$diff];
+        }
+        $wrapped = $diff !== [] || $code;
+        if ($wrapped) {
+            $el = $code ? 'code' : 'span';
+            $body = '<' . $el . self::styleAttr($diff) . '>' . $body . '</' . $el . '>';
         }
         if ($span->href !== null) {
             $href = self::href($span->href);
             if ($this->linkDepth > 0) {
                 // An anchor inside an anchor is restructured by HTML parsers: keep the text and styles, lose the inner link.
                 $nested = true;
-                $body = $diff === [] ? '<span>' . $body . '</span>' : $body;
+                $body = $wrapped ? $body : '<span>' . $body . '</span>';
             } else {
                 $body = '<a href="' . self::esc($href) . '">' . $body . '</a>';
             }
@@ -307,6 +381,16 @@ final class HtmlWriter implements TreeVisitor
         $this->out .= $body;
 
         return self::overridesDecoration($style, $text);
+    }
+
+    /**
+     * The face and size, whatever the parent has: for elements whose browser default would otherwise show through.
+     *
+     * @return array<string,string>
+     */
+    private function fontCss(ComputedStyle $s): array
+    {
+        return array_intersect_key(Css::text($s, null, $this->options->fonts()->fallbacks, $this->options->fonts()), ['font-family' => 1, 'font-size' => 1]);
     }
 
     private function link(Link $l, ComputedStyle $s, ComputedStyle $parent, Visit $at): string
@@ -469,6 +553,12 @@ final class HtmlWriter implements TreeVisitor
             $this->fidelity->approximated('fr column widths', $at->path());
         }
         $est = max(0.0, $this->regionWidth - array_sum($this->edges) - Css::horizontalEdges($s));
+        // a table that fits its columns (markup tables): Length columns too wide for the page are scaled down together
+        $shrink = 1.0;
+        if ($n->fitsColumns() && $est > 0.0 && $fixed > 0.0) {
+            $room = $est * max(0.0, 1.0 - $percent / 100.0);
+            $shrink = $fixed > $room ? $room / $fixed : 1.0;
+        }
         $hasAuto = in_array(true, array_map(static fn (object $t): bool => $t instanceof Auto, $tracks), true);
         if ($hasAuto) {
             $this->fidelity->approximated('auto column widths', $at->path());
@@ -481,10 +571,13 @@ final class HtmlWriter implements TreeVisitor
         if ($hasAuto) {
             $decls['table-layout'] = 'auto';
         }
+        if ($n->fillsWidth() && !isset($decls['width'])) {
+            $decls['width'] = '100%';
+        }
         $this->out .= '<table' . self::styleAttr($decls) . '><colgroup>';
         foreach ($tracks as $t) {
             $width = match (true) {
-                $t instanceof Length => Css::pt($t->points),
+                $t instanceof Length => Css::pt($t->points * $shrink),
                 $t instanceof Percent => Css::num($t->value) . '%',
                 $t instanceof Fr => $hasAuto ? null : self::frWidth($fixed, $percent, $t->value / $frs, $est),
                 default => null,
@@ -513,6 +606,8 @@ final class HtmlWriter implements TreeVisitor
         $parent = end($this->styles);
         \assert($parent instanceof ComputedStyle);
         $this->checkDecoration($s, $parent, $at->path());
+        $this->rowPlacements ??= new \WeakMap();
+        $this->rowPlacements[$n] = TableGrid::of($at->parent())->placements[$at->index()] ?? [];
         $want = $at->inHeader() ? 'thead' : 'tbody';
         $open = end($this->sections);
         if ($open !== $want) {
@@ -539,7 +634,10 @@ final class HtmlWriter implements TreeVisitor
         }
         $this->checkDecoration($s, $parent, $at->path());
         $tag = $n->header() ? 'th' : 'td';
-        $span = $n->span() > 1 ? ' colspan="' . $n->span() . '"' : '';
+        $p = $this->rowPlacements[$at->parent()][$at->index()] ?? null;
+        $colspan = $p->colspan ?? $n->span();
+        $rowspan = $p->rowspan ?? $n->rowsSpanned();
+        $span = ($colspan > 1 ? ' colspan="' . $colspan . '"' : '') . ($rowspan > 1 ? ' rowspan="' . $rowspan . '"' : '');
         $td = [...Css::box($s), ...$this->textCss($s, $parent, $at->path())];
         if ($s->justify === Justify::Center) {
             $td['vertical-align'] = 'middle';

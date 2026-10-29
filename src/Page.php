@@ -38,6 +38,15 @@ final class Page implements Node
     private array $header = [];
     /** @var list<Node|Component> */
     private array $footer = [];
+    /** @var list<Node|Component>|null */
+    private ?array $firstHeader = null;
+    /** @var list<Node|Component>|null */
+    private ?array $firstFooter = null;
+    /** @var list<Node|Component>|null */
+    private ?array $evenHeader = null;
+    /** @var list<Node|Component>|null */
+    private ?array $evenFooter = null;
+    private bool $mirrorMargins = false;
     private ?PdfPage $template = null;
     /** @var list<Node|Component> */
     private array $background = [];
@@ -204,6 +213,46 @@ final class Page implements Node
         return $clone;
     }
 
+    /** Header for the first page of a run, in place of the default header. No arguments, when it has no content yet, sets it empty (none on that page). */
+    public function firstHeader(Node|Component|string ...$nodes): self
+    {
+        $clone = clone $this;
+        $clone->firstHeader = [...($this->firstHeader ?? []), ...View::normalize($nodes)];
+        return $clone;
+    }
+
+    /** Footer for the first page of a run, in place of the default footer. No arguments, when it has no content yet, sets it empty (none on that page). */
+    public function firstFooter(Node|Component|string ...$nodes): self
+    {
+        $clone = clone $this;
+        $clone->firstFooter = [...($this->firstFooter ?? []), ...View::normalize($nodes)];
+        return $clone;
+    }
+
+    /** Header for even-numbered pages, in place of the default header. No arguments, when it has no content yet, sets it empty (none on that page). */
+    public function evenHeader(Node|Component|string ...$nodes): self
+    {
+        $clone = clone $this;
+        $clone->evenHeader = [...($this->evenHeader ?? []), ...View::normalize($nodes)];
+        return $clone;
+    }
+
+    /** Footer for even-numbered pages, in place of the default footer. No arguments, when it has no content yet, sets it empty (none on that page). */
+    public function evenFooter(Node|Component|string ...$nodes): self
+    {
+        $clone = clone $this;
+        $clone->evenFooter = [...($this->evenFooter ?? []), ...View::normalize($nodes)];
+        return $clone;
+    }
+
+    /** Swaps the left and right margins on even-numbered pages, for pages printed double-sided. */
+    public function mirrorMargins(bool $on = true): self
+    {
+        $clone = clone $this;
+        $clone->mirrorMargins = $on;
+        return $clone;
+    }
+
     public function background(Node|Component|string ...$nodes): self
     {
         $clone = clone $this;
@@ -242,6 +291,21 @@ final class Page implements Node
     public function margins(): Edges
     {
         return $this->margins;
+    }
+
+    /** Whether the left and right margins swap on even pages. */
+    public function mirrorsMargins(): bool
+    {
+        return $this->mirrorMargins;
+    }
+
+    /** The margins of the given page number: margins(), with left and right swapped on even pages when mirrored. */
+    public function marginsOn(int $pageNumber): Edges
+    {
+        if (!$this->mirrorMargins || $pageNumber % 2 !== 0) {
+            return $this->margins;
+        }
+        return Edges::of($this->margins->top, $this->margins->left, $this->margins->bottom, $this->margins->right);
     }
 
     /**
@@ -284,6 +348,77 @@ final class Page implements Node
     public function footerNodes(): array
     {
         return $this->footer;
+    }
+
+    /** @return list<Node|Component>|null null when no first-page header is set */
+    public function firstHeaderNodes(): ?array
+    {
+        return $this->firstHeader;
+    }
+
+    /** @return list<Node|Component>|null null when no first-page footer is set */
+    public function firstFooterNodes(): ?array
+    {
+        return $this->firstFooter;
+    }
+
+    /** @return list<Node|Component>|null null when no even-page header is set */
+    public function evenHeaderNodes(): ?array
+    {
+        return $this->evenHeader;
+    }
+
+    /** @return list<Node|Component>|null null when no even-page footer is set */
+    public function evenFooterNodes(): ?array
+    {
+        return $this->evenFooter;
+    }
+
+    /** Which header a page uses: the first-page one on the first page of a run, else the even one on even pages, else the default. */
+    public function headerVariantOn(bool $firstOfRun, int $pageNumber): PageVariant
+    {
+        return self::variantOn($this->firstHeader, $this->evenHeader, $firstOfRun, $pageNumber);
+    }
+
+    /** Which footer a page uses: the first-page one on the first page of a run, else the even one on even pages, else the default. */
+    public function footerVariantOn(bool $firstOfRun, int $pageNumber): PageVariant
+    {
+        return self::variantOn($this->firstFooter, $this->evenFooter, $firstOfRun, $pageNumber);
+    }
+
+    /**
+     * @param list<Node|Component>|null $first
+     * @param list<Node|Component>|null $even
+     */
+    private static function variantOn(?array $first, ?array $even, bool $firstOfRun, int $pageNumber): PageVariant
+    {
+        if ($firstOfRun && $first !== null) {
+            return PageVariant::First;
+        }
+        if ($pageNumber % 2 === 0 && $even !== null) {
+            return PageVariant::Even;
+        }
+        return PageVariant::Default;
+    }
+
+    /** @return list<Node|Component> the header of a variant; empty when that variant is set empty */
+    public function headerNodesOf(PageVariant $variant): array
+    {
+        return match ($variant) {
+            PageVariant::Default => $this->header,
+            PageVariant::First => $this->firstHeader ?? [],
+            PageVariant::Even => $this->evenHeader ?? [],
+        };
+    }
+
+    /** @return list<Node|Component> the footer of a variant; empty when that variant is set empty */
+    public function footerNodesOf(PageVariant $variant): array
+    {
+        return match ($variant) {
+            PageVariant::Default => $this->footer,
+            PageVariant::First => $this->firstFooter ?? [],
+            PageVariant::Even => $this->evenFooter ?? [],
+        };
     }
 
     /** @return list<Node|Component> */

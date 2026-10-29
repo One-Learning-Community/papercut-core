@@ -47,8 +47,12 @@ final class TreeWalker
         return [
             [Region::Background, $page->backgroundNodes()],
             [Region::Header, $page->headerNodes()],
+            [Region::FirstHeader, $page->firstHeaderNodes() ?? []],
+            [Region::EvenHeader, $page->evenHeaderNodes() ?? []],
             [Region::Body, $page->bodyNodes()],
             [Region::Footer, $page->footerNodes()],
+            [Region::FirstFooter, $page->firstFooterNodes() ?? []],
+            [Region::EvenFooter, $page->evenFooterNodes() ?? []],
             [Region::Overlay, $page->overlayPlaces()],
         ];
     }

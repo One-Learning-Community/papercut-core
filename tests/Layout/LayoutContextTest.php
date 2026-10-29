@@ -21,6 +21,20 @@ final class LayoutContextTest extends TestCase
         return new LayoutContext(FontRegistry::withDefaults($backend), Theme::default(), $backend, OverflowMode::Throw, null);
     }
 
+    public function test_warn_once_reports_a_message_once_per_path(): void
+    {
+        $got = [];
+        $backend = new FakeBackend();
+        $ctx = new LayoutContext(FontRegistry::withDefaults($backend), Theme::default(), $backend, OverflowMode::Throw, function (string $m) use (&$got): void { $got[] = $m; });
+        $ctx->warnOnce('same');
+        $ctx->warnOnce('same');
+        $ctx->pushPath('box');
+        $ctx->warnOnce('same');
+        $ctx->warnOnce('same');
+        $ctx->warn('same');
+        self::assertSame(['same', '[box] same', '[box] same'], $got, 'warn() still reports every time');
+    }
+
     public function test_resolve_style_is_memoized_per_node_and_parent(): void
     {
         $ctx = self::ctx();

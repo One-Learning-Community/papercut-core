@@ -21,6 +21,8 @@ final class LayoutContext
     /** Open lists by kind, for depth-dependent markers. */
     private int $orderedLists = 0;
     private int $unorderedLists = 0;
+    /** @var array<string, true> warnings already reported through warnOnce(), by path and message */
+    private array $warned = [];
     /** @var array<string, PdfPageHandle> by source, page and password */
     private array $pdfPages = [];
 
@@ -32,6 +34,8 @@ final class LayoutContext
     public private(set) ?string $lastFailurePath = null;
     /** Off while laying out headers, footers and backgrounds, which repeat on every page. */
     public bool $bookmarks = true;
+    /** Off for a trial layout that must not clip a too-tall node in place (Clip mode), so the paginator can try the next page instead. */
+    public bool $clipInPlace = true;
     public readonly StyleResolver $styles;
 
     public function __construct(
@@ -56,7 +60,7 @@ final class LayoutContext
     {
         return $this->itemizer ??= new Itemizer($this->fonts, function (string $msg): void {
             $this->warn($msg);
-        }, $this->fallbackFamilies);
+        }, $this->fallbackFamilies, $this->theme);
     }
 
     /** $withPath false: the message already names its node. */
@@ -67,6 +71,17 @@ final class LayoutContext
         }
         $path = $withPath ? $this->path() : '';
         ($this->onWarning)($path === '' ? $msg : sprintf('[%s] %s', $path, $msg));
+    }
+
+    /** Like warn(), but a message already reported for the same path is not repeated, as when a trial layout is run again. */
+    public function warnOnce(string $msg, bool $withPath = true): void
+    {
+        $key = ($withPath ? $this->path() : '') . "\0" . $msg;
+        if (isset($this->warned[$key])) {
+            return;
+        }
+        $this->warned[$key] = true;
+        $this->warn($msg, $withPath);
     }
 
     /** $name may carry a sibling index, e.g. "view[2]". */

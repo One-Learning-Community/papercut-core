@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Papercut\Tests\Layout;
 
-use Papercut\{Column, Document, Page, Row, Table, Text, View};
+use Papercut\{Column, Document, OverflowMode, Page, Row, Table, TableCell, TableRow, Text, View};
 use Papercut\Decorator\Field;
-use Papercut\Layout\{Fragment, LayoutResult, Status};
+use Papercut\Layout\{Fragment, LayoutContext, LayoutEngine, LayoutResult, Paginator, Status};
+use Papercut\Paint\{PageDisplayList, Painter, Rect};
+use Papercut\Style\Theme;
+use Papercut\Tests\Support\FakeBackend;
+use Papercut\Text\FontRegistry;
 use Papercut\Tests\Support\LayoutHarness;
 use PHPUnit\Framework\TestCase;
 
@@ -153,6 +157,59 @@ final class MinMaxHeightTest extends TestCase
     {
         $r = (new LayoutHarness())->layout(Table::make()->columns('1fr')->row(View::make(Text::make('cell'))->minHeight(pt(60))), 200);
         self::assertGreaterThanOrEqual(60.0, self::frag($r)->height);
+    }
+
+    public function test_min_height_cell_in_a_split_row_stays_within_the_body(): void
+    {
+        $long = implode(' ', array_map(fn (int $i) => "a$i", range(1, 30)));
+        $table = Table::make()->columns('1fr 1fr')->row(TableCell::make($long), TableCell::make('short')->minHeight(pt(150))->background('#eee'));
+
+        $this->assertWithinBody($this->pages($table));
+    }
+
+    public function test_min_height_cell_in_a_rowspan_group_stays_within_the_body(): void
+    {
+        $table = Table::make()->columns('1fr 1fr')
+            ->bodyRow(TableRow::make(TableCell::make('span')->rowspan(8)->minHeight(pt(150))->background('#eee'), 'r0'));
+        for ($i = 1; $i < 8; $i++) {
+            $table = $table->bodyRow(TableRow::make("r$i"));
+        }
+
+        $this->assertWithinBody($this->pages($table));
+    }
+
+    public function test_min_height_cell_that_fits_still_gets_its_full_height(): void
+    {
+        $table = Table::make()->columns('1fr 1fr')->row(TableCell::make('x'), TableCell::make('y')->minHeight(pt(60))->background('#eee'));
+        $pages = $this->pages($table);
+
+        $rects = array_values(array_filter($pages[0]->ops, fn ($o) => $o instanceof Rect));
+        self::assertCount(1, $rects);
+        self::assertEqualsWithDelta(60.0, $rects[0]->height, 0.001);
+    }
+
+    /** @return list<PageDisplayList> */
+    private function pages(Table $table): array
+    {
+        $b = new FakeBackend();
+        $ctx = new LayoutContext(FontRegistry::withDefaults($b), Theme::default(), $b, OverflowMode::Throw, static function (string $w): void {
+        });
+        return Painter::paint((new Paginator(new LayoutEngine($ctx), $ctx))->paginate(Document::make(Page::size(pt(220), pt(120))->margin(pt(10))->body($table))));
+    }
+
+    /** @param list<PageDisplayList> $pages */
+    private function assertWithinBody(array $pages): void
+    {
+        $seen = 0;
+        foreach ($pages as $page) {
+            foreach ($page->ops as $op) {
+                if ($op instanceof Rect) {
+                    $seen++;
+                    self::assertLessThanOrEqual(110.0 + 0.001, $op->y + $op->height, 'the box ends inside the body (page 120, margin 10)');
+                }
+            }
+        }
+        self::assertGreaterThan(0, $seen);
     }
 
     private static function frag(LayoutResult $r): Fragment

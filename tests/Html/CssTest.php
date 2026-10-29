@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Papercut\Tests\Html;
 
 use Papercut\Html\Css;
+use Papercut\Text\{FontClass, FontSet};
 use Papercut\Style\{Align, BorderStyle, ComputedStyle, Direction, Justify, Style, TextAlign, Theme};
 use Papercut\Value\{Auto, Color, Edges, Length, Percent};
 use PHPUnit\Framework\TestCase;
@@ -57,6 +58,38 @@ final class CssTest extends TestCase
         self::assertSame('"\\3c /style>"', Css::string('</style>'));
         self::assertSame('"Zürich"', Css::string('Zürich'));
         self::assertSame('"Evil\\"; background:url(x)", system-ui, sans-serif', Css::fontFamily('Evil"; background:url(x)'));
+    }
+
+    public function test_mono_family_stack_ends_in_monospace(): void
+    {
+        self::assertSame('"Cousine", monospace', Css::fontFamily('Cousine', [], FontClass::Mono));
+        $fonts = new FontSet(FontSet::bundled());
+        $s = $this->child(new Style(fontFamily: 'Cousine'));
+        self::assertSame('"Cousine", monospace', Css::text($s, null, [], $fonts)['font-family']);
+    }
+
+    public function test_serif_class_ends_in_serif(): void
+    {
+        self::assertSame('"X", serif', Css::fontFamily('X', [], FontClass::Serif));
+    }
+
+    public function test_fallbacks_precede_the_class_generic(): void
+    {
+        self::assertSame('"Cousine", "Inter", monospace', Css::fontFamily('Cousine', ['Inter'], FontClass::Mono));
+    }
+
+    public function test_sans_stack_unchanged(): void
+    {
+        self::assertSame('"Inter", system-ui, sans-serif', Css::fontFamily('Inter', [], FontClass::Sans));
+        $fonts = new FontSet(FontSet::bundled());
+        self::assertSame('"Inter", system-ui, sans-serif', Css::text($this->root(), null, [], $fonts)['font-family']);
+    }
+
+    public function test_unknown_family_keeps_sans_fallback(): void
+    {
+        self::assertSame('"Nope", system-ui, sans-serif', Css::fontFamily('Nope'));
+        $s = $this->child(new Style(fontFamily: 'Nope'));
+        self::assertSame('"Nope", system-ui, sans-serif', Css::text($s, null, [], new FontSet(FontSet::bundled()))['font-family']);
     }
 
     public function test_box_omits_defaults_and_emits_borders_only_with_width(): void

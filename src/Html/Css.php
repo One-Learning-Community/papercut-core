@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Papercut\Html;
 
-use Papercut\Style\{Align, ComputedStyle, Justify, Theme};
+use Papercut\Style\{Align, ComputedStyle, Justify, Theme, WhiteSpace};
+use Papercut\Text\{FontClass, FontSet};
 use Papercut\Value\{Auto, Color, Edges, Length, Percent};
 
 /** Pure mapping from resolved style values to CSS declarations. Only values that differ from the root defaults are emitted. */
@@ -54,9 +55,9 @@ final class Css
     }
 
     /** @param list<string> $fallbacks families tried before the generic ones */
-    public static function fontFamily(string $family, array $fallbacks = []): string
+    public static function fontFamily(string $family, array $fallbacks = [], ?FontClass $class = null): string
     {
-        return implode(', ', [...array_map(self::string(...), [$family, ...$fallbacks]), 'system-ui', 'sans-serif']);
+        return implode(', ', [...array_map(self::string(...), [$family, ...$fallbacks]), $class?->cssGeneric() ?? 'system-ui, sans-serif']);
     }
 
     /** @return array<string,string> */
@@ -96,11 +97,11 @@ final class Css
      * @param list<string> $fallbacks
      * @return array<string,string> every property when $parent is null, otherwise those that differ
      */
-    public static function text(ComputedStyle $s, ?ComputedStyle $parent, array $fallbacks = []): array
+    public static function text(ComputedStyle $s, ?ComputedStyle $parent, array $fallbacks = [], ?FontSet $fonts = null): array
     {
         $d = [];
         if ($parent === null || $s->fontFamily !== $parent->fontFamily) {
-            $d['font-family'] = self::fontFamily($s->fontFamily, $fallbacks);
+            $d['font-family'] = self::fontFamily($s->fontFamily, $fallbacks, $fonts?->info($s->fontFamily)?->class);
         }
         if ($parent === null || $s->fontSize !== $parent->fontSize) {
             $d['font-size'] = self::pt($s->fontSize);
@@ -131,6 +132,14 @@ final class Css
                 default => 'none',
             };
         }
+        if ($parent === null ? $s->whiteSpace !== WhiteSpace::Normal : $s->whiteSpace !== $parent->whiteSpace) {
+            $d['white-space'] = $s->whiteSpace->value;
+            if ($s->whiteSpace === WhiteSpace::PreWrap) {
+                // Tabs advance like the PDF's (4 columns), not the browser's 8.
+                $d['tab-size'] = '4';
+            }
+        }
+
         return $d;
     }
 

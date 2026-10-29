@@ -17,6 +17,8 @@ final class Table implements Styled
     /** @var list<TableRow> */
     private array $bodyRows = [];
     private bool $repeatHeader = true;
+    private bool $fillWidth = false;
+    private bool $fitColumns = false;
 
     private function __construct()
     {
@@ -121,6 +123,38 @@ final class Table implements Styled
     public function repeatsHeader(): bool
     {
         return $this->repeatHeader;
+    }
+
+    /** Gives width left over after sizing the columns to the auto columns (when no fr column takes it). */
+    public function fillWidth(bool $on = true): self
+    {
+        $clone = clone $this;
+        $clone->fillWidth = $on;
+        return $clone;
+    }
+
+    public function fillsWidth(): bool
+    {
+        return $this->fillWidth;
+    }
+
+    /**
+     * Scales Length columns down, proportionally, when they and the other columns' minimum widths exceed the width
+     * available, instead of overflowing it. Set by the markup converter for tables pasted from elsewhere.
+     *
+     * @internal
+     */
+    public function fitColumns(bool $on = true): self
+    {
+        $clone = clone $this;
+        $clone->fitColumns = $on;
+        return $clone;
+    }
+
+    /** @internal */
+    public function fitsColumns(): bool
+    {
+        return $this->fitColumns;
     }
 
     /**

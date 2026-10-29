@@ -24,7 +24,7 @@ final class GoldenBytesTest extends TestCase
     private const array EXAMPLES = ['invoice', 'transcript', 'report'];
 
     /** @var list<string> visual fixtures that use features v0.1 did not have, so they have no v0.1 bytes to match */
-    private const array NEWER_FIXTURES = ['markup-slide', 'decorators', 'decorators-split'];
+    private const array NEWER_FIXTURES = ['markup-slide', 'decorators', 'decorators-split', 'table-rowspan', 'markup-tables', 'markup-pre'];
 
     /** @return iterable<string, array{string}> */
     public static function cases(): iterable

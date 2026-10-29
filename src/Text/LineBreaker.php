@@ -20,23 +20,25 @@ final class LineBreaker
         /** @var list<InlineItem> $cur */
         $cur = [];
         $w = 0.0;
-        /** @var ?InlineItem $space */
-        $space = null;
+        /** @var list<InlineItem> $gap the spaces and tabs between the last placed word and the chunk */
+        $gap = [];
         /** @var list<InlineItem> $chunk */
         $chunk = [];
+        // True from the start of a source line until its first word: spaces and tabs there are indentation and stay.
+        $indent = true;
 
-        $place = static function () use (&$chunk, &$cur, &$w, &$space, &$lines, $max): void {
+        $place = static function () use (&$chunk, &$cur, &$w, &$gap, &$lines, &$indent, $max): void {
             if ($chunk === []) {
                 return;
             }
             $cw = array_sum(array_map(static fn (InlineItem $i): float => $i->width, $chunk));
-            $sw = $cur !== [] && $space !== null ? $space->width : 0.0;
+            [$gapItems, $sw] = $cur !== [] ? self::resolveGap($gap, $w) : [[], 0.0];
             if ($cur !== [] && $w + $sw + $cw > $max + self::EPS) {
                 $lines[] = [$cur, $w, false];
                 $cur = [];
                 $w = 0.0;
+                $gapItems = [];
                 $sw = 0.0;
-                $space = null;
             }
             if ($cur === [] && $cw > $max + self::EPS) {
                 foreach (self::splitChunk($chunk, $max) as [$done, $dw]) {
@@ -48,17 +50,18 @@ final class LineBreaker
                 }
             } else {
                 // Presence, not width: a space can measure <= 0 (negative letter spacing) and still separates words.
-                if ($cur !== [] && $space !== null) {
-                    $cur[] = $space;
-                    $w += $sw;
+                foreach ($gapItems as $g) {
+                    $cur[] = $g;
                 }
+                $w += $sw;
                 foreach ($chunk as $it) {
                     $cur[] = $it;
                     $w += $it->width;
                 }
             }
             $chunk = [];
-            $space = null;
+            $gap = [];
+            $indent = false;
         };
 
         foreach ($items as $it) {
@@ -67,10 +70,25 @@ final class LineBreaker
                 $lines[] = [$cur, $w, true];
                 $cur = [];
                 $w = 0.0;
-                $space = null;
-            } elseif ($it->kind === 'space') {
+                $gap = [];
+                $indent = true;
+            } elseif ($it->kind === 'space' || $it->kind === 'tab') {
                 $place();
-                $space = $it;
+                if (!$indent) {
+                    $gap[] = $it;
+                    continue;
+                }
+                $pitch = $it->width;
+                $sized = $it->kind === 'tab' ? $it->withWidth(self::tabAdvance($pitch, $w)) : $it;
+                if ($cur !== [] && $w + $sized->width > $max + self::EPS) {
+                    $lines[] = [$cur, $w, false];
+                    $cur = [];
+                    $w = 0.0;
+                    $sized = $it->kind === 'tab' ? $it->withWidth(self::tabAdvance($pitch, 0.0)) : $it;
+                }
+                $it = $sized;
+                $cur[] = $it;
+                $w += $it->width;
             } else {
                 $chunk[] = $it;
                 if ($it->breakAfter) {
@@ -89,6 +107,35 @@ final class LineBreaker
             $out[] = new Line($its, $width, $forced, $i === $last);
         }
         return $out;
+    }
+
+    /**
+     * The gap's items with each tab sized for where it falls when the gap starts at $x, and the gap's total width.
+     *
+     * @param list<InlineItem> $gap
+     * @return array{list<InlineItem>, float}
+     */
+    private static function resolveGap(array $gap, float $x): array
+    {
+        $out = [];
+        $at = $x;
+        foreach ($gap as $g) {
+            $g = $g->kind === 'tab' ? $g->withWidth(self::tabAdvance($g->width, $at)) : $g;
+            $out[] = $g;
+            $at += $g->width;
+        }
+        return [$out, $at - $x];
+    }
+
+    /** Distance from $x to the next multiple of $pitch; a full pitch when $x is already on a stop. */
+    private static function tabAdvance(float $pitch, float $x): float
+    {
+        if ($pitch <= 0.0) {
+            return 0.0;
+        }
+        $rest = fmod($x, $pitch);
+        $near = 1e-6 * $pitch;
+        return $rest < $near || $pitch - $rest < $near ? $pitch : $pitch - $rest;
     }
 
     /**

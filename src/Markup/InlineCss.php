@@ -37,7 +37,7 @@ final class InlineCss
     /**
      * @return array{style: Style, dropped: list<string>, float: bool, marker: ?ListMarker}
      */
-    public static function parse(string $declarations, bool $inline, bool $list = false): array
+    public static function parse(string $declarations, bool $inline, bool $list = false, bool $rule = false): array
     {
         $props = [];
         $dropped = [];
@@ -55,6 +55,14 @@ final class InlineCss
             $value = trim(preg_replace('/!\s*important\s*$/i', '', $value) ?? $value);
             if ($inline && !in_array($property, self::TEXT, true)) {
                 if ($property !== 'float' || strtolower($value) !== 'none') {
+                    $dropped[] = $declaration;
+                }
+                continue;
+            }
+            if ($rule && in_array($property, ['color', 'border-color', 'border-top-color', 'border-bottom-color'], true)) {
+                try {
+                    $props['borderColor'] = Color::parse($value);
+                } catch (InvalidValue) {
                     $dropped[] = $declaration;
                 }
                 continue;

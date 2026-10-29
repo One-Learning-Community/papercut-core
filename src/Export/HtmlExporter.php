@@ -40,7 +40,7 @@ final class HtmlExporter implements Exporter
         }
         $css = Stylesheet::css($doc, $options, $fontCss);
         $lang = $meta->lang !== null ? ' lang="' . HtmlWriter::esc($meta->lang) . '"' : '';
-        $rootDiv = '<div class="papercut"' . $lang . ' style="' . HtmlWriter::esc(Css::attr(Css::text($root, null, $options->fonts()->fallbacks))) . '">' . $writer->html() . '</div>';
+        $rootDiv = '<div class="papercut"' . $lang . ' style="' . HtmlWriter::esc(Css::attr(Css::text($root, null, $options->fonts()->fallbacks, $options->fonts()))) . '">' . $writer->html() . '</div>';
         $style = '<style>' . $css . '</style>';
 
         if (!$options->fullPage()) {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Papercut\Decorator;
 
 use Papercut\{Component, Node, Text, View};
-use Papercut\Concerns\HasStyle;
+use Papercut\Concerns\{HasStyle, HasVariants};
 
 /**
  * A bordered, padded box with an optional title strip across the top.
@@ -13,6 +13,7 @@ use Papercut\Concerns\HasStyle;
 final class Card implements Decorator
 {
     use HasStyle;
+    use HasVariants;
 
     /** @var list<Node|Component> */
     private array $children;
@@ -40,16 +41,22 @@ final class Card implements Decorator
         return $clone;
     }
 
+    /** @return list<string> */
+    public function partNames(): array
+    {
+        return ['card', 'card.title', 'card.body'];
+    }
+
     public function render(): View
     {
         $parts = [];
         if ($this->title !== null) {
-            $parts[] = View::make($this->title)->apply('card.title')->keepWithNext(true);
+            $parts[] = View::make($this->title)->apply($this->part('card.title'))->keepWithNext(true);
         }
-        $parts[] = View::make(...$this->children)->apply('card.body');
+        $parts[] = View::make(...$this->children)->apply($this->part('card.body'));
 
         return View::make(...$parts)
-            ->apply(trim('card ' . ($this->styleName() ?? '')))
+            ->apply(trim($this->part('card') . ' ' . ($this->styleName() ?? '')))
             ->apply($this->style());
     }
 }

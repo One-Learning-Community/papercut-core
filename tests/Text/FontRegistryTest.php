@@ -27,7 +27,7 @@ final class FontRegistryTest extends TestCase
     public function test_faces_lists_registered_faces(): void
     {
         $faces = FontRegistry::withDefaults(new PhpPdfBackend())->faces();
-        $this->assertCount(4, $faces);
+        $this->assertCount(8, $faces);
         $this->assertSame('Inter', $faces[0]['family']);
         $this->assertSame(400, $faces[0]['weight']);
         $this->assertSame(FontStyle::Normal, $faces[0]['style']);
@@ -75,7 +75,7 @@ final class FontRegistryTest extends TestCase
     {
         $r = FontRegistry::withDefaults(new PhpPdfBackend());
         self::assertTrue($r->has('inter'));
-        self::assertSame(['Inter'], $r->families());
+        self::assertSame(['Inter', 'Cousine'], $r->families());
         self::assertNotSame($r->resolve('Inter'), $r->resolve('Inter', 700));
         self::assertNotSame($r->resolve('Inter'), $r->resolve('Inter', 400, FontStyle::Italic));
         self::assertSame($r->resolve('inter'), $r->resolve('INTER'));

@@ -22,21 +22,26 @@ final class InlineRun
     /** @var list<Span> */
     private array $spans = [];
 
-    public function text(string $text, Style $style, ?string $href): void
+    /** $preserve: preformatted text, whose spaces and tabs are kept as written. */
+    public function text(string $text, Style $style, ?string $href, bool $preserve = false, ?string $styleName = null): void
     {
         $text = str_replace(["\u{FEFF}", "\u{200B}"], '', $text);
-        $text = preg_replace('/[ \t\n\r\f]+/', ' ', $text) ?? $text;
-        if (str_starts_with($text, ' ') && $this->atLineStartOrAfterSpace()) {
+        if (!$preserve) {
+            $text = preg_replace('/[ \t\n\r\f]+/', ' ', $text) ?? $text;
+        }
+        if (!$preserve && str_starts_with($text, ' ') && $this->atLineStartOrAfterSpace()) {
             $text = substr($text, 1);
         }
         if ($text !== '') {
-            $this->spans[] = new Span($text, $style, $href);
+            $this->spans[] = new Span($text, $style, $href, false, $styleName);
         }
     }
 
-    public function break(): void
+    public function break(bool $preserve = false): void
     {
-        $this->trimEnd();
+        if (!$preserve) {
+            $this->trimEnd();
+        }
         $this->spans[] = Span::break();
     }
 
@@ -93,7 +98,7 @@ final class InlineRun
         }
         $text = substr($last->text, 0, -1);
         if ($text !== '') {
-            $this->spans[] = new Span($text, $last->style, $last->href);
+            $this->spans[] = new Span($text, $last->style, $last->href, false, $last->styleName, $last->base);
         }
     }
 }

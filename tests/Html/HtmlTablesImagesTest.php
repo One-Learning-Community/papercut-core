@@ -87,6 +87,59 @@ final class HtmlTablesImagesTest extends TestCase
         self::assertContains('html: approximated auto column widths at page > body > table[0]', $messages);
     }
 
+    public function test_fill_width_table_is_full_width(): void
+    {
+        $html = $this->html($this->body(Table::make()->columns('auto auto')->fillWidth()->row('a', 'b')));
+        $style = $this->style($this->xpath($html, '//table')[0]);
+        self::assertStringContainsString('width:100%', $style);
+        self::assertStringContainsString('table-layout:auto', $style);
+        $plain = $this->html($this->body(Table::make()->columns('auto auto')->row('a', 'b')));
+        self::assertStringNotContainsString('width:100%', $this->style($this->xpath($plain, '//table')[0]));
+    }
+
+    public function test_fit_columns_emits_length_columns_scaled_to_the_width(): void
+    {
+        $widths = function (Table $t): array {
+            $out = [];
+            foreach ($this->xpath($this->html($this->body($t)), '//col') as $col) {
+                $css = $this->style($col);
+                self::assertStringStartsWith('width:', $css);
+                self::assertStringEndsWith('pt', $css);
+                $out[] = (float) substr($css, 6, -2);
+            }
+            return $out;
+        };
+        $plain = $widths(Table::make()->columns('400pt 400pt')->row('a', 'b'));
+        self::assertSame([400.0, 400.0], $plain);
+        $fitted = $widths(Table::make()->columns('400pt 400pt')->fitColumns()->row('a', 'b'));
+        self::assertEqualsWithDelta($this->contentWidth(), array_sum($fitted), 0.01);
+        self::assertEqualsWithDelta($fitted[0], $fitted[1], 0.001);
+        $fits = $widths(Table::make()->columns('100pt 100pt')->fitColumns()->row('a', 'b'));
+        self::assertSame([100.0, 100.0], $fits);
+    }
+
+    public function test_rowspan_attribute(): void
+    {
+        $html = $this->html($this->body(Table::make()->columns('1fr 1fr')->row(TableCell::make('a')->rowspan(2), 'b')->row('c')));
+        self::assertStringContainsString('<td rowspan="2"', $html);
+        self::assertCount(2, $this->xpath($html, '//table/colgroup/col'));
+    }
+
+    public function test_colspan_running_into_a_rowspan_is_clamped(): void
+    {
+        $html = $this->html($this->body(Table::make()->columns('1fr 1fr 1fr')->row('a', 'b', TableCell::make('c')->rowspan(2))->row(TableCell::make('d')->colspan(3))));
+        self::assertStringContainsString('colspan="2"', $html);
+        self::assertStringNotContainsString('colspan="3"', $html);
+    }
+
+    public function test_explicit_width_wins_over_fill_width(): void
+    {
+        $html = $this->html($this->body(Table::make()->columns('auto auto')->fillWidth()->width(pt(300))->row('a', 'b')));
+        $style = $this->style($this->xpath($html, '//table')[0]);
+        self::assertStringContainsString('width:300pt', $style);
+        self::assertStringNotContainsString('width:100%', $style);
+    }
+
     public function test_missing_tracks_are_fr_and_extra_ignored(): void
     {
         $html = $this->html($this->body(Table::make()->columns('10pt 20pt 30pt 40pt')->row('a', 'b')));

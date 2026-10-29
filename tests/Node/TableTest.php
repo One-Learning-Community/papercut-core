@@ -12,6 +12,25 @@ use function Papercut\mm;
 
 final class TableTest extends TestCase
 {
+    public function test_cols_spanned_pairs_with_rows_spanned(): void
+    {
+        $cell = TableCell::make('a');
+        self::assertSame(1, $cell->colsSpanned());
+        self::assertSame(3, $cell->colspan(3)->colsSpanned());
+        self::assertSame($cell->colspan(2)->span(), $cell->colspan(2)->colsSpanned());
+    }
+
+    public function test_rowspan_is_at_least_one(): void
+    {
+        $cell = TableCell::make('a');
+        self::assertSame(1, $cell->rowsSpanned());
+        self::assertSame(3, $cell->rowspan(3)->rowsSpanned());
+        self::assertSame(1, $cell->rowsSpanned());
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('rowspan must be at least 1.');
+        $cell->rowspan(0);
+    }
+
     public function test_convenience_api_builds_rows(): void
     {
         $courses = [['Math', 4, 'A'], ['Art', 2, 'B+']];

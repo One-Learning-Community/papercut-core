@@ -489,7 +489,7 @@ $document = Document::make(
 
 ## Fonts
 
-Inter (Regular, Bold, Italic, BoldItalic) is bundled, subset and embedded; the 14 standard PDF fonts are never
+Inter and Cousine (Regular, Bold, Italic, BoldItalic; Cousine is the monospace family, licensed under the SIL Open Font License 1.1 like Inter) are bundled, subset and embedded; the 14 standard PDF fonts are never
 used. Add your own families with a `FontSet` of `FontFace`s, pick them with `font()`, and list fallback families for glyphs
 the primary font lacks.
 
@@ -643,5 +643,5 @@ Thank you.
 
 ## License
 
-MIT. Bundled Inter font: SIL Open Font License 1.1 (`resources/fonts/Inter/LICENSE.txt`).
+MIT. Bundled Inter and Cousine fonts: SIL Open Font License 1.1 (`resources/fonts/Inter/LICENSE.txt`, `resources/fonts/Cousine/OFL.txt`).
 Color palette derived from Tailwind CSS (MIT). php-pdf: MIT. See [`NOTICE.md`](../../NOTICE.md).

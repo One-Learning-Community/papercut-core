@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Papercut\Decorator;
 
 use Papercut\{Component, Node, Text, View};
-use Papercut\Concerns\HasStyle;
+use Papercut\Concerns\{HasStyle, HasVariants};
 use Papercut\Style\Direction;
 
 /**
@@ -14,6 +14,7 @@ use Papercut\Style\Direction;
 final class Section implements Decorator
 {
     use HasStyle;
+    use HasVariants;
 
     /** @var list<Node|Component> */
     private array $children;
@@ -53,29 +54,35 @@ final class Section implements Decorator
         return $clone;
     }
 
+    /** @return list<string> */
+    public function partNames(): array
+    {
+        return ['section', 'section.heading', 'section.rule', 'section.title', 'section.number', 'section.body'];
+    }
+
     public function render(): View
     {
         $parts = [];
         if ($this->title !== null || $this->number !== null) {
             $heading = [];
             if ($this->number !== null) {
-                $heading[] = Text::make((string) $this->number)->apply('section.number');
+                $heading[] = Text::make((string) $this->number)->apply($this->part('section.number'));
             }
             if ($this->title !== null) {
                 $heading[] = is_string($this->title)
-                    ? Text::make($this->title)->apply('section.title')->grow(1)
-                    : View::make($this->title)->apply('section.title')->grow(1);
+                    ? Text::make($this->title)->apply($this->part('section.title'))->grow(1)
+                    : View::make($this->title)->apply($this->part('section.title'))->grow(1);
             }
             $parts[] = View::make(...$heading)
                 ->direction(Direction::Row)
-                ->apply($this->rule ? 'section.heading section.rule' : 'section.heading')
+                ->apply($this->rule ? $this->part('section.heading') . ' ' . $this->part('section.rule') : $this->part('section.heading'))
                 ->keepWithNext(true);
         }
-        $parts[] = View::make(...$this->children)->apply('section.body');
+        $parts[] = View::make(...$this->children)->apply($this->part('section.body'));
 
         return View::make(...$parts)
             ->htmlTag('section')
-            ->apply(trim('section ' . ($this->styleName() ?? '')))
+            ->apply(trim($this->part('section') . ' ' . ($this->styleName() ?? '')))
             ->apply($this->style());
     }
 }

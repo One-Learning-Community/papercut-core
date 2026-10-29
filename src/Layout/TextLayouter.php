@@ -6,7 +6,7 @@ namespace Papercut\Layout;
 
 use Papercut\{Node, Text};
 use Papercut\Paint\{Line as LineOp, Link as LinkOp, Rect, TextRun};
-use Papercut\Style\{ComputedStyle, TextAlign};
+use Papercut\Style\{ComputedStyle, TextAlign, WhiteSpace};
 use Papercut\Text\{FontStyle, InlineItem, Line, LineBreaker};
 use Papercut\Value\Length;
 
@@ -112,7 +112,7 @@ final class TextLayouter implements Layouter
                 continue;
             }
             $line += $item->width;
-            if ($item->kind === 'space') {
+            if ($item->kind === 'space' || $item->kind === 'tab') {
                 $chunk = 0.0;
                 continue;
             }
@@ -249,7 +249,9 @@ final class TextLayouter implements Layouter
     /** @param array{baseline: float, height: float} $box */
     private function paintLine(Fragment $f, Line $line, float $ox, float $top, array $box, TextAlign $align, float $width): void
     {
-        $justified = $align === TextAlign::Justify && !$line->isLast && !$line->endsWithBreak;
+        // Pre-wrap lines are never stretched: their spaces are layout (indentation, columns), not word gaps.
+        $justified = $align === TextAlign::Justify && !$line->isLast && !$line->endsWithBreak
+            && array_all($line->items, static fn (InlineItem $i): bool => $i->style->whiteSpace === WhiteSpace::Normal);
         $perSpace = 0.0;
         if ($justified) {
             $spaces = count(array_filter($line->items, static fn (InlineItem $i): bool => $i->kind === 'space'));
@@ -285,7 +287,7 @@ final class TextLayouter implements Layouter
         }
         $runs = $justified
             ? array_map(static fn (array $p): array => [$p], array_values(array_filter($placed, static fn (array $p): bool => $p['item']->kind === 'word')))
-            : self::group($placed, self::styleKey(...));
+            : self::group($placed, self::runKey(...));
         // Highlights sit behind the text: one rect per contiguous same-style run, including stretched spaces.
         foreach (self::group($placed, self::styleKey(...)) as $group) {
             $bg = $group[0]['item']->style->background;
@@ -332,7 +334,9 @@ final class TextLayouter implements Layouter
      * A merged run is drawn as one string, so it is as wide as the font says
      * that string is (kerning across item boundaries included), not the sum of
      * its items. The difference goes to the run's last item and shifts every
-     * later item on the line, so decorations and links match the drawn text.
+     * later item on the line, so decorations and links match the drawn text. A tab
+     * stop is fixed, so a tab absorbs the shift so far (its width shrinks, never
+     * below zero) and the text after it lands on the stop.
      *
      * @param list<array{item: InlineItem, x: float, w: float}> $placed
      * @return list<array{item: InlineItem, x: float, w: float}>
@@ -341,7 +345,7 @@ final class TextLayouter implements Layouter
     {
         $out = [];
         $shift = 0.0;
-        foreach (self::group($placed, self::styleKey(...)) as $group) {
+        foreach (self::group($placed, self::runKey(...)) as $group) {
             $delta = 0.0;
             if (count($group) > 1) {
                 $first = $group[0]['item'];
@@ -349,14 +353,18 @@ final class TextLayouter implements Layouter
                 $delta = $first->font->advance($text, $first->size, $first->style->letterSpacing) - array_sum(array_column($group, 'w'));
             }
             $last = count($group) - 1;
+            $isTab = $group[0]['item']->kind === 'tab';
             foreach ($group as $k => $p) {
                 $p['x'] += $shift;
+                if ($isTab) {
+                    $p['w'] = max(0.0, $p['w'] - $shift);
+                }
                 if ($k === $last) {
                     $p['w'] += $delta;
                 }
                 $out[] = $p;
             }
-            $shift += $delta;
+            $shift = $isTab ? 0.0 : $shift + $delta;
         }
         return $out;
     }
@@ -386,6 +394,12 @@ final class TextLayouter implements Layouter
             $groups[] = $current;
         }
         return $groups;
+    }
+
+    /** Like styleKey, but a tab is a run of its own: text before and after it is drawn apart. */
+    private static function runKey(InlineItem $i): string
+    {
+        return $i->kind === 'tab' ? 'tab' . spl_object_id($i) : self::styleKey($i);
     }
 
     private static function styleKey(InlineItem $i): string

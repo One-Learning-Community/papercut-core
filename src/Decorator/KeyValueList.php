@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Papercut\Decorator;
 
 use Papercut\{Component, Node, Table, TableCell, View};
-use Papercut\Concerns\HasStyle;
+use Papercut\Concerns\{HasStyle, HasVariants};
 use Papercut\Value\{Auto, Fr, Length, Percent};
 
 /**
@@ -14,6 +14,7 @@ use Papercut\Value\{Auto, Fr, Length, Percent};
 final class KeyValueList implements Decorator
 {
     use HasStyle;
+    use HasVariants;
 
     /** @var list<KeyValuePair> */
     private array $pairs;
@@ -58,9 +59,15 @@ final class KeyValueList implements Decorator
         return $this->pairs;
     }
 
+    /** @return list<string> */
+    public function partNames(): array
+    {
+        return ['key-value', 'key-value.label', 'key-value.value'];
+    }
+
     public function render(): Table|View
     {
-        $names = trim('key-value ' . ($this->styleName() ?? ''));
+        $names = trim($this->part('key-value') . ' ' . ($this->styleName() ?? ''));
         if ($this->pairs === []) {
             return View::make()->apply($names)->apply($this->style());
         }
@@ -68,8 +75,8 @@ final class KeyValueList implements Decorator
         $table = Table::make()->columns($this->labelWidth ?? Auto::instance(), Fr::of(1));
         foreach ($this->pairs as $pair) {
             $table = $table->row(
-                TableCell::make($pair->label)->apply('key-value.label'),
-                TableCell::make($pair->value)->apply('key-value.value'),
+                TableCell::make($pair->label)->apply($this->part('key-value.label')),
+                TableCell::make($pair->value)->apply($this->part('key-value.value')),
             );
         }
 

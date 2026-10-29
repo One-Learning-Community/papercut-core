@@ -6,7 +6,7 @@ namespace Papercut\Decorator;
 
 use InvalidArgumentException;
 use Papercut\{Component, Node, Text, View};
-use Papercut\Concerns\HasStyle;
+use Papercut\Concerns\{HasStyle, HasVariants};
 use Papercut\Value\Length;
 
 
@@ -21,6 +21,7 @@ use Papercut\Value\Length;
 final class Field implements Decorator
 {
     use HasStyle;
+    use HasVariants;
 
     /** @var list<Node|Component> */
     private array $children;
@@ -71,11 +72,17 @@ final class Field implements Decorator
         return self::allEmpty($this->children);
     }
 
+    /** @return list<string> */
+    public function partNames(): array
+    {
+        return ['field', 'field.label', 'field.placeholder'];
+    }
+
     public function render(): View
     {
         $parts = $this->children;
         if ($this->placeholder !== null && $this->isEmpty()) {
-            $parts = [Text::make($this->placeholder)->apply('field.placeholder')];
+            $parts = [Text::make($this->placeholder)->apply($this->part('field.placeholder'))];
         }
 
         // lines(n) is n lines of the field's own text inside its padding, so it follows the theme's size.
@@ -85,15 +92,15 @@ final class Field implements Decorator
 
         if ($this->label === null) {
             return $box
-                ->apply(trim('field ' . ($this->styleName() ?? '')))
+                ->apply(trim($this->part('field') . ' ' . ($this->styleName() ?? '')))
                 ->apply($this->style());
         }
 
         $label = is_string($this->label)
-            ? Text::make($this->label)->apply('field.label')->keepWithNext(true)
-            : View::make($this->label)->apply('field.label')->keepWithNext(true);
+            ? Text::make($this->label)->apply($this->part('field.label'))->keepWithNext(true)
+            : View::make($this->label)->apply($this->part('field.label'))->keepWithNext(true);
 
-        $outer = View::make($label, $box->apply('field'));
+        $outer = View::make($label, $box->apply($this->part('field')));
         if ($this->styleName() !== null) {
             $outer = $outer->apply($this->styleName());
         }

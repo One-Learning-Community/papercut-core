@@ -106,4 +106,23 @@ final class EndToEndTest extends TestCase
         PdfInspector::check($pdf);
         self::assertStringContainsString('Hello options', PdfInspector::text($pdf));
     }
+
+    public function test_monospace_text_embeds_the_bundled_mono_font(): void
+    {
+        $pdf = Document::make(Page::a4()->body(Text::make('fixed width')->font('monospace')))->toPdf()->bytes();
+
+        PdfInspector::check($pdf);
+        $file = tempnam(sys_get_temp_dir(), 'pdf');
+        self::assertIsString($file);
+        try {
+            file_put_contents($file, $pdf);
+            exec('pdffonts ' . escapeshellarg($file) . ' 2>&1', $lines, $code);
+        } finally {
+            unlink($file);
+        }
+        self::assertSame(0, $code, implode("\n", $lines));
+        $names = implode("\n", array_slice($lines, 2));
+        self::assertStringContainsString('Cousine', $names);
+        self::assertStringNotContainsString('Inter', $names);
+    }
 }

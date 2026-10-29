@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Papercut\Text;
 
 use Papercut\Span;
-use Papercut\Style\ComputedStyle;
+use Papercut\Style\{ComputedStyle, Theme, WhiteSpace};
 
 final class Itemizer
 {
@@ -19,6 +19,7 @@ final class Itemizer
         private readonly FontRegistry $fonts,
         private readonly ?\Closure $onWarning = null,
         private readonly array $fallbackFamilies = [],
+        private readonly ?Theme $theme = null,
     ) {
     }
 
@@ -35,12 +36,25 @@ final class Itemizer
         $atStart = true;
 
         foreach ($spans as $span) {
-            $style = $paragraph->child($span->style);
+            $style = $paragraph->child(($this->theme ?? Theme::default())->spanStyle($span));
             $font = $this->primary($style);
             if ($span->lineBreak) {
                 $pending = null;
                 $items[] = new InlineItem('break', '', $font, $style->fontSize, 0.0, $style, $span->href);
                 $atStart = true;
+                continue;
+            }
+            if ($style->whiteSpace === WhiteSpace::PreWrap) {
+                $own = $this->preWrap($span, $style, $font);
+                if ($own !== []) {
+                    // A pending normal space is flushed only by a pre-wrap span that produced items.
+                    if ($pending !== null) {
+                        $items[] = $pending;
+                        $pending = null;
+                    }
+                    array_push($items, ...$own);
+                    $atStart = $own[count($own) - 1]->kind === 'break';
+                }
                 continue;
             }
             $parts = preg_split('/([ \t\n\r\f]+)/', $span->text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
@@ -70,6 +84,27 @@ final class Itemizer
             }
         }
         return $items;
+    }
+
+    /**
+     * Under pre-wrap every space is an item of its own, a newline is a break and a tab is a tab item.
+     *
+     * @return list<InlineItem>
+     */
+    private function preWrap(Span $span, ComputedStyle $style, CachedFont $font): array
+    {
+        $space = $font->advance(' ', $style->fontSize, $style->letterSpacing);
+        $out = [];
+        $parts = preg_split('/(\r\n|\r|\n|\t|[ \f])/', $span->text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+        foreach ($parts === false ? [] : $parts as $part) {
+            array_push($out, ...match (true) {
+                $part === "\t" => [new InlineItem('tab', "\t", $font, $style->fontSize, 4 * $space, $style, $span->href)],
+                $part === ' ' || $part === "\f" => [new InlineItem('space', ' ', $font, $style->fontSize, $space, $style, $span->href)],
+                trim($part, "\r\n") === '' => [new InlineItem('break', '', $font, $style->fontSize, 0.0, $style, $span->href)],
+                default => $this->words($part, $style, $font, $span->href),
+            });
+        }
+        return $out;
     }
 
     private function primary(ComputedStyle $style): CachedFont

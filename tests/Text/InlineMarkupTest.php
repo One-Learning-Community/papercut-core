@@ -28,6 +28,16 @@ final class InlineMarkupTest extends TestCase
         self::assertNull($s[3]->style->fontWeight);
     }
 
+    public function test_inline_markup_code_tag(): void
+    {
+        $s = InlineMarkup::parse('use <code>x()</code> now');
+        self::assertSame(['use ', 'x()', ' now'], array_map(fn ($x) => $x->text, $s));
+        self::assertSame([null, 'code', null], array_map(fn ($x) => $x->styleName, $s));
+        self::assertTrue($s[1]->style->isEmpty());
+        $n = InlineMarkup::parse('<code>a<b>b</b></code>');
+        self::assertSame(['code', 'code'], array_map(fn ($x) => $x->styleName, $n));
+    }
+
     public function test_mark_sets_a_yellow_background(): void
     {
         $s = InlineMarkup::parse('a <mark>b</mark> c');

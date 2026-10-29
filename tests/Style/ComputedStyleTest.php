@@ -65,4 +65,17 @@ final class ComputedStyleTest extends TestCase
         $this->expectException(\Papercut\Exception\InvalidValue::class);
         $root->child(Style::make(lineHeight: 0.0));
     }
+
+    public function test_monospace_keyword_resolves_to_theme_mono_family(): void
+    {
+        $root = ComputedStyle::root(Theme::default());
+        self::assertSame('Cousine', $root->child(Style::make(fontFamily: 'monospace'))->fontFamily);
+        self::assertSame('Cousine', $root->child(Style::make(fontFamily: 'MonoSpace'))->fontFamily);
+        $inter = ComputedStyle::root(Theme::default()->with(monoFamily: 'Inter'));
+        $mono = $inter->child(Style::make(fontFamily: 'monospace'));
+        self::assertSame('Inter', $mono->fontFamily);
+        self::assertSame('Inter', $mono->child(Style::make(fontSize: pt(8)))->fontFamily);
+        self::assertSame('Brand', $mono->child(Style::make(fontFamily: 'Brand'))->fontFamily);
+        self::assertSame('Cousine', ComputedStyle::root(Theme::default()->with(fontFamily: 'monospace'))->fontFamily);
+    }
 }

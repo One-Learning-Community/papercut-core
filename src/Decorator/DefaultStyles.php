@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Papercut\Decorator;
 
-use Papercut\Style\{Align, Direction, Justify, Style};
+use Papercut\Style\{Align, Direction, Justify, Style, WhiteSpace};
 use Papercut\Value\{Color, Edges, Length};
 
 use function Papercut\pt;
@@ -87,6 +87,12 @@ final class DefaultStyles
         );
         $s['blockquote.cite'] = Style::make(italic: false, fontSize: Length::em(0.9), color: self::c('slate-500'));
 
+        $s['markup.table'] = Style::make(borderWidth: Edges::of(pt(0.75), $zero, $zero, pt(0.75)), borderColor: self::c('slate-300'));
+        $s['markup.td'] = Style::make(borderWidth: Edges::of($zero, pt(0.75), pt(0.75), $zero), borderColor: self::c('slate-300'));
+        $s['markup.th'] = Style::make(borderWidth: Edges::of($zero, pt(0.75), pt(0.75), $zero), borderColor: self::c('slate-300'), background: self::c('slate-50'));
+
+        $s['markup.hr'] = Style::make(borderWidth: Edges::of($zero, $zero, pt(0.75), $zero), borderColor: self::c('slate-300'), margin: self::sides(6, 0, 6, 0));
+
         $s['section'] = Style::make(gap: pt(6));
         // The heading's row direction is fixed in Section; the entry is kept per the spec, but direction here has no effect.
         $s['section.heading'] = Style::make(direction: Direction::Row, gap: pt(4));
@@ -135,6 +141,17 @@ final class DefaultStyles
         foreach (['neutral' => 'slate', 'note' => 'sky', 'tip' => 'emerald', 'warning' => 'amber', 'danger' => 'red'] as $tone => $hue) {
             $s['badge.' . $tone] = Style::make(background: self::c($hue . '-100'), color: self::c($hue . '-800'));
         }
+
+        // Preformatted text: the theme's mono family at 0.9em, spaces and line breaks kept.
+        $s['pre'] = Style::make(
+            fontFamily: 'monospace',
+            fontSize: Length::em(0.9),
+            whiteSpace: WhiteSpace::PreWrap,
+            background: self::c('slate-100'),
+            padding: self::sides(6, 8, 6, 8),
+            margin: self::sides(0, 0, 6, 0),
+        );
+        $s['code'] = Style::make(fontFamily: 'monospace', fontSize: Length::em(0.9), background: self::c('slate-100'));
 
         return $s;
     }

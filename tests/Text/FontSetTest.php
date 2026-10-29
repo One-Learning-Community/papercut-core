@@ -31,9 +31,9 @@ final class FontSetTest extends TestCase
         self::assertCount(1, $b->faces);
     }
 
-    public function test_bundled_lists_the_four_inter_faces(): void
+    public function test_bundled_lists_the_four_inter_faces_first(): void
     {
-        $faces = FontSet::bundled();
+        $faces = array_slice(FontSet::bundled(), 0, 4);
         self::assertCount(4, $faces);
         foreach ($faces as $face) {
             self::assertSame('Inter', $face->family);
@@ -52,10 +52,66 @@ final class FontSetTest extends TestCase
         );
         $faces = $set->effectiveFaces();
 
-        self::assertCount(5, $faces);
-        self::assertSame(['Inter', 'Inter', 'Inter', 'Inter', 'Brand'], array_map(static fn (FontFace $f): string => $f->family === 'inter' ? 'Inter' : $f->family, $faces));
+        self::assertCount(9, $faces);
+        self::assertSame(['Inter', 'Inter', 'Inter', 'Inter', 'Cousine', 'Cousine', 'Cousine', 'Cousine', 'Brand'], array_map(static fn (FontFace $f): string => $f->family === 'inter' ? 'Inter' : $f->family, $faces));
         self::assertSame(['inter', 700, FontStyle::Normal, $custom], [$faces[2]->family, $faces[2]->weight, $faces[2]->style, $faces[2]->path]);
         self::assertSame(FontSet::bundled()[0]->path, $faces[0]->path);
-        self::assertSame(self::INTER, $faces[4]->path);
+        self::assertSame(self::INTER, $faces[8]->path);
+    }
+
+    public function test_bundled_includes_cousine(): void
+    {
+        $bundled = FontSet::bundled();
+        self::assertCount(8, $bundled);
+        self::assertSame(['Inter', 'Inter', 'Inter', 'Inter'], array_map(static fn (FontFace $f): string => $f->family, array_slice($bundled, 0, 4)));
+        $cousine = array_slice($bundled, 4);
+        self::assertSame(['Cousine', 'Cousine', 'Cousine', 'Cousine'], array_map(static fn (FontFace $f): string => $f->family, $cousine));
+        $combos = array_map(static fn (FontFace $f): string => $f->weight . '/' . $f->style->value, $cousine);
+        self::assertEqualsCanonicalizing(['400/' . FontStyle::Normal->value, '400/' . FontStyle::Italic->value, '700/' . FontStyle::Normal->value, '700/' . FontStyle::Italic->value], $combos);
+        foreach ($cousine as $face) {
+            self::assertFileExists($face->path);
+        }
+    }
+
+    public function test_pdf_renders_cousine_without_registration(): void
+    {
+        $pdf = \Papercut\Document::make(\Papercut\Page::a4()->body(\Papercut\Text::make('let x = 1;')->font('Cousine')))->toPdf()->bytes();
+        self::assertStringStartsWith('%PDF-', $pdf);
+        self::assertStringContainsString('Cousine', $pdf);
+    }
+
+    public function test_word_name_defaults(): void
+    {
+        $set = new FontSet();
+        self::assertSame('Inter', $set->wordName('Inter'));
+        self::assertSame('Courier New', $set->wordName('Cousine'));
+        self::assertSame('Nope', $set->wordName('Nope'));
+    }
+
+    public function test_word_name_override_is_case_insensitive(): void
+    {
+        $set = (new FontSet())->withWordName('INTER', 'Arial')->withWordName('cousine', 'Consolas')->with(new FontFace('Brand', self::INTER));
+        self::assertSame('Arial', $set->wordName('inter'));
+        self::assertSame('Consolas', $set->wordName('Cousine'));
+        self::assertSame('Brand', $set->wordName('Brand'));
+        self::assertSame('Arial', $set->withFallbacks('Inter')->wordName('Inter'));
+        self::assertSame('Inter', (new FontSet())->wordName('Inter'));
+        self::assertSame('Tinos', $set->withWordName('Inter', 'Tinos')->wordName('Inter'));
+    }
+
+    public function test_word_names_given_to_the_constructor_match_case_insensitively(): void
+    {
+        $set = new FontSet(wordNames: ['Brand Sans' => 'Arial']);
+
+        self::assertSame('Arial', $set->wordName('brand sans'));
+        self::assertSame('Arial', $set->wordName('BRAND SANS'));
+    }
+
+    public function test_a_numeric_family_name_keeps_its_word_name(): void
+    {
+        $set = (new FontSet())->withWordName('1', 'One')->withWordName('2', 'Two');
+
+        self::assertSame('One', $set->wordName('1'));
+        self::assertSame('Two', $set->wordName('2'));
     }
 }

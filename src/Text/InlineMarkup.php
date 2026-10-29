@@ -24,9 +24,13 @@ final class InlineMarkup
     /** @return list<Span> */
     public static function parse(string $markup): array
     {
-        /** @var list<array{tag: string, style: Style, href: ?string}> $stack */
+        /** @var list<array{tag: string, style: Style, href: ?string, inner: Style, base: ?Style}> $stack */
         $stack = [];
         $style = new Style();
+        // Inside <code>: $base is the style set outside it and $inner only what was opened since, so the
+        // named code style can sit between them (outer, then code, then inner).
+        $base = null;
+        $inner = new Style();
         $href = null;
         $spans = [];
         $len = strlen($markup);
@@ -62,9 +66,11 @@ final class InlineMarkup
                 if (trim($rawAttrs) !== '') {
                     throw self::notAllowed($markup, $display);
                 }
-                self::flush($text, $spans, $style, $href);
+                self::flush($text, $spans, $base === null ? $style : $inner, $base, $href, self::named($stack));
                 array_pop($stack);
                 $style = $top['style'];
+                $inner = $top['inner'];
+                $base = $top['base'];
                 $href = $top['href'];
                 continue;
             }
@@ -74,7 +80,7 @@ final class InlineMarkup
                 if ($attrs !== []) {
                     throw self::notAllowed($markup, $display);
                 }
-                self::flush($text, $spans, $style, $href);
+                self::flush($text, $spans, $base === null ? $style : $inner, $base, $href, self::named($stack));
                 $spans[] = Span::break();
                 continue;
             }
@@ -89,13 +95,19 @@ final class InlineMarkup
                 'mark' => self::noAttrs($attrs, $markup, $display, new Style(background: Color::named('yellow-200'))),
                 's' => self::noAttrs($attrs, $markup, $display, new Style(strike: true)),
                 'a' => self::noAttrs(array_diff_key($attrs, ['href' => 1]), $markup, $display, new Style()),
+                'code' => self::noAttrs($attrs, $markup, $display, new Style()),
                 'span' => self::spanStyle($attrs, $markup),
                 default => throw self::notAllowed($markup, $display),
             };
 
-            self::flush($text, $spans, $style, $href);
-            $stack[] = ['tag' => $name, 'style' => $style, 'href' => $href];
+            self::flush($text, $spans, $base === null ? $style : $inner, $base, $href, self::named($stack));
+            $stack[] = ['tag' => $name, 'style' => $style, 'href' => $href, 'inner' => $inner, 'base' => $base];
+            if ($name === 'code' && $base === null) {
+                $base = $style;
+                $inner = new Style();
+            }
             $style = $style->merge($add);
+            $inner = $inner->merge($add);
             if ($name === 'a') {
                 if (!isset($attrs['href'])) {
                     throw InvalidValue::for('inline markup', $markup)->because('<a> needs an href');
@@ -110,12 +122,23 @@ final class InlineMarkup
         if ($stack !== []) {
             throw InvalidValue::for('inline markup', $markup)->because('<' . $stack[count($stack) - 1]['tag'] . '> is not closed');
         }
-        self::flush($text, $spans, $style, $href);
+        self::flush($text, $spans, $base === null ? $style : $inner, $base, $href, self::named($stack));
         return $spans;
     }
 
+    /** @param list<array{tag: string, style: Style, href: ?string, inner: Style, base: ?Style}> $stack */
+    private static function named(array $stack): ?string
+    {
+        foreach ($stack as $open) {
+            if ($open['tag'] === 'code') {
+                return 'code';
+            }
+        }
+        return null;
+    }
+
     /** @param list<Span> $spans */
-    private static function flush(string &$text, array &$spans, Style $style, ?string $href): void
+    private static function flush(string &$text, array &$spans, Style $style, ?Style $base, ?string $href, ?string $name): void
     {
         if ($text === '') {
             return;
@@ -123,11 +146,11 @@ final class InlineMarkup
         $decoded = self::decode($text);
         $text = '';
         $last = $spans === [] ? null : $spans[count($spans) - 1];
-        if ($last !== null && !$last->lineBreak && $last->href === $href && $last->style == $style) {
-            $spans[count($spans) - 1] = new Span($last->text . $decoded, $style, $href);
+        if ($last !== null && !$last->lineBreak && $last->href === $href && $last->styleName === $name && $last->style == $style && $last->base == $base) {
+            $spans[count($spans) - 1] = new Span($last->text . $decoded, $style, $href, false, $name, $base);
             return;
         }
-        $spans[] = new Span($decoded, $style, $href);
+        $spans[] = new Span($decoded, $style, $href, false, $name, $base);
     }
 
     /** @return array<string, string> */

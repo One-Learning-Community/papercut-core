@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Papercut\Decorator;
 
 use Papercut\{Component, Node, Text, View};
-use Papercut\Concerns\HasStyle;
+use Papercut\Concerns\{HasStyle, HasVariants};
 use Papercut\Style\Direction;
 
 /**
@@ -14,6 +14,7 @@ use Papercut\Style\Direction;
 final class Blockquote implements Decorator
 {
     use HasStyle;
+    use HasVariants;
 
     /** @var list<Node|Component> */
     private array $children;
@@ -37,20 +38,26 @@ final class Blockquote implements Decorator
         return $clone;
     }
 
+    /** @return list<string> */
+    public function partNames(): array
+    {
+        return ['blockquote', 'blockquote.cite'];
+    }
+
     public function render(): View
     {
         $parts = $this->children;
         if (is_string($this->cite)) {
-            $parts[] = Text::make("\u{2014} " . $this->cite)->apply('blockquote.cite');
+            $parts[] = Text::make("\u{2014} " . $this->cite)->apply($this->part('blockquote.cite'));
         } elseif ($this->cite !== null) {
             $parts[] = View::make(Text::make("\u{2014} "), $this->cite)
                 ->direction(Direction::Row)
-                ->apply('blockquote.cite');
+                ->apply($this->part('blockquote.cite'));
         }
 
         return View::make(...$parts)
             ->htmlTag('blockquote')
-            ->apply(trim('blockquote ' . ($this->styleName() ?? '')))
+            ->apply(trim($this->part('blockquote') . ' ' . ($this->styleName() ?? '')))
             ->apply($this->style());
     }
 }

@@ -11,6 +11,8 @@ use Papercut\ListItem;
 use Papercut\ListNode;
 use Papercut\Node;
 use Papercut\Span;
+use Papercut\Style\StyleName;
+use Papercut\Table;
 use Papercut\Text;
 use Papercut\View;
 
@@ -40,7 +42,9 @@ final class Markup
     public static function flatten(View|Text $converted): Text
     {
         if ($converted instanceof Text) {
-            return $converted;
+            return !StyleName::leads($converted->styleName(), 'pre')
+                ? $converted
+                : Text::spans(...self::named($converted))->apply($converted->style())->withNotes(...$converted->notes());
         }
 
         $blocks = [];
@@ -62,13 +66,28 @@ final class Markup
     }
 
     /**
+     * The text's spans. The block style name `pre` moves onto its spans, so what lives in the
+     * style, such as pre-wrap and the monospace font, survives when the block is flattened into a line.
+     *
+     * @return list<Span>
+     */
+    private static function named(Text $text): array
+    {
+        $name = $text->styleName();
+        if (!StyleName::leads($name, 'pre')) {
+            return $text->spanList();
+        }
+        return array_map(static fn (Span $s): Span => $s->lineBreak || $s->styleName !== null ? $s : new Span($s->text, $s->style, $s->href, false, $name), $text->spanList());
+    }
+
+    /**
      * @param list<list<Span>> $blocks
      * @param list<Note> $notes
      */
     private static function collect(Node|Component $node, array &$blocks, array &$notes): void
     {
         if ($node instanceof Text) {
-            $blocks[] = $node->spanList();
+            $blocks[] = self::named($node);
             array_push($notes, ...$node->notes());
         } elseif ($node instanceof View || $node instanceof ListItem) {
             if ($node instanceof View) {
@@ -81,10 +100,51 @@ final class Markup
             foreach ($node->items() as $item) {
                 self::collect($item, $blocks, $notes);
             }
+        } elseif ($node instanceof Table) {
+            self::collectTable($node, $blocks, $notes);
         } elseif ($node instanceof Image) {
             $notes[] = new Note(FidelityLevel::Dropped, 'markup <img> (removed when flattened into a line)');
         } else {
             $notes[] = new Note(FidelityLevel::Dropped, 'markup ' . ($node instanceof Node ? $node->debugName() : 'component') . ' (removed when flattened into a line)');
+        }
+    }
+
+    /**
+     * A table is one block: a row's cells joined by spaces, rows by line breaks.
+     *
+     * @param list<list<Span>> $blocks
+     * @param list<Note> $notes
+     */
+    private static function collectTable(Table $table, array &$blocks, array &$notes): void
+    {
+        $notes[] = new Note(FidelityLevel::Approximated, 'markup <table> (flattened into a line)');
+        $spans = [];
+        $first = true;
+        foreach ([...$table->headerRows(), ...$table->bodyRows()] as $row) {
+            $line = [];
+            foreach ($row->cells() as $cell) {
+                $parts = [];
+                foreach ($cell->children() as $child) {
+                    self::collect($child, $parts, $notes);
+                }
+                foreach ($parts as $part) {
+                    if ($line !== []) {
+                        $line[] = Span::text(' ');
+                    }
+                    array_push($line, ...$part);
+                }
+            }
+            if ($line === []) {
+                continue;
+            }
+            if (!$first) {
+                $spans[] = Span::break();
+            }
+            $first = false;
+            array_push($spans, ...$line);
+        }
+        if ($spans !== []) {
+            $blocks[] = $spans;
         }
     }
 }

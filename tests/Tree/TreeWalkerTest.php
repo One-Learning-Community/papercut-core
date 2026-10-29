@@ -175,6 +175,23 @@ final class TreeWalkerTest extends TestCase
         self::assertFalse($visitor->visits[spl_object_id($texts[1])]->inHeader());
     }
 
+    public function test_variants_are_walked_after_their_kind_in_order(): void
+    {
+        $page = Page::a4()->header('h')->firstHeader('fh')->evenHeader('eh')->body('b')->footer('f')->firstFooter('ff')->evenFooter('ef');
+        $regions = array_values(array_filter($this->walk(Document::make($page)), fn ($l) => str_starts_with($l, 'region:')));
+        self::assertSame(['region:header', 'region:first-header', 'region:even-header', 'region:body', 'region:footer', 'region:first-footer', 'region:even-footer'], $regions);
+
+        $empty = Page::a4()->header('h')->firstHeader()->evenHeader()->body('b')->footer('f')->firstFooter()->evenFooter();
+        $regions = array_values(array_filter($this->walk(Document::make($empty)), fn ($l) => str_starts_with($l, 'region:')));
+        self::assertSame(['region:header', 'region:body', 'region:footer'], $regions);
+    }
+
+    public function test_variant_paths_name_the_slot(): void
+    {
+        $doc = Document::make(Page::a4()->body('b')->firstHeader(Text::make('x')->apply('nope')));
+        self::assertStringContainsString('page > first-header > text[0]', self::messageOf(fn () => $this->walk($doc)));
+    }
+
     /** @return list<string> */
     private function walk(Document $doc): array
     {

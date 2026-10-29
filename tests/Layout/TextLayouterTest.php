@@ -9,7 +9,7 @@ use Papercut\Exception\LayoutOverflow;
 use Papercut\Layout\{BreakToken, Constraints, Fragment, LayoutResult, Status};
 use Papercut\Paint\{Line as LineOp, Link as LinkOp, Rect, TextRun};
 use Papercut\PapercutException;
-use Papercut\Style\{ComputedStyle, Style, Theme};
+use Papercut\Style\{ComputedStyle, Style, Theme, WhiteSpace};
 use Papercut\Tests\Support\LayoutHarness;
 use Papercut\Value\Color;
 use PHPUnit\Framework\TestCase;
@@ -32,6 +32,81 @@ final class TextLayouterTest extends TestCase
         $h = new LayoutHarness();
         self::assertSame(145.0, LayoutHarness::runs($h->layout(Text::make('Hello world')->right(), 200)->fragment)[0]['x']);
         self::assertSame(72.5, LayoutHarness::runs($h->layout(Text::make('Hello world')->center(), 200)->fragment)[0]['x']);
+    }
+
+    private static function preWrap(string $text): Text
+    {
+        return Text::spans(Span::text($text, Style::make(whiteSpace: WhiteSpace::PreWrap)));
+    }
+
+    public function test_pre_wrap_lays_out_lines_indent_and_tabs(): void
+    {
+        $r = (new LayoutHarness())->layout(self::preWrap("ab\tc\n    y"), 200);
+        self::assertSame(Status::Complete, $r->status);
+        $runs = LayoutHarness::runs($r->fragment);
+        self::assertSame(['ab', 'c', '    y'], array_column($runs, 'text'));
+        self::assertSame([0.0, 20.0, 0.0], array_column($runs, 'x'));
+        self::assertSame(28.0, $r->fragment?->height); // two lines
+    }
+
+    public function test_pre_wrap_tab_run_is_not_painted(): void
+    {
+        $runs = LayoutHarness::runs((new LayoutHarness())->layout(self::preWrap("a\tb"), 200)->fragment);
+        self::assertSame(['a', 'b'], array_column($runs, 'text'));
+        self::assertSame(20.0, $runs[1]['x']);
+    }
+
+    public function test_pre_wrap_long_line_wraps_in_a_narrow_box(): void
+    {
+        $r = (new LayoutHarness())->layout(self::preWrap(str_repeat('x', 200)), 100);
+        self::assertSame(Status::Complete, $r->status);
+        $runs = LayoutHarness::runs($r->fragment);
+        self::assertGreaterThan(1, count($runs));
+        self::assertSame(str_repeat('x', 200), implode('', array_column($runs, 'text')));
+    }
+
+    public function test_pre_wrap_lines_are_not_justified(): void
+    {
+        $runs = LayoutHarness::runs((new LayoutHarness())->layout(self::preWrap('aa  bb ccc dd')->justify(), 40)->fragment);
+        self::assertSame(0.0, $runs[0]['x']);
+        foreach ($runs as $run) {
+            self::assertStringNotContainsString("\t", $run['text']);
+        }
+        self::assertSame('aa  bb', $runs[0]['text']);
+    }
+
+    public function test_pre_wrap_intrinsic_width_counts_kept_spaces_and_tabs(): void
+    {
+        $h = new LayoutHarness();
+        $style = ComputedStyle::root(Theme::default());
+        $i = $h->engine->intrinsic(self::preWrap("a   b\n\tcc"), $style);
+        self::assertSame(30.0, $i['max']); // widest line: tab (20) + cc (10)
+    }
+
+    public function test_text_after_a_tab_lands_on_the_stop_when_the_run_before_it_kerns(): void
+    {
+        $h = new LayoutHarness(backend: new \Papercut\Tests\Support\FakeBackend(kerning: true));
+        // "To A" is 20pt of glyphs but draws 1pt tighter; the tab still ends at the stop at 40pt.
+        $runs = LayoutHarness::runs($h->layout(self::preWrap("To A\tx"), 200)->fragment);
+
+        self::assertSame(['To A', 'x'], array_column($runs, 'text'));
+        self::assertSame([0.0, 40.0], array_column($runs, 'x'));
+    }
+
+    public function test_a_pre_wrap_span_in_a_justified_paragraph_is_not_stretched_but_other_lines_are(): void
+    {
+        $t = Text::spans(
+            Span::text('aa '),
+            Span::text('b c', Style::make(whiteSpace: WhiteSpace::PreWrap)),
+            Span::text(' dd ee f ggg'),
+        )->justify();
+        $runs = LayoutHarness::runs((new LayoutHarness())->layout($t, 40)->fragment);
+
+        // line 1 "aa b c" (30pt) holds the pre-wrap span: drawn as one run, spaces unstretched
+        self::assertSame(['aa b c', 'dd', 'ee', 'f', 'ggg'], array_column($runs, 'text'));
+        self::assertSame(0.0, $runs[0]['x']);
+        // line 2 "dd ee f" (35pt) is stretched to 40: each of its two spaces gains 2.5pt
+        self::assertSame([0.0, 17.5, 35.0], array_slice(array_column($runs, 'x'), 1, 3));
     }
 
     public function test_justify_spreads_words_except_last_line(): void

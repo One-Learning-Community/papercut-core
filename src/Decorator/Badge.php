@@ -6,7 +6,7 @@ namespace Papercut\Decorator;
 
 use InvalidArgumentException;
 use Papercut\{Component, Node, Text, View};
-use Papercut\Concerns\HasStyle;
+use Papercut\Concerns\{HasStyle, HasVariants};
 
 /**
  * A small rounded label in a tone; block-level, sized to its text.
@@ -14,6 +14,7 @@ use Papercut\Concerns\HasStyle;
 final class Badge implements Decorator
 {
     use HasStyle;
+    use HasVariants;
 
     private Node|Component $content;
     private string $tone = 'neutral';
@@ -39,6 +40,9 @@ final class Badge implements Decorator
         if (preg_match('/\s/', $tone) === 1) {
             throw new InvalidArgumentException("Badge tone must be a single word, got '$tone'.");
         }
+        if (str_contains($tone, '?')) {
+            throw new InvalidArgumentException("Badge tone must not contain '?', got '$tone'.");
+        }
         $clone = clone $this;
         $clone->tone = $tone;
         return $clone;
@@ -49,10 +53,22 @@ final class Badge implements Decorator
         return $this->tone;
     }
 
+    /** @return list<string> */
+    protected function toneNames(): array
+    {
+        return ['neutral', 'note', 'tip', 'warning', 'danger'];
+    }
+
+    /** @return list<string> */
+    public function partNames(): array
+    {
+        return ['badge'];
+    }
+
     public function render(): View
     {
         return View::make($this->content)
-            ->apply(trim('badge badge.' . $this->tone . ' ' . ($this->styleName() ?? '')))
+            ->apply(trim($this->part('badge', $this->tone) . ' ' . ($this->styleName() ?? '')))
             ->apply($this->style());
     }
 }

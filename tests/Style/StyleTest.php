@@ -24,6 +24,14 @@ final class StyleTest extends TestCase
         self::assertFalse($base->isEmpty());
     }
 
+    public function test_white_space_attribute_parses_and_rejects_unknown_values(): void
+    {
+        self::assertSame(\Papercut\Style\WhiteSpace::PreWrap, Style::fromAttributes(['white-space' => 'pre-wrap'])->whiteSpace);
+        self::assertSame(\Papercut\Style\WhiteSpace::Normal, Style::fromAttributes(['white-space' => 'normal'])->whiteSpace);
+        $this->expectException(\Papercut\Exception\InvalidValue::class);
+        Style::fromAttributes(['white-space' => 'nowrap']);
+    }
+
     public function test_from_attributes_parses_strings(): void
     {
         $s = Style::fromAttributes([

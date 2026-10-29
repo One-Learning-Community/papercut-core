@@ -14,6 +14,7 @@ final class TableCell implements Styled
     /** @var list<Node|Component> */
     private array $children = [];
     private int $span = 1;
+    private int $rowspan = 1;
     private bool $header = false;
 
     private function __construct()
@@ -47,9 +48,32 @@ final class TableCell implements Styled
         return $clone;
     }
 
+    /** How many columns the cell spans (set with colspan()). */
     public function span(): int
     {
         return $this->span;
+    }
+
+    /** How many columns the cell spans: the same as span(), named to pair with rowsSpanned(). */
+    public function colsSpanned(): int
+    {
+        return $this->span;
+    }
+
+    public function rowspan(int $n): self
+    {
+        if ($n < 1) {
+            throw new \InvalidArgumentException('rowspan must be at least 1.');
+        }
+        $clone = clone $this;
+        $clone->rowspan = $n;
+        return $clone;
+    }
+
+    /** How many rows the cell spans (set with rowspan()). */
+    public function rowsSpanned(): int
+    {
+        return $this->rowspan;
     }
 
     /**

@@ -8,7 +8,10 @@ use Papercut\Style\ComputedStyle;
 
 final readonly class InlineItem
 {
-    /** @param 'word'|'space'|'break' $kind */
+    /**
+     * @param 'word'|'space'|'break'|'tab' $kind a 'tab' carries the stop pitch (four space advances) as its width until
+     *                                            LineBreaker replaces it with the distance to the next stop
+     */
     public function __construct(
         public string $kind,
         public string $text,
@@ -19,6 +22,11 @@ final readonly class InlineItem
         public ?string $href = null,
         public bool $breakAfter = false,
     ) {
+    }
+
+    public function withWidth(float $width): self
+    {
+        return new self($this->kind, $this->text, $this->font, $this->size, $width, $this->style, $this->href, $this->breakAfter);
     }
 
     public function withText(string $text, float $width, bool $breakAfter): self
