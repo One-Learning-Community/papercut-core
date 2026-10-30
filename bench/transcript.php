@@ -26,7 +26,7 @@ $courses = array_map(
 
 return Document::make(
     Page::a4()->margin(mm(10))
-        ->header(Row::make(Text::make('Official Transcript')->bold()->size(pt(16)), Spacer::flex(), Text::make('One Learning Community')))
+        ->header(Row::make(Text::make('Official Transcript')->bold()->size(pt(16)), Spacer::flex(), Text::make('Papercut')))
         ->body(Column::make(
             Text::h2('Student: Ada Lovelace'),
             Table::make()->columns('3fr 25mm 20mm')->head('Course', 'Credits', 'Grade')
