@@ -41,6 +41,9 @@ final class ContentParityTest extends TestCase
     #[DataProvider('documents')]
     public function test_pdf_and_html_have_the_same_word_multisets(string $file): void
     {
+        if (basename($file, '.php') === 'certificate') {
+            self::markTestSkipped('The certificate is text over a PDF template, and the template, the point of the example, is dropped from Word and HTML.');
+        }
         $source = require $file;
         self::assertInstanceOf(Document::class, $source);
         $pages = array_map(static fn (Page $p): Page => Page::size(pt($p->width()), pt($p->height()))->margin($p->margins())->body(...$p->bodyNodes()), $source->pages());

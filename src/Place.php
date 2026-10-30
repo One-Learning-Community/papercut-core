@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Papercut;
 
 use Papercut\Style\{Anchor, Style};
+use Papercut\Support\EnumValue;
 use Papercut\Value\{Length, Percent};
 
 /**
@@ -32,8 +33,10 @@ final class Place implements Node
         return new self(self::parse($x), self::parse($y), View::normalize($nodes));
     }
 
-    public function anchor(Anchor $anchor): self
+    /** @throws \Papercut\Exception\InvalidValue for a string that is not an anchor */
+    public function anchor(Anchor|string $anchor): self
     {
+        $anchor = EnumValue::from(Anchor::class, $anchor);
         $clone = clone $this;
         $clone->anchor = $anchor;
         return $clone;

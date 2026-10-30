@@ -7,7 +7,7 @@ namespace Papercut;
 use Papercut\Concerns\{HasNotes, HasStyle};
 use Papercut\Exception\InvalidValue;
 use Papercut\Style\{Align, Direction, Justify, Style};
-use Papercut\Support\Suggest;
+use Papercut\Support\{EnumValue, Suggest};
 use Papercut\Value\Length;
 
 final class View implements Styled, Annotated
@@ -92,8 +92,10 @@ final class View implements Styled, Annotated
         return $this->style()->direction === Direction::Row ? 'row' : 'column';
     }
 
-    public function direction(Direction $d): self
+    /** @throws InvalidValue for a string that is not a direction */
+    public function direction(Direction|string $d): self
     {
+        $d = EnumValue::from(Direction::class, $d);
         $clone = $this->withStyle(new Style(direction: $d));
         $clone->explicitDirection = true;
         return $clone;
@@ -104,13 +106,17 @@ final class View implements Styled, Annotated
         return $this->withStyle(new Style(gap: $g));
     }
 
-    public function justify(Justify $j): self
+    /** @throws InvalidValue for a string that is not a justify option */
+    public function justify(Justify|string $j): self
     {
+        $j = EnumValue::from(Justify::class, $j);
         return $this->withStyle(new Style(justify: $j));
     }
 
-    public function align(Align $a): self
+    /** @throws InvalidValue for a string that is not an alignment */
+    public function align(Align|string $a): self
     {
+        $a = EnumValue::from(Align::class, $a);
         return $this->withStyle(new Style(alignItems: $a));
     }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Papercut\Concerns;
 
 use Papercut\Style\{Align, BorderStyle, Style, TextAlign};
+use Papercut\Support\EnumValue;
 use Papercut\Value\{Auto, Color, Edges, Length, Percent};
 
 /**
@@ -94,8 +95,10 @@ trait HasStyle
         return Edges::of(...$lengths);
     }
 
-    public function border(Length $width, Color|string|null $color = null, ?BorderStyle $style = null): static
+    /** @throws \Papercut\Exception\InvalidValue for a $style string that is not a border style */
+    public function border(Length $width, Color|string|null $color = null, BorderStyle|string|null $style = null): static
     {
+        $style = $style === null ? null : EnumValue::from(BorderStyle::class, $style);
         return $this->withStyle(new Style(borderWidth: Edges::all($width), borderColor: $color === null ? null : self::toColor($color), borderStyle: $style));
     }
 
@@ -139,8 +142,10 @@ trait HasStyle
         return $this->withStyle(new Style(basis: $v));
     }
 
-    public function alignSelf(Align $v): static
+    /** @throws \Papercut\Exception\InvalidValue for a string that is not an alignment */
+    public function alignSelf(Align|string $v): static
     {
+        $v = EnumValue::from(Align::class, $v);
         return $this->withStyle(new Style(alignSelf: $v));
     }
 
@@ -184,8 +189,10 @@ trait HasStyle
         return $this->withStyle(new Style(letterSpacing: $v));
     }
 
-    public function textAlign(TextAlign $v): static
+    /** @throws \Papercut\Exception\InvalidValue for a string that is not a text alignment */
+    public function textAlign(TextAlign|string $v): static
     {
+        $v = EnumValue::from(TextAlign::class, $v);
         return $this->withStyle(new Style(textAlign: $v));
     }
 

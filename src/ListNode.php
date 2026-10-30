@@ -6,6 +6,7 @@ namespace Papercut;
 
 use Papercut\Concerns\HasStyle;
 use Papercut\Style\ListMarker;
+use Papercut\Support\EnumValue;
 
 /**
  * An ordered or unordered list of ListItems.
@@ -38,8 +39,10 @@ final class ListNode implements Styled
         return $clone;
     }
 
-    public function marker(ListMarker $m): self
+    /** @throws \Papercut\Exception\InvalidValue for a string that is not a list marker */
+    public function marker(ListMarker|string $m): self
     {
+        $m = EnumValue::from(ListMarker::class, $m);
         $clone = clone $this;
         $clone->marker = $m;
         return $clone;

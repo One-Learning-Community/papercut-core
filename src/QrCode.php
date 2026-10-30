@@ -9,6 +9,7 @@ use Papercut\Barcode\Bacon\BaconQrSvg;
 use Papercut\Barcode\{ErrorCorrection, QrDesign, QrEncoder, QrEyes, QrGradient, QrShape};
 use Papercut\Concerns\HasStyle;
 use Papercut\Exception\{InvalidValue, MissingPackage};
+use Papercut\Support\EnumValue;
 use Papercut\Value\Color;
 
 /**
@@ -42,10 +43,11 @@ final class QrCode implements Styled
 
     /**
      * @param QrEncoder|null $encoder null uses php-pdf's encoder, which holds up to 213 bytes at Medium
-     * @throws InvalidValue when $value is empty or too long
+     * @throws InvalidValue when $value is empty or too long, or $level is a string that is not a level
      */
-    public static function make(string $value, ErrorCorrection $level = ErrorCorrection::Medium, ?QrEncoder $encoder = null): self
+    public static function make(string $value, ErrorCorrection|string $level = ErrorCorrection::Medium, ?QrEncoder $encoder = null): self
     {
+        $level = EnumValue::from(ErrorCorrection::class, $level);
         $encoder ??= new PhpPdfQrEncoder();
 
         return new self($encoder->encode($value, $level), $value, $level, $encoder);
@@ -77,13 +79,17 @@ final class QrCode implements Styled
 
     /**
      * Encodes the same text again at another level. A code with dots or rounded modules stays at
-     * Quartile or above.
+     * Quartile or above. The level is a case or a string: L, M, Q or H, or low, medium, quartile or high.
+     *
+     * @throws \LogicException for a code made from modules, which has no text to encode again
+     * @throws InvalidValue for a string that is not a level
      */
-    public function errorCorrection(ErrorCorrection $level): self
+    public function errorCorrection(ErrorCorrection|string $level): self
     {
         if ($this->value === null || $this->encoder === null) {
             throw new \LogicException('A QR code made from modules has no text to encode again.');
         }
+        $level = EnumValue::from(ErrorCorrection::class, $level);
         if ($this->design !== null && self::needsQuartile($this->design->shape) && self::rank($level) < self::rank(ErrorCorrection::Quartile)) {
             $level = ErrorCorrection::Quartile;
         }
@@ -112,10 +118,12 @@ final class QrCode implements Styled
      * already High. A grid from fromModules() has no text to re-encode and is drawn as given.
      *
      * @throws MissingPackage when bacon/bacon-qr-code is not installed
-     * @throws InvalidValue when the grid is not a standard QR size, or the text is too long for Quartile
+     * @throws InvalidValue when the grid is not a standard QR size, or the text is too long for Quartile,
+     *                      or for a string that is not a shape
      */
-    public function shape(QrShape $shape): self
+    public function shape(QrShape|string $shape): self
     {
+        $shape = EnumValue::from(QrShape::class, $shape);
         $styled = $this->designed(static fn (QrDesign $d): QrDesign => $d->with(shape: $shape));
         if (!self::needsQuartile($shape) || $this->value === null || self::rank($this->level) >= self::rank(ErrorCorrection::Quartile)) {
             return $styled;
@@ -142,10 +150,11 @@ final class QrCode implements Styled
      * How the three corner eyes are drawn.
      *
      * @throws MissingPackage when bacon/bacon-qr-code is not installed
-     * @throws InvalidValue when the grid is not a standard QR size
+     * @throws InvalidValue when the grid is not a standard QR size, or for a string that is not an eyes style
      */
-    public function eyes(QrEyes $eyes): self
+    public function eyes(QrEyes|string $eyes): self
     {
+        $eyes = EnumValue::from(QrEyes::class, $eyes);
         return $this->designed(static fn (QrDesign $d): QrDesign => $d->with(eyes: $eyes));
     }
 
@@ -167,10 +176,11 @@ final class QrCode implements Styled
      * the background, or the code may not scan.
      *
      * @throws MissingPackage when bacon/bacon-qr-code is not installed
-     * @throws InvalidValue when the grid is not a standard QR size
+     * @throws InvalidValue when the grid is not a standard QR size, or for a string that is not a gradient type
      */
-    public function gradient(Color|string $from, Color|string $to, QrGradient $type = QrGradient::Diagonal): self
+    public function gradient(Color|string $from, Color|string $to, QrGradient|string $type = QrGradient::Diagonal): self
     {
+        $type = EnumValue::from(QrGradient::class, $type);
         $from = self::toColor($from);
         $to = self::toColor($to);
 

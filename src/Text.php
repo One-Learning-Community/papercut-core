@@ -36,6 +36,12 @@ final class Text implements Styled, Annotated
         return $t;
     }
 
+    /** Inline code: literal text in the theme's `code` style, shorthand for `Text::spans(Span::code($text))`. */
+    public static function code(string $text): self
+    {
+        return self::spans(Span::code($text));
+    }
+
     public static function markup(string $markup): self
     {
         return self::spans(...Text\InlineMarkup::parse($markup));

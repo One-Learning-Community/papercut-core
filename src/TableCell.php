@@ -89,7 +89,8 @@ final class TableCell implements Styled
         return $this->header;
     }
 
-    public function align(TextAlign $a): self
+    /** @throws \Papercut\Exception\InvalidValue for a string that is not a text alignment */
+    public function align(TextAlign|string $a): self
     {
         return $this->textAlign($a);
     }

@@ -25,6 +25,12 @@ final readonly class Span
         return new self($text, $style ?? new Style());
     }
 
+    /** Literal text in the theme's `code` style: the same span as `<code>` in markup and `<x-doc::code>` in Blade. */
+    public static function code(string $text): self
+    {
+        return new self($text, new Style(), null, false, 'code');
+    }
+
     public static function break(): self
     {
         return new self('', new Style(), null, true);

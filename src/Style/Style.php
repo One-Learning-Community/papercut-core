@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Papercut\Style;
 
 use Papercut\Exception\{InvalidValue, UnknownAttribute};
-use Papercut\Support\Suggest;
+use Papercut\Support\{EnumValue, Suggest};
 use Papercut\Value\{Auto, Color, Edges, Length, Percent};
 
 /**
@@ -361,13 +361,6 @@ final readonly class Style
         if ($v instanceof $enum) {
             return $v;
         }
-        $s = self::str($v, 'value');
-        $normalized = strtolower(trim($s));
-        $case = $enum::tryFrom($normalized);
-        if ($case !== null) {
-            return $case;
-        }
-        $values = array_map(static fn (\BackedEnum $c): string => (string) $c->value, $enum::cases());
-        throw InvalidValue::for('value', $s, Suggest::closest($normalized, $values));
+        return EnumValue::from($enum, self::str($v, 'value'));
     }
 }

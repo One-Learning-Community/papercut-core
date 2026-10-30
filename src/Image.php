@@ -6,6 +6,7 @@ namespace Papercut;
 
 use Papercut\Concerns\HasStyle;
 use Papercut\Style\ImageFit;
+use Papercut\Support\EnumValue;
 
 final class Image implements Styled
 {
@@ -29,8 +30,10 @@ final class Image implements Styled
         return new self('bytes', $bytes);
     }
 
-    public function fit(ImageFit $fit): self
+    /** @throws \Papercut\Exception\InvalidValue for a string that is not a fit mode */
+    public function fit(ImageFit|string $fit): self
     {
+        $fit = EnumValue::from(ImageFit::class, $fit);
         $clone = clone $this;
         $clone->fit = $fit;
         return $clone;

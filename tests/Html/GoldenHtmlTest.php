@@ -22,6 +22,10 @@ final class GoldenHtmlTest extends TestCase
             $files = glob(__DIR__ . "/../$dir/*.php") ?: [];
             sort($files);
             foreach ($files as $file) {
+                // The certificate fills in a PDF template, and the template, the point of the example, is dropped from HTML.
+                if ($kind === 'examples' && basename($file, '.php') === 'certificate') {
+                    continue;
+                }
                 yield $kind . '-' . basename($file, '.php') => [$file, $kind];
             }
         }
