@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Papercut\Markup;
 
 use Papercut\Backend\ImageFormat;
-use Papercut\Decorator\Blockquote;
+use Papercut\Code\CodeHighlighting;
+use Papercut\Decorator\{Blockquote, CodeBlock};
 use Papercut\Export\FidelityLevel;
 use Papercut\Image;
 use Papercut\Layout\TableGrid;
@@ -201,6 +202,11 @@ final class HtmlConverter
                 $this->run->break($this->pre > 0);
                 return;
             case 'pre':
+                $highlighting = $this->options->code;
+                if ($highlighting !== false && ($language = $this->codeLanguage($el)) !== null) {
+                    $this->styled($own, $preset, fn () => $this->codeBlock($el, $language, $highlighting, $preset));
+                    return;
+                }
                 $this->pre++;
                 try {
                     $this->styled($own, $preset, fn () => $this->block($el, $style, $href, $preset, 'pre'));
@@ -794,6 +800,77 @@ final class HtmlConverter
             }
         }
         return true;
+    }
+
+    /**
+     * The language of a `pre` that is a code block: the first `language-x` or `lang-x` class word
+     * on it or on its only element child `code`. Null when it is not one, or code blocks are off.
+     */
+    private function codeLanguage(\Dom\Element $el): ?string
+    {
+        if ($this->options->code === false) {
+            return null;
+        }
+        $only = self::onlyCode($el);
+        return self::languageOf($el) ?? ($only !== null ? self::languageOf($only) : null);
+    }
+
+    /** The lone `code` child; with $bare, only when every other child is whitespace-only text. */
+    private static function onlyCode(\Dom\Element $el, bool $bare = false): ?\Dom\Element
+    {
+        $first = $el->firstElementChild;
+        if ($el->childElementCount !== 1 || $first?->localName !== 'code') {
+            return null;
+        }
+        if ($bare) {
+            foreach ($el->childNodes as $child) {
+                if ($child !== $first && !($child instanceof \Dom\Text && trim($child->data, " \t\n\r\f") === '')) {
+                    return null;
+                }
+            }
+        }
+        return $first;
+    }
+
+    /**
+     * Emits the `pre` as a CodeBlock over its text, `br` as a newline and one final newline dropped.
+     * Markup other than span, br and code inside is flattened (the highlighter colours the code
+     * afresh) and noted.
+     */
+    private function codeBlock(\Dom\Element $el, string $language, CodeHighlighting $options, ?string $outer): void
+    {
+        $this->flush($outer);
+        $code = '';
+        $flat = false;
+        $walk = function (\Dom\Node $node) use (&$walk, &$code, &$flat): void {
+            foreach ($node->childNodes as $child) {
+                if ($child instanceof \Dom\Text) {
+                    $code .= $child->data;
+                } elseif ($child instanceof \Dom\Element) {
+                    if ($child->localName === 'br') {
+                        $code .= "\n";
+                        continue;
+                    }
+                    $flat = $flat || !in_array($child->localName, ['span', 'code'], true);
+                    $walk($child);
+                }
+            }
+        };
+        $walk(self::onlyCode($el, true) ?? $el);
+        if ($flat) {
+            $this->note(FidelityLevel::Approximated, 'markup inside a code block');
+        }
+        $this->blocks[] = [CodeBlock::make($code)->language($language)->highlighting($options)->render(), false];
+    }
+
+    private static function languageOf(\Dom\Element $el): ?string
+    {
+        foreach (preg_split('/[ \t\n\r\f]+/', $el->getAttribute('class') ?? '', -1, PREG_SPLIT_NO_EMPTY) ?: [] as $word) {
+            if (preg_match('/^(?:language|lang)-(.+)$/', $word, $m) === 1) {
+                return $m[1];
+            }
+        }
+        return null;
     }
 
     /**

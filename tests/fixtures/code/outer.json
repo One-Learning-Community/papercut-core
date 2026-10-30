@@ -1,0 +1,8 @@
+{
+  "name": "outer",
+  "displayName": "Outer",
+  "scopeName": "source.outer",
+  "patterns": [
+    { "begin": "^<<$", "end": "^>>$", "patterns": [{ "include": "source.inner" }] }
+  ]
+}

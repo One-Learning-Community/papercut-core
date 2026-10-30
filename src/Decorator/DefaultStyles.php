@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Papercut\Decorator;
 
-use Papercut\Style\{Align, Direction, Justify, Style, WhiteSpace};
+use Papercut\Style\{Align, Direction, Justify, Style, TextAlign, WhiteSpace};
 use Papercut\Value\{Color, Edges, Length};
 
 use function Papercut\pt;
@@ -152,6 +152,19 @@ final class DefaultStyles
             margin: self::sides(0, 0, 6, 0),
         );
         $s['code'] = Style::make(fontFamily: 'monospace', fontSize: Length::em(0.9), background: self::c('slate-100'));
+
+        // Code blocks: geometry only; the colours come from the code theme (see CodeBlock).
+        $s['code-block'] = Style::make(padding: self::sides(6, 8, 6, 8), margin: self::sides(0, 0, 6, 0), radius: pt(3), borderWidth: Edges::all(pt(0.5)), fontWeight: 400, italic: false, underline: false, strike: false);
+        $s['code-block.code'] = Style::make(fontFamily: 'monospace', fontSize: Length::em(0.9), whiteSpace: WhiteSpace::PreWrap);
+        $s['code-block.label'] = Style::make(fontSize: Length::em(0.7), fontWeight: 600, italic: false, underline: false, strike: false, letterSpacing: pt(0.4), textAlign: TextAlign::Right, margin: self::sides(0, 0, 2, 0));
+        $s['code-block.bar'] = Style::make(padding: self::sides(2, 8, 2, 8), borderWidth: Edges::of($zero, $zero, pt(0.5), $zero));
+        $s['code-block.strip'] = Style::make(padding: Edges::all($zero));
+        $s['code-block.code.strip'] = Style::make(padding: self::sides(6, 8, 6, 8));
+        $s['code-block.bar.strip'] = Style::make();
+        $s['code-block.label.strip'] = Style::make(textAlign: TextAlign::Left);
+        $s['code-block.caption'] = Style::make(borderWidth: Edges::all($zero), radius: $zero, padding: Edges::all($zero));
+        $s['code-block.label.caption'] = Style::make(textAlign: TextAlign::Left, margin: self::sides(0, 0, 3, 2));
+        $s['code-block.code.caption'] = Style::make(padding: self::sides(6, 8, 6, 10), borderWidth: self::sides(0, 0, 0, 2));
 
         return $s;
     }

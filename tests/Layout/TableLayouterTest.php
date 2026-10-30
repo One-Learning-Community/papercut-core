@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Papercut\Tests\Layout;
 
-use Papercut\{Component, Node, Table, TableCell, TableRow, Text};
+use Papercut\{Component, Node, OverflowMode, Table, TableCell, TableRow, Text};
+use Papercut\Exception\LayoutOverflow;
 use Papercut\Layout\{Fragment, Status};
 use Papercut\Paint\{Line, Rect};
 use Papercut\Style\{ComputedStyle, Theme};
@@ -55,15 +56,158 @@ final class TableLayouterTest extends TestCase
         );
     }
 
-    public function test_hand_built_over_wide_length_tracks_overflow_and_warn(): void
+    public function test_hand_built_over_wide_length_tracks_throw_in_throw_mode(): void
     {
         $t = Table::make()->columns('300pt 300pt')->row('a', 'b');
-        $h = new LayoutHarness();
-        $widths = $this->columnWidths($t, 400.0);
-        self::assertSame([300.0, 300.0], $widths);
+        $this->expectException(LayoutOverflow::class);
+        $this->expectExceptionMessage('Table columns need 600.00pt but only 400.00pt is available');
+        (new LayoutHarness())->layout($t, 400);
+    }
+
+    public function test_hand_built_over_wide_length_tracks_overflow_and_warn_in_clip_mode(): void
+    {
+        $t = Table::make()->columns('300pt 300pt')->row('a', 'b');
+        $h = new LayoutHarness(overflow: OverflowMode::Clip);
+        self::assertSame([300.0, 300.0], $this->columnWidths($t, 400.0, OverflowMode::Clip));
         $h->layout($t, 400);
         self::assertCount(1, $h->warnings);
         self::assertStringContainsString('Table columns need', $h->warnings[0]);
+    }
+
+    // 5pt per character, 12pt cell padding: 'aa' needs 22pt, twenty a's 112pt
+    public function test_auto_columns_narrower_than_their_content_shrink_the_widest_first(): void
+    {
+        $t = Table::make()->columns('auto auto')->row('aa', str_repeat('a', 20));
+        self::assertEqualsWithDelta([22.0, 78.0], $this->columnWidths($t, 100.0), 1e-6);
+
+        $h = new LayoutHarness();
+        $f = $h->layout($t, 100)->fragment;
+        self::assertNotNull($f);
+        self::assertLessThanOrEqual(100.0 + 1e-6, self::rightEdge($f));
+        self::assertCount(1, $h->warnings);
+        self::assertStringContainsString('pdf: approximated table columns narrower than their content', $h->warnings[0]);
+        self::assertStringContainsString('34.00pt more', $h->warnings[0]);
+        self::assertStringContainsString('smaller text or less cell padding', $h->warnings[0]);
+    }
+
+    public function test_an_fr_column_narrower_than_its_content_shrinks_too(): void
+    {
+        $t = Table::make()->columns('auto 1fr')->row('aaaa', str_repeat('b', 30));
+        self::assertEqualsWithDelta([32.0, 68.0], $this->columnWidths($t, 100.0), 1e-6);
+    }
+
+    public function test_fitted_length_columns_shrink_below_their_content_when_the_minimums_do_not_fit(): void
+    {
+        $t = Table::make()->columns('100pt 100pt')->fitColumns()->row(str_repeat('a', 30), str_repeat('a', 30));
+        self::assertEqualsWithDelta([50.0, 50.0], $this->columnWidths($t, 100.0), 1e-6);
+    }
+
+    // floor per column: 12pt padding + its widest letter (5pt)
+    public function test_columns_never_shrink_below_their_padding_and_widest_letter(): void
+    {
+        $t = Table::make()->columns('auto auto')->row('aaaa', 'aaaa');
+        self::assertEqualsWithDelta([17.0, 17.0], $this->columnWidths($t, 30.0, OverflowMode::Clip), 1e-6);
+    }
+
+    public function test_a_table_that_cannot_shrink_enough_throws_in_throw_mode(): void
+    {
+        $t = Table::make()->columns('auto auto')->row('aaaa', 'aaaa');
+        $this->expectException(LayoutOverflow::class);
+        (new LayoutHarness())->layout($t, 30);
+    }
+
+    public function test_a_table_that_cannot_shrink_enough_overflows_and_warns_in_clip_mode(): void
+    {
+        $t = Table::make()->columns('auto auto')->row('aaaa', 'aaaa');
+        $h = new LayoutHarness(overflow: OverflowMode::Clip);
+        $h->layout($t, 30);
+        self::assertStringContainsString('Table columns need 34.00pt but only 30.00pt is available', implode("\n", $h->warnings));
+    }
+
+    // the inner table can shrink to 17 + 17, plus the outer cell's 12pt padding: 46
+    public function test_a_nested_table_keeps_the_width_its_own_columns_can_shrink_to(): void
+    {
+        $inner = Table::make()->columns('auto auto')->row('aaaa', 'aaaa');
+        $t = Table::make()->columns('auto auto')->row(TableCell::make($inner), str_repeat('c', 20));
+        self::assertEqualsWithDelta([46.0, 34.0], $this->columnWidths($t, 80.0), 1e-6);
+        $h = new LayoutHarness();
+        $f = $h->layout($t, 80)->fragment;
+        self::assertNotNull($f);
+        self::assertLessThanOrEqual(80.0 + 1e-6, self::rightEdge($f));
+    }
+
+    public function test_a_fixed_width_box_keeps_its_column_wide_enough(): void
+    {
+        $box = \Papercut\Column::make(Text::make('x'))->width(pt(100));
+        $t = Table::make()->columns('auto auto')->row(TableCell::make($box), str_repeat('c', 40));
+        self::assertEqualsWithDelta([112.0, 38.0], $this->columnWidths($t, 150.0), 1e-6);
+    }
+
+    public function test_a_column_covered_only_by_spanning_cells_keeps_their_floor(): void
+    {
+        $t = Table::make()->columns('auto auto')->row(TableCell::make('aaaa')->colspan(2));
+        self::assertEqualsWithDelta([8.5, 8.5], $this->columnWidths($t, 6.0, OverflowMode::Clip), 1e-6);
+        $this->expectException(LayoutOverflow::class);
+        (new LayoutHarness())->layout($t, 6);
+    }
+
+    public function test_an_image_column_shrinks_to_its_padding(): void
+    {
+        $t = Table::make()->columns('auto auto')->row(TableCell::make(\Papercut\Image::bytes(\Papercut\Tests\Support\TestImages::png(200, 10))), str_repeat('c', 40));
+        $widths = $this->columnWidths($t, 100.0);
+        self::assertEqualsWithDelta(100.0, array_sum($widths), 1e-6);
+        self::assertEqualsWithDelta($widths[0], $widths[1], 1e-6);
+    }
+
+    public function test_a_nested_table_with_fitted_length_columns_keeps_what_they_can_shrink_to(): void
+    {
+        $inner = Table::make()->columns('100pt 100pt')->fitColumns()->row('aaaa', 'aaaa');
+        $t = Table::make()->columns('auto auto')->row(TableCell::make($inner), str_repeat('c', 40));
+        self::assertEqualsWithDelta([46.0, 34.0], $this->columnWidths($t, 80.0), 1e-6);
+        (new LayoutHarness())->layout($t, 80);
+        $this->addToAssertionCount(1); // did not throw
+    }
+
+    public function test_svgs_and_images_with_a_width_scale_down_with_their_column(): void
+    {
+        $svg = \Papercut\Svg::fromString('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="40" viewBox="0 0 400 40"><rect width="400" height="40"/></svg>');
+        $image = \Papercut\Image::bytes(\Papercut\Tests\Support\TestImages::png(40, 10))->width(pt(300));
+        foreach ([$svg, $image] as $box) {
+            $t = Table::make()->columns('auto auto')->row(TableCell::make($box), 'text');
+            $f = (new LayoutHarness())->layout($t, 200)->fragment;
+            self::assertNotNull($f);
+            self::assertLessThanOrEqual(200.0 + 1e-6, self::rightEdge($f));
+        }
+    }
+
+    public function test_fr_columns_covered_only_by_a_spanning_cell_share_its_floor(): void
+    {
+        $t = Table::make()->columns('1fr 1fr 1fr')->row(TableCell::make('aaaa')->colspan(2), str_repeat('a', 40));
+        self::assertEqualsWithDelta([8.5, 8.5, 83.0], $this->columnWidths($t, 100.0), 1e-6);
+    }
+
+    // all three were given 100pt, so the shared cap shrinks them alike; none drops to 0
+    public function test_fitted_length_columns_covered_only_by_a_spanning_cell_do_not_drop_to_nothing(): void
+    {
+        $t = Table::make()->columns('100pt 100pt 100pt')->fitColumns()->row(TableCell::make('aaaa')->colspan(2), str_repeat('a', 40));
+        self::assertEqualsWithDelta([100 / 3, 100 / 3, 100 / 3], $this->columnWidths($t, 100.0), 1e-6);
+    }
+
+    // a letter is 5pt plus 10pt letter spacing: wider than one em
+    public function test_the_text_floor_is_its_widest_letter_with_letter_spacing(): void
+    {
+        $cell = static fn (): TableCell => TableCell::make(Text::make('aaaa')->letterSpacing(pt(10)));
+        $t = Table::make()->columns('auto auto')->row($cell(), $cell());
+        self::assertEqualsWithDelta([27.0, 27.0], $this->columnWidths($t, 50.0, OverflowMode::Clip), 1e-6);
+    }
+
+    private static function rightEdge(Fragment $f, float $ox = 0.0): float
+    {
+        $right = $ox + $f->width;
+        foreach ($f->children() as $c) {
+            $right = max($right, self::rightEdge($c['fragment'], $ox + $c['x']));
+        }
+        return $right;
     }
 
     public function test_fit_columns_scales_length_tracks_down_to_the_width_without_a_warning(): void
@@ -102,9 +246,9 @@ final class TableLayouterTest extends TestCase
     }
 
     /** @return list<float> */
-    private function columnWidths(Table $t, float $width): array
+    private function columnWidths(Table $t, float $width, OverflowMode $overflow = OverflowMode::Throw): array
     {
-        $engine = (new LayoutHarness())->engine;
+        $engine = (new LayoutHarness(overflow: $overflow))->engine;
         return (new \Papercut\Layout\TableLayouter(new \Papercut\Layout\BlockLayouter()))->columns($t, ComputedStyle::root(Theme::default()), $width, $engine);
     }
 

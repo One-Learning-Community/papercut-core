@@ -6,6 +6,7 @@ namespace Papercut\Layout;
 
 use Papercut\{Image, Node, OverflowMode, PdfPage};
 use Papercut\Backend\{Backend, ImageHandle, PdfPageHandle, PdfPageLoader};
+use Papercut\Export\{FidelityLevel, FidelityReport};
 use Papercut\Style\{ComputedStyle, StyleResolver, Theme};
 use Papercut\Text\{FontRegistry, Itemizer, SvgFonts};
 
@@ -36,6 +37,9 @@ final class LayoutContext
     public bool $bookmarks = true;
     /** Off for a trial layout that must not clip a too-tall node in place (Clip mode), so the paginator can try the next page instead. */
     public bool $clipInPlace = true;
+    /** On inside quietly(). */
+    public private(set) bool $quiet = false;
+    private bool $heldBack = false;
     public readonly StyleResolver $styles;
 
     public function __construct(
@@ -46,6 +50,8 @@ final class LayoutContext
         private readonly ?\Closure $onWarning,
         /** @var list<string> */
         private readonly array $fallbackFamilies = [],
+        /** The format named in fidelity reports from layout. */
+        public readonly string $format = 'pdf',
     ) {
         $this->styles = new StyleResolver($theme);
     }
@@ -61,6 +67,50 @@ final class LayoutContext
         return $this->itemizer ??= new Itemizer($this->fonts, function (string $msg): void {
             $this->warn($msg);
         }, $this->fallbackFamilies, $this->theme);
+    }
+
+    /**
+     * Runs $fn for a layout that may never be rendered (the paginator's look-ahead at later headers
+     * and footers): a table too wide for its box neither throws nor reports. The second value is
+     * false when that held something back, so the caller lays it out again if it is rendered.
+     *
+     * @template T
+     * @param \Closure(): T $fn
+     * @return array{T, bool}
+     */
+    public function quietly(\Closure $fn): array
+    {
+        [$quiet, $held] = [$this->quiet, $this->heldBack];
+        $this->quiet = true;
+        $this->heldBack = false;
+        try {
+            $result = $fn();
+            return [$result, !$this->heldBack];
+        } finally {
+            $this->quiet = $quiet;
+            $this->heldBack = $held;
+        }
+    }
+
+    /** Inside quietly(): notes that a report or throw was held back. */
+    public function holdBack(): void
+    {
+        $this->heldBack = true;
+    }
+
+    /** Reports a fidelity approximation at the current path, once per path and feature. */
+    public function approximated(string $feature): void
+    {
+        $report = new FidelityReport(FidelityLevel::Approximated, $this->format, $feature, $this->path());
+        $key = "\0approximated\0" . $report->path . "\0" . $feature;
+        if ($this->onWarning === null || isset($this->warned[$key])) {
+            return;
+        }
+        $this->warned[$key] = true;
+        $r = new \ReflectionFunction($this->onWarning);
+        $r->getNumberOfParameters() === 1 && !$r->isVariadic()
+            ? ($this->onWarning)($report->message())
+            : ($this->onWarning)($report->message(), $report);
     }
 
     /** $withPath false: the message already names its node. */

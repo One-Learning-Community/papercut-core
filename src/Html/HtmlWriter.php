@@ -319,7 +319,8 @@ final class HtmlWriter implements TreeVisitor
     private function text(Text $t, ComputedStyle $s, ComputedStyle $parent, Visit $at): string
     {
         $override = self::overridesDecoration($s, $parent);
-        $pre = StyleName::leads($t->styleName(), 'pre');
+        // `code-block.code` is the code text of Decorator\CodeBlock; it exports as a pre like markup's own.
+        $pre = StyleName::leads($t->styleName(), 'pre') || StyleName::leads($t->styleName(), 'code-block.code');
         $tag = match (true) {
             $pre => 'pre',
             in_array($t->preset(), ['h1', 'h2', 'h3', 'h4'], true) => $t->preset(),
@@ -331,6 +332,12 @@ final class HtmlWriter implements TreeVisitor
             $decls = ['margin' => '0', 'overflow-wrap' => 'anywhere', 'tab-size' => '4', ...$this->fontCss($s), ...$decls, 'white-space' => $s->whiteSpace->value];
         }
         $this->out .= '<' . $tag . self::styleAttr($decls) . '>';
+        $inner = '';
+        if ($pre && $t->isHtmlCode()) {
+            $language = preg_replace('/[^A-Za-z0-9_+#.-]/', '', (string) $t->htmlCodeLanguage());
+            $this->out .= '<code' . ($language !== '' && $language !== null ? ' class="language-' . $language . '"' : '') . '>';
+            $inner = '</code>';
+        }
         $nested = false;
         foreach ($t->spanList() as $span) {
             $override = $this->span($span, $s, $nested, $at->path()) || $override;
@@ -342,7 +349,7 @@ final class HtmlWriter implements TreeVisitor
             $this->fidelity->approximated('text decoration override', $at->path());
         }
 
-        return '</' . $tag . '>';
+        return $inner . '</' . $tag . '>';
     }
 
     /** @return bool whether the span turns off a decoration the paragraph has on */

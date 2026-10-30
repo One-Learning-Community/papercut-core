@@ -83,10 +83,6 @@ final class SvgLayouter implements Layouter
         if (!$node instanceof Svg) {
             throw new \LogicException(sprintf('SvgLayouter cannot measure %s.', $node::class));
         }
-        $w = $style->width instanceof Length
-            ? $style->width->points
-            : $node->document()->widthPt + $style->padding->horizontal() + $style->borderWidth->horizontal();
-
-        return ['min' => $w, 'max' => $w];
+        return ReplacedBox::intrinsic($style, $node->document()->widthPt, $engine);
     }
 }

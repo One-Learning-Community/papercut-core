@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Papercut\Layout;
 
-use Papercut\{Node, Table, TableCell, TableRow, View};
-use Papercut\Exception\UnknownAttribute;
+use Papercut\{Node, OverflowMode, Table, TableCell, TableRow, View};
+use Papercut\Exception\{LayoutOverflow, UnknownAttribute};
 use Papercut\Style\{ComputedStyle, Justify, Style, Theme};
 use Papercut\Value\{Auto, Fr, Length, Percent};
 
@@ -231,12 +231,13 @@ final class TableLayouter implements Layouter
             return ['min' => $style->width->points, 'max' => $style->width->points];
         }
         $table = self::table($node);
-        $columns = $this->columnContent($table, $style, $engine);
+        $fitted = $engine->breaksAnywhere() && $table->fitsColumns();
+        $columns = $this->columnContent($table, $style, $engine, $fitted);
         $tracks = self::trackList($table);
         $min = 0.0;
         $max = 0.0;
         foreach ($columns as $k => $size) {
-            $fixed = $tracks[$k] instanceof Length ? $tracks[$k]->points : null;
+            $fixed = $tracks[$k] instanceof Length && !$fitted ? $tracks[$k]->points : null;
             $min += $fixed ?? $size['min'];
             $max += $fixed ?? $size['max'];
         }
@@ -370,8 +371,28 @@ final class TableLayouter implements Layouter
             }
             $total = array_sum($widths);
         }
+        $ctx = $engine->context();
+        $held = false;
         if ($total > $width + self::EPSILON) {
-            $engine->context()->warnOnce(sprintf('Table columns need %.2fpt but only %.2fpt is available', $total, $width));
+            $needed = $total;
+            $total = $this->shrink($table, $style, $tracks, $widths, $width, $engine);
+            if ($total <= $width + self::EPSILON) {
+                $feature = sprintf(
+                    'table columns narrower than their content (they need %.2fpt more; smaller text or less cell padding keeps words whole)',
+                    $needed - $width,
+                );
+                $ctx->quiet ? $held = true : $ctx->approximated($feature);
+            }
+        }
+        if ($total > $width + self::EPSILON) {
+            $message = sprintf('Table columns need %.2fpt but only %.2fpt is available', $total, $width);
+            if ($ctx->quiet) {
+                $held = true;
+            } elseif ($ctx->overflow === OverflowMode::Throw) {
+                throw LayoutOverflow::tooWide($ctx->path(), $message);
+            } else {
+                $ctx->warnOnce($message);
+            }
         }
 
         $offsets = [];
@@ -381,9 +402,90 @@ final class TableLayouter implements Layouter
             $x += $w;
         }
         $grid = ['width' => max($width, $total) + $edge, 'widths' => array_values($widths), 'offsets' => $offsets];
+        if ($held) {
+            // not cached, so a rendered layout of this table reports or throws
+            $ctx->holdBack();
+            return $grid;
+        }
         $cached[$key] = $grid;
         $this->grids[$table] = $cached;
         return $grid;
+    }
+
+    /**
+     * Last resort when the columns overflow $width even at their min-content: the auto and fr
+     * columns (and the Length ones of a table that fits its columns) are capped at one shared
+     * width, so the widest give way first and words in them break. No column goes below its
+     * floor: its min-content when text breaks anywhere and images scale (padding and border plus
+     * its widest letter, but a fixed-width box or a nested table keeps what it needs). Returns the
+     * new total; grid() reports it.
+     *
+     * @param list<Length|Percent|Fr|Auto> $tracks
+     * @param array<int, float> $widths column widths, updated in place
+     */
+    private function shrink(Table $table, ComputedStyle $style, array $tracks, array &$widths, float $width, LayoutEngine $engine): float
+    {
+        $before = array_sum($widths);
+        $open = [];
+        foreach ($tracks as $k => $track) {
+            if ($track instanceof Auto || $track instanceof Fr || ($track instanceof Length && $table->fitsColumns())) {
+                $open[$k] = $widths[$k];
+            }
+        }
+        if ($open === []) {
+            return $before;
+        }
+        $content = $engine->breakingAnywhere(fn (): array => $this->columnContent($table, $style, $engine, true));
+        $floors = [];
+        foreach ($open as $k => $w) {
+            // a column given less than its floor (an fr column covered only by a spanning cell) is raised to it
+            $floors[$k] = $content[$k]['min'];
+            $open[$k] = max($w, $floors[$k]);
+            $before += $open[$k] - $w;
+        }
+        $room = $width - ($before - array_sum($open));
+        $cap = self::cap($open, $floors, $room);
+        foreach ($open as $k => $w) {
+            $widths[$k] = min($w, max($floors[$k], $cap));
+        }
+        return array_sum($widths);
+    }
+
+    /**
+     * The width $c with sum(min(w, max(floor, c))) = $room, or 0 when even the floors exceed it.
+     *
+     * @param array<int, float> $widths
+     * @param array<int, float> $floors each at most its width
+     */
+    private static function cap(array $widths, array $floors, float $room): float
+    {
+        if (array_sum($floors) >= $room - self::EPSILON) {
+            return 0.0;
+        }
+        $points = array_unique([...array_values($widths), ...array_values($floors)], SORT_REGULAR);
+        sort($points);
+        $at = static function (float $c) use ($widths, $floors): float {
+            $sum = 0.0;
+            foreach ($widths as $k => $w) {
+                $sum += min($w, max($floors[$k], $c));
+            }
+            return $sum;
+        };
+        // the sum grows with the cap and is linear between breakpoints: find the segment holding $room
+        $lo = 0.0;
+        foreach ($points as $p) {
+            if ($at($p) >= $room) {
+                $slope = 0;
+                foreach ($widths as $k => $w) {
+                    if ($floors[$k] < $p && $w >= $p) {
+                        $slope++;
+                    }
+                }
+                return $slope === 0 ? $p : $p - ($at($p) - $room) / $slope;
+            }
+            $lo = $p;
+        }
+        return $lo;
     }
 
     /**
@@ -464,7 +566,7 @@ final class TableLayouter implements Layouter
      */
     private function columnContent(Table $table, ComputedStyle $style, LayoutEngine $engine, bool $measureFixed = false): array
     {
-        $key = self::styleKey($style) . ($measureFixed ? '|fixed' : '');
+        $key = self::styleKey($style) . ($measureFixed ? '|fixed' : '') . ($engine->breaksAnywhere() ? '|anywhere' : '');
         $cached = $this->content[$table] ?? [];
         if (isset($cached[$key])) {
             return $cached[$key];
@@ -497,16 +599,20 @@ final class TableLayouter implements Layouter
             });
         }
 
+        // Spanning cells widen the auto columns they cover; measured for a floor ($measureFixed), the
+        // fr and fitted length columns too, since those can shrink as well.
+        $grows = static fn (int $k): bool => $tracks[$k] instanceof Auto
+            || ($measureFixed && ($tracks[$k] instanceof Fr || ($tracks[$k] instanceof Length && $table->fitsColumns())));
         foreach ($spanning as $s) {
             $covered = range($s['col'], $s['col'] + $s['span'] - 1);
-            $autos = array_values(array_filter($covered, static fn (int $k): bool => $tracks[$k] instanceof Auto));
+            $autos = array_values(array_filter($covered, $grows));
             if ($autos === []) {
                 continue;
             }
             $sumMin = 0.0;
             $sumMax = 0.0;
             foreach ($covered as $k) {
-                $fixed = $tracks[$k] instanceof Length ? $tracks[$k]->points : null;
+                $fixed = $tracks[$k] instanceof Length && !$grows($k) ? $tracks[$k]->points : null;
                 $sumMin += $fixed ?? $columns[$k]['min'];
                 $sumMax += $fixed ?? $columns[$k]['max'];
             }

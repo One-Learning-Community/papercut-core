@@ -1,0 +1,8 @@
+{
+  "scopeName": "demo.sigils.injection",
+  "injectionSelector": "L:source.demo",
+  "patterns": [{ "include": "#sigil" }],
+  "repository": {
+    "sigil": { "match": "@@\\w+", "name": "variable.language.demo" }
+  }
+}

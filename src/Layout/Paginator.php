@@ -171,14 +171,19 @@ final class Paginator
         if (isset($cache['bands'][$key])) {
             return $cache['bands'][$key];
         }
-        if (!array_key_exists($hv->value, $cache['headers'])) {
-            $cache['headers'][$hv->value] = $this->slot($page->headerNodesOf($hv), $root, $contentWidth, self::slotName('header', $hv));
+        $held = false;
+        if (array_key_exists($hv->value, $cache['headers'])) {
+            $header = $cache['headers'][$hv->value];
+        } else {
+            [$header, $keep] = $this->bandSlot($page->headerNodesOf($hv), $root, $contentWidth, self::slotName('header', $hv), $report);
+            $keep ? $cache['headers'][$hv->value] = $header : $held = true;
         }
-        if (!array_key_exists($fv->value, $cache['footers'])) {
-            $cache['footers'][$fv->value] = $this->slot($page->footerNodesOf($fv), $root, $contentWidth, self::slotName('footer', $fv));
+        if (array_key_exists($fv->value, $cache['footers'])) {
+            $footer = $cache['footers'][$fv->value];
+        } else {
+            [$footer, $keep] = $this->bandSlot($page->footerNodesOf($fv), $root, $contentWidth, self::slotName('footer', $fv), $report);
+            $keep ? $cache['footers'][$fv->value] = $footer : $held = true;
         }
-        $header = $cache['headers'][$hv->value];
-        $footer = $cache['footers'][$fv->value];
         $headerSpace = $header === null ? 0.0 : $header->height + $page->headerGapLength()->points;
         $footerSpace = $footer === null ? 0.0 : $footer->height + $page->footerGapLength()->points;
 
@@ -207,7 +212,7 @@ final class Paginator
             }
         }
         $band = ['header' => $header, 'footer' => $footer, 'headerSpace' => $headerSpace, 'footerSpace' => $footerSpace];
-        if ($report || !$noRoom) {
+        if (($report || !$noRoom) && !$held) {
             $cache['bands'][$key] = $band;
         }
         return $band;
@@ -296,6 +301,21 @@ final class Paginator
     private static function resolve(Length|Percent $v, float $basis): float
     {
         return $v instanceof Percent ? $v->resolve($basis) : $v->points;
+    }
+
+    /**
+     * A header or footer band. Without $report it is laid out quietly, as it may never be rendered;
+     * the second value is false when that held back a report or throw, so it is not to be kept.
+     *
+     * @param list<\Papercut\Node|\Papercut\Component> $nodes
+     * @return array{?Fragment, bool}
+     */
+    private function bandSlot(array $nodes, ComputedStyle $root, float $width, string $pathName, bool $report): array
+    {
+        if ($report) {
+            return [$this->slot($nodes, $root, $width, $pathName), true];
+        }
+        return $this->ctx->quietly(fn (): ?Fragment => $this->slot($nodes, $root, $width, $pathName));
     }
 
     /** @param list<\Papercut\Node|\Papercut\Component> $nodes */

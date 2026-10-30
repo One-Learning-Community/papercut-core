@@ -33,12 +33,14 @@
     },
     "require-dev": {
         "bacon/bacon-qr-code": "^3.1",
+        "phiki/phiki": "^2.2",
         "phpstan/phpstan": "^2.3",
         "phpunit/phpunit": "^13.4"
     },
     "suggest": {
         "bacon/bacon-qr-code": "Draw styled QR codes: dotted or rounded modules, eye shapes and colors, gradients",
-        "ext-gd": "Read WebP, GIF, BMP and AVIF images (PNG and JPEG work without it)"
+        "ext-gd": "Read WebP, GIF, BMP and AVIF images (PNG and JPEG work without it)",
+        "phiki/phiki": "Syntax highlighting in code blocks (TextMate grammars and themes)"
     },
     "autoload": {
         "psr-4": {
@@ -62,7 +64,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "0.4.x-dev"
+            "dev-main": "0.5.x-dev"
         }
     }
 }

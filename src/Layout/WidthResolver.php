@@ -22,9 +22,11 @@ final class WidthResolver
 
     /**
      * A resolver over a fresh layout context and engine, never shared with a PDF render:
-     * table column warnings fire once per engine and must not be swallowed here.
+     * table column warnings fire once per engine and must not be swallowed here. Clip mode:
+     * a table too wide for its box is reported, never thrown, since Word lays it out itself.
+     * $format is named in the fidelity reports.
      */
-    public static function for(ExportOptions $options): self
+    public static function for(ExportOptions $options, string $format = 'docx'): self
     {
         $backend = DefaultBackend::make();
         $fonts = $options->fonts();
@@ -32,9 +34,10 @@ final class WidthResolver
             FontRegistry::fromSet($fonts, $backend),
             $options->theme(),
             $backend,
-            OverflowMode::Throw,
+            OverflowMode::Clip,
             $options->onWarning(),
             $fonts->fallbacks,
+            $format,
         );
 
         return new self(new LayoutEngine($ctx));
@@ -67,11 +70,18 @@ final class WidthResolver
 
     /**
      * Column widths in pt; $style is the table's computed style, $available as in flexLines().
+     * $path names the table in reports.
      *
      * @return list<float>
      */
-    public function tableColumns(Table $table, ComputedStyle $style, float $available): array
+    public function tableColumns(Table $table, ComputedStyle $style, float $available, string $path = ''): array
     {
-        return $this->engine->tableLayouter()->columns($table, $style, $available, $this->engine);
+        $ctx = $this->engine->context();
+        $ctx->pushPath($path);
+        try {
+            return $this->engine->tableLayouter()->columns($table, $style, $available, $this->engine);
+        } finally {
+            $ctx->popPath();
+        }
     }
 }

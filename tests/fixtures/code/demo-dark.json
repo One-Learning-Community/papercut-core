@@ -1,0 +1,9 @@
+{
+  "name": "demo-dark",
+  "type": "dark",
+  "colors": { "editor.background": "#101010", "editor.foreground": "#eeeeee" },
+  "tokenColors": [
+    { "scope": ["variable.language.demo"], "settings": { "foreground": "#ff00ff" } },
+    { "scope": ["keyword.demo"], "settings": { "foreground": "#00ff00", "fontStyle": "bold" } }
+  ]
+}

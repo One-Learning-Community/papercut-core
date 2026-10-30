@@ -60,6 +60,7 @@ final class Theme
             fontSize: pt($size),
             fontWeight: 700,
             margin: Edges::of(Length::zero(), Length::zero(), pt($size * 0.5), Length::zero()),
+            keepWithNext: true,
         );
     }
 

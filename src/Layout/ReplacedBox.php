@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Papercut\Layout;
 
+use Papercut\Value\Length;
+
 use Papercut\Style\ComputedStyle;
 
 /**
@@ -13,6 +15,20 @@ final class ReplacedBox
 {
     private function __construct()
     {
+    }
+
+    /**
+     * Intrinsic size of a box of natural content width $naturalWidth: its width when one is set, else
+     * that plus padding and border. It scales down to fit its box, so when measured as if text breaks
+     * anywhere its min is only its padding and border.
+     *
+     * @return array{min: float, max: float}
+     */
+    public static function intrinsic(ComputedStyle $style, float $naturalWidth, LayoutEngine $engine): array
+    {
+        $edges = $style->padding->horizontal() + $style->borderWidth->horizontal();
+        $w = $style->width instanceof Length ? $style->width->points : $naturalWidth + $edges;
+        return ['min' => $engine->breaksAnywhere() ? min($w, $edges) : $w, 'max' => $w];
     }
 
     /**

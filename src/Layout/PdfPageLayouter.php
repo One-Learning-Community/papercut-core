@@ -52,10 +52,7 @@ final class PdfPageLayouter implements Layouter
         if (!$node instanceof PdfPage) {
             throw new \LogicException(sprintf('PdfPageLayouter cannot measure %s.', $node::class));
         }
-        $w = $style->width instanceof Length
-            ? $style->width->points
-            : $engine->context()->pdfPage($node)->widthPt() + $style->padding->horizontal() + $style->borderWidth->horizontal();
-
-        return ['min' => $w, 'max' => $w];
+        $natural = $style->width instanceof Length ? 0.0 : $engine->context()->pdfPage($node)->widthPt();
+        return ReplacedBox::intrinsic($style, $natural, $engine);
     }
 }

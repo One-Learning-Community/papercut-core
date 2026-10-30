@@ -70,9 +70,7 @@ final class ImageLayouter implements Layouter
         if (!$node instanceof Image) {
             throw new \LogicException(sprintf('ImageLayouter cannot measure %s.', $node::class));
         }
-        $w = $style->width instanceof Length
-            ? $style->width->points
-            : $engine->context()->image($node)->widthPx() * self::PT_PER_PX + $style->padding->horizontal() + $style->borderWidth->horizontal();
-        return ['min' => $w, 'max' => $w];
+        $natural = $style->width instanceof Length ? 0.0 : $engine->context()->image($node)->widthPx() * self::PT_PER_PX;
+        return ReplacedBox::intrinsic($style, $natural, $engine);
     }
 }

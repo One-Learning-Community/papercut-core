@@ -248,6 +248,33 @@ final class PaginatorTest extends TestCase
         self::assertStringContainsString('header and footer leave no room', $this->warnings[0]);
     }
 
+    public function test_a_table_too_wide_in_a_header_that_is_never_rendered_does_not_throw(): void
+    {
+        $wide = \Papercut\Table::make()->columns('400pt 400pt')->row('a', 'b');
+        $pages = $this->paginate(Document::make($this->tall()->header('H')->evenHeader($wide)->body('one page')));
+        self::assertCount(1, $pages);
+        self::assertSame([], $this->warnings);
+    }
+
+    public function test_a_table_too_wide_in_a_header_throws_once_that_header_is_rendered(): void
+    {
+        $wide = \Papercut\Table::make()->columns('400pt 400pt')->row('a', 'b');
+        $this->expectException(LayoutOverflow::class);
+        $this->expectExceptionMessage('even-header');
+        $this->paginate(Document::make($this->tall()->header('H')->evenHeader($wide)->body(...self::lines(40))));
+    }
+
+    public function test_a_shrunk_table_in_a_header_is_reported_only_once_that_header_is_rendered(): void
+    {
+        $wide = \Papercut\Table::make()->columns('auto auto')->row(str_repeat('a', 40), str_repeat('b', 40));
+        $this->paginate(Document::make($this->tall()->header('H')->evenHeader($wide)->body('one page')));
+        self::assertSame([], $this->warnings);
+        $this->warnings = [];
+        $this->paginate(Document::make($this->tall()->header('H')->evenHeader($wide)->body(...self::lines(40))));
+        self::assertCount(1, $this->warnings);
+        self::assertStringContainsString('approximated table columns narrower than their content', implode("\n", $this->warnings));
+    }
+
     private function tall(): Page
     {
         // 200x300 page, 10pt margins, no gaps
@@ -535,12 +562,10 @@ final class PaginatorTest extends TestCase
             $table = $table->row('a', 'b');
         }
         $doc = Document::make($this->tall()->firstHeader($tall)->header('Running')->body($table));
-        foreach ([OverflowMode::Throw, OverflowMode::Clip] as $mode) {
-            $this->warnings = [];
-            $this->paginate($doc, $mode);
-            self::assertSame(array_values(array_unique($this->warnings)), $this->warnings, $mode->name);
-            self::assertCount(2, $this->warnings, $mode->name);
-        }
+        // Clip mode: in Throw mode hand-set columns wider than the page throw instead of warning
+        $this->paginate($doc, OverflowMode::Clip);
+        self::assertSame(array_values(array_unique($this->warnings)), $this->warnings);
+        self::assertCount(2, $this->warnings);
     }
 
     public function test_caption_over_a_table_whose_first_row_is_taller_than_a_page_does_not_split_the_row_in_place(): void
@@ -553,6 +578,27 @@ final class PaginatorTest extends TestCase
         $pages = array_map(fn ($p) => $this->texts($p), $this->paginate($doc, OverflowMode::Throw));
         // The caption is left alone on its own page; the first row starts on the next one and splits there.
         self::assertSame([['Intro'], ['Caption'], ['T1', 'T2', 'T3', 'T4', 'T5'], ['T6', 'T7', 'T8']], $pages);
+    }
+
+    public function test_heading_moves_with_a_keep_together_block_that_jumps_a_page(): void
+    {
+        // body 180 x 110: every heading level fits after the four intro lines, the four-line box does not
+        $box = \Papercut\View::make(...array_map(static fn (int $i): Text => Text::make("B$i"), range(1, 4)))->keepTogether();
+        $intro = array_map(static fn (int $i): Text => Text::make("I$i"), range(1, 4));
+        foreach (['h1', 'h2', 'h3', 'h4'] as $level) {
+            $page = Page::size(pt(200), pt(130))->margin(pt(10))->headerGap(pt(0))->footerGap(pt(0));
+            $doc = Document::make($page->body(...[...$intro, Text::$level('Heading'), $box]));
+            $pages = array_map(fn ($p) => $this->texts($p), $this->paginate($doc));
+            self::assertSame([['I1', 'I2', 'I3', 'I4'], ['Heading', 'B1', 'B2', 'B3', 'B4']], $pages, $level);
+        }
+    }
+
+    public function test_a_heading_can_opt_out_of_keeping_with_next(): void
+    {
+        $box = \Papercut\View::make(...array_map(static fn (int $i): Text => Text::make("B$i"), range(1, 4)))->keepTogether();
+        $doc = Document::make($this->small()->body(Text::make('Intro'), Text::make('Intro 2'), Text::h4('Heading')->keepWithNext(false), $box));
+        $pages = array_map(fn ($p) => $this->texts($p), $this->paginate($doc));
+        self::assertSame([['Intro', 'Intro 2', 'Heading'], ['B1', 'B2', 'B3', 'B4']], $pages);
     }
 }
 

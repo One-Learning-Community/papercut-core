@@ -104,7 +104,14 @@ final class TextLayouter implements Layouter
         $max = 0.0;
         $chunk = 0.0;
         $line = 0.0;
+        $anywhere = $engine->breaksAnywhere();
+        $glyph = 0.0;
         foreach ($items as $item) {
+            if ($anywhere && $item->kind === 'word') {
+                foreach (mb_str_split($item->text, 1, 'UTF-8') as $ch) {
+                    $glyph = max($glyph, $item->font->advance($ch, $item->size, $item->style->letterSpacing));
+                }
+            }
             if ($item->kind === 'break') {
                 $max = max($max, $line);
                 $line = 0.0;
@@ -121,6 +128,9 @@ final class TextLayouter implements Layouter
             if ($item->breakAfter) {
                 $chunk = 0.0;
             }
+        }
+        if ($anywhere) {
+            $min = min($min, $glyph);
         }
         return ['min' => $min + $edges, 'max' => max($max, $line) + $edges];
     }

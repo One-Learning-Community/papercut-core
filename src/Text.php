@@ -17,6 +17,8 @@ final class Text implements Styled, Annotated
     /** @var list<Span> */
     private array $spans = [];
     private ?string $preset = null;
+    private bool $htmlCode = false;
+    private ?string $htmlCodeLanguage = null;
 
     private function __construct()
     {
@@ -67,6 +69,30 @@ final class Text implements Styled, Annotated
     public function preset(): ?string
     {
         return $this->preset;
+    }
+
+    /**
+     * Hints that HTML export wraps the text in `<code>` (with `class="language-x"` when a language is
+     * given) inside its `<pre>`; PDF and Word ignore it.
+     *
+     * @internal Set by CodeBlock; not public API before v1.
+     */
+    public function htmlCode(?string $language = null): self
+    {
+        $clone = clone $this;
+        $clone->htmlCode = true;
+        $clone->htmlCodeLanguage = $language === null || $language === '' ? null : $language;
+        return $clone;
+    }
+
+    public function isHtmlCode(): bool
+    {
+        return $this->htmlCode;
+    }
+
+    public function htmlCodeLanguage(): ?string
+    {
+        return $this->htmlCodeLanguage;
     }
 
     public function withPreset(string $name): self

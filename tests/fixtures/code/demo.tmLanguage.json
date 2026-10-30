@@ -1,0 +1,13 @@
+{
+  "name": "demo",
+  "displayName": "Demo",
+  "scopeName": "source.demo",
+  "patterns": [
+    { "begin": "^<<ts$", "end": "^ts>>$", "contentName": "meta.embedded.block.ts", "patterns": [{ "include": "source.ts" }] },
+    { "match": "\\bdemo\\b", "name": "keyword.demo" },
+    { "include": "#sigil" }
+  ],
+  "repository": {
+    "sigil": { "match": "!!\\w+", "name": "keyword.demo" }
+  }
+}

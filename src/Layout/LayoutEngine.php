@@ -27,6 +27,9 @@ final class LayoutEngine
      * @var \WeakMap<Node, \WeakMap<ComputedStyle, array{min: float, max: float}>>
      */
     private \WeakMap $intrinsics;
+    /** @var \WeakMap<Node, \WeakMap<ComputedStyle, array{min: float, max: float}>> the same while sizes are measured as if text breaks anywhere */
+    private \WeakMap $anywhereIntrinsics;
+    private bool $anywhere = false;
 
     private readonly BlockLayouter $block;
     private readonly FlexLayouter $flex;
@@ -35,6 +38,7 @@ final class LayoutEngine
     public function __construct(private readonly LayoutContext $ctx)
     {
         $this->intrinsics = new \WeakMap();
+        $this->anywhereIntrinsics = new \WeakMap();
         $this->block = new BlockLayouter();
         $this->flex = new FlexLayouter();
         $leaf = new LeafLayouter();
@@ -118,6 +122,7 @@ final class LayoutEngine
     {
         $this->layouters[$class] = $layouter;
         $this->intrinsics = new \WeakMap();
+        $this->anywhereIntrinsics = new \WeakMap();
     }
 
     /**
@@ -148,11 +153,38 @@ final class LayoutEngine
         $this->ctx->setLastFailurePath($path);
     }
 
+    /**
+     * Runs $fn with intrinsic sizes measured as if text may break anywhere (its widest letter per
+     * line at least) and images, SVGs and PDF pages may scale down: the narrowest a box can get without its content
+     * overflowing it, as with CSS overflow-wrap: anywhere. Fixed widths stay as they are.
+     *
+     * @template T
+     * @param \Closure(): T $fn
+     * @return T
+     */
+    public function breakingAnywhere(\Closure $fn): mixed
+    {
+        $was = $this->anywhere;
+        $this->anywhere = true;
+        try {
+            return $fn();
+        } finally {
+            $this->anywhere = $was;
+        }
+    }
+
+    /** True inside breakingAnywhere(). */
+    public function breaksAnywhere(): bool
+    {
+        return $this->anywhere;
+    }
+
     /** @return array{min: float, max: float} */
     public function intrinsic(Node|Component $node, ComputedStyle $parent, ?int $index = null): array
     {
         $node = Expander::expand($node);
-        $byParent = $this->intrinsics[$node] ?? null;
+        $cache = $this->anywhere ? $this->anywhereIntrinsics : $this->intrinsics;
+        $byParent = $cache[$node] ?? null;
         if ($byParent !== null && isset($byParent[$parent])) {
             return $byParent[$parent];
         }
@@ -163,7 +195,7 @@ final class LayoutEngine
             if ($byParent === null) {
                 /** @var \WeakMap<ComputedStyle, array{min: float, max: float}> $byParent */
                 $byParent = new \WeakMap();
-                $this->intrinsics[$node] = $byParent;
+                $cache[$node] = $byParent;
             }
             $byParent[$parent] = $size;
             return $size;

@@ -1,0 +1,6 @@
+{
+  "name": "inner",
+  "displayName": "Inner",
+  "scopeName": "source.inner",
+  "patterns": [{ "match": "\\bzzz\\b", "name": "keyword.demo" }]
+}
