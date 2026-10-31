@@ -6,7 +6,7 @@ namespace Papercut\Tests\Support;
 
 use Papercut\Barcode\{ErrorCorrection, QrGradient};
 use Papercut\Exception\InvalidValue;
-use Papercut\Style\{Align, Direction};
+use Papercut\Style\{Align, Anchor, Direction};
 use Papercut\Support\EnumValue;
 use PHPUnit\Framework\TestCase;
 
@@ -74,5 +74,25 @@ final class EnumValueTest extends TestCase
         } catch (InvalidValue $e) {
             self::assertStringNotContainsString('Did you mean', $e->getMessage());
         }
+    }
+
+    public function test_anchor_takes_its_other_names_for_the_middle_of_each_side(): void
+    {
+        self::assertSame(Anchor::Top, EnumValue::from(Anchor::class, 'top-center'));
+        self::assertSame(Anchor::Bottom, EnumValue::from(Anchor::class, 'Bottom-Center'));
+        self::assertSame(Anchor::Left, EnumValue::from(Anchor::class, 'center-left'));
+        self::assertSame(Anchor::Right, EnumValue::from(Anchor::class, 'CenterRight'));
+        self::assertSame(Anchor::Top, Anchor::TopCenter);
+        self::assertSame(Anchor::Bottom, Anchor::BottomCenter);
+        self::assertSame(Anchor::Left, Anchor::CenterLeft);
+        self::assertSame(Anchor::Right, Anchor::CenterRight);
+    }
+
+    public function test_an_anchor_typo_can_suggest_an_other_name(): void
+    {
+        $this->expectException(InvalidValue::class);
+        $this->expectExceptionMessage('Did you mean "top-center"?');
+
+        EnumValue::from(Anchor::class, 'top-centre');
     }
 }

@@ -16,7 +16,8 @@ final class EnumValue
 {
     /**
      * The case whose backing value or name equals $value, ignoring case and surrounding whitespace.
-     * An enum case passes through.
+     * An enum with a static aliases() method (string => case) also accepts those strings, with or
+     * without hyphens. An enum case passes through.
      *
      * @template T of \BackedEnum
      * @param class-string<T> $enum
@@ -44,8 +45,22 @@ final class EnumValue
                 return $case;
             }
         }
+        $aliases = [];
+        foreach (method_exists($enum, 'aliases') ? (array) $enum::aliases() : [] as $alias => $case) {
+            if (is_string($alias) && $case instanceof $enum) {
+                $aliases[$alias] = $case;
+            }
+        }
+        foreach ($aliases as $alias => $case) {
+            if ($normalized === $alias || $normalized === str_replace('-', '', $alias)) {
+                return $case;
+            }
+        }
         // Candidates are compared in lower case and shown as spelled. A single letter is no useful suggestion.
         $shown = [];
+        foreach (array_keys($aliases) as $alias) {
+            $shown[$alias] = (string) $alias;
+        }
         foreach ($cases as $case) {
             foreach ([(string) $case->value, $case->name] as $spelling) {
                 if (strlen($spelling) > 1) {

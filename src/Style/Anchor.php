@@ -17,6 +17,27 @@ enum Anchor: string
     case Bottom = 'bottom';
     case BottomRight = 'bottom-right';
 
+    /** Other names for the middle of each side. */
+    public const TopCenter = self::Top;
+    public const BottomCenter = self::Bottom;
+    public const CenterLeft = self::Left;
+    public const CenterRight = self::Right;
+
+    /**
+     * The other names as strings, so `'top-center'` works where `'top'` does.
+     *
+     * @return array<string, self>
+     */
+    public static function aliases(): array
+    {
+        return [
+            'top-center' => self::Top,
+            'bottom-center' => self::Bottom,
+            'center-left' => self::Left,
+            'center-right' => self::Right,
+        ];
+    }
+
     /** How far across the box the anchor is: 0 at the left, 0.5 in the middle, 1 at the right. */
     public function across(): float
     {
