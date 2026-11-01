@@ -1,6 +1,6 @@
 {
     "name": "papercut/core",
-    "description": "Component-based, page-aware PDF layout engine for modern PHP.",
+    "description": "Page-aware PDF and HTML documents for modern PHP, built from typed, immutable components.",
     "type": "library",
     "license": "MIT",
     "homepage": "https://github.com/One-Learning-Community/papercut",
@@ -64,7 +64,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "0.5.x-dev"
+            "dev-main": "0.6.x-dev"
         }
     }
 }

@@ -17,10 +17,17 @@ final class Spacer implements Styled
     {
     }
 
-    public static function size(Length $l): self
+    /** A gap of a fixed size, in an absolute unit. */
+    public static function fixed(Length $l): self
     {
-        $s = new self();
-        $s->fixed = $l->absolute('spacer size');
+        return (new self())->size($l);
+    }
+
+    /** Sets the gap to a fixed size, keeping the spacer's style. On a spacer, size is the gap, not a font size. */
+    public function size(Length $v): static
+    {
+        $s = clone $this;
+        $s->fixed = $v->absolute('spacer size');
         return $s;
     }
 

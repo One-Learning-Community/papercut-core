@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Papercut\Layout;
 
-use Papercut\{OverflowMode, Table, View};
+use Papercut\{OverflowMode, Page, Table, View};
 use Papercut\Backend\DefaultBackend;
 use Papercut\Export\ExportOptions;
 use Papercut\Text\FontRegistry;
-use Papercut\Style\ComputedStyle;
+use Papercut\Style\{ComputedStyle, PageThemes};
+use Papercut\Toc\TocIndex;
 
 /**
  * Horizontal sizes from the layout engine's own flex and table calculations,
@@ -24,23 +25,33 @@ final class WidthResolver
      * A resolver over a fresh layout context and engine, never shared with a PDF render:
      * table column warnings fire once per engine and must not be swallowed here. Clip mode:
      * a table too wide for its box is reported, never thrown, since Word lays it out itself.
-     * $format is named in the fidelity reports.
+     * $format is named in the fidelity reports. $toc is the document's table-of-contents index, so a Toc measures as it lays out.
      */
-    public static function for(ExportOptions $options, string $format = 'docx'): self
+    public static function for(ExportOptions $options, string $format = 'docx', ?TocIndex $toc = null, ?PageThemes $themes = null): self
     {
         $backend = DefaultBackend::make();
         $fonts = $options->fonts();
         $ctx = new LayoutContext(
             FontRegistry::fromSet($fonts, $backend),
-            $options->theme(),
+            $themes?->document() ?? $options->theme(),
             $backend,
             OverflowMode::Clip,
             $options->onWarning(),
             $fonts->fallbacks,
             $format,
         );
+        $ctx->themes = $themes;
+        if ($toc !== null) {
+            $ctx->toc = $toc;
+        }
 
         return new self(new LayoutEngine($ctx));
+    }
+
+    /** Measures with the page's theme from here on, when the resolver was built with page themes. */
+    public function usePage(Page $page): void
+    {
+        $this->engine->context()->usePage($page);
     }
 
     /**

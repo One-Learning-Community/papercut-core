@@ -366,7 +366,7 @@ final class HtmlTablesImagesTest extends TestCase
 
     public function test_cell_children_sit_in_a_column_wrapper_that_counts_as_flex(): void
     {
-        $cell = TableCell::make(Text::make('a'), Spacer::size(pt(12)), Text::make('b'))->attributes(['gap' => pt(4), 'justify' => Justify::Center]);
+        $cell = TableCell::make(Text::make('a'), Spacer::fixed(pt(12)), Text::make('b'))->attributes(['gap' => pt(4), 'justify' => Justify::Center]);
         $html = $this->html($this->body(Table::make()->columns('1fr')->row($cell)));
         $td = $this->xpath($html, '//td')[0];
         self::assertStringContainsString('vertical-align:middle', $this->style($td));

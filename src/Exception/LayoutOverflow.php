@@ -16,6 +16,12 @@ final class LayoutOverflow extends PapercutException
         parent::__construct($message ?? sprintf('Content at "%s" cannot fit on an empty page: %s.', $path, $reason));
     }
 
+    /** Content taller than its box's fixed height or max-height. */
+    public static function tooTall(string $path, string $reason): self
+    {
+        return new self($path, $reason, sprintf('Content at "%s" does not fit its box: %s.', $path, $reason));
+    }
+
     /** Content wider than its box, even after shrinking what can shrink. */
     public static function tooWide(string $path, string $reason): self
     {

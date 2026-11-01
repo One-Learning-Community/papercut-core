@@ -59,6 +59,46 @@ final class FidelityTest extends TestCase
         self::assertCount(1, $f->reports());
     }
 
+    public function test_strict_pdf_throws_on_characters_no_font_has(): void
+    {
+        $doc = Document::make(Page::a5()->body(Text::make('Student: 李明')));
+        try {
+            $doc->toPdf(new PdfOptions(strict: true));
+            self::fail('expected UnsupportedFeature');
+        } catch (UnsupportedFeature $e) {
+            self::assertSame('pdf', $e->report->format);
+            self::assertSame('page 1', $e->report->path);
+            self::assertStringContainsString('("李明";', $e->getMessage());
+            self::assertStringContainsString('fallback font', $e->getMessage());
+        }
+    }
+
+    public function test_strict_pdf_throws_on_svg_text_no_font_has(): void
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="20"><text x="0" y="15">日本</text></svg>';
+        $this->expectException(UnsupportedFeature::class);
+        Document::make(Page::a5()->body(\Papercut\Svg::fromString($svg)))->toPdf(new PdfOptions(strict: true));
+    }
+
+    public function test_strict_pdf_ignores_a_header_that_never_prints(): void
+    {
+        // The even-page header is laid out to measure it, but a one-page document never prints it.
+        $doc = Document::make(Page::a5()->evenHeader(Text::make('王'))->body(Text::make('Hello')));
+        self::assertStringStartsWith('%PDF', $doc->toPdf(new PdfOptions(strict: true))->bytes());
+    }
+
+    public function test_strict_pdf_ignores_invisible_formatting_characters(): void
+    {
+        $doc = Document::make(Page::a5()->body(Text::make("soft\u{00AD}hyphen zw\u{200D}j wo\u{2060}rd")));
+        self::assertStringStartsWith('%PDF', $doc->toPdf(new PdfOptions(strict: true))->bytes());
+    }
+
+    public function test_strict_pdf_renders_characters_the_font_has(): void
+    {
+        $doc = Document::make(Page::a5()->body(Text::make('Café')));
+        self::assertStringStartsWith('%PDF', $doc->toPdf(new PdfOptions(strict: true))->bytes());
+    }
+
     public function test_one_argument_warning_closure_still_receives_layout_warnings(): void
     {
         $warnings = [];

@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace Papercut\Tree;
 
-use Papercut\{Component, Node};
+use Papercut\{Component, Node, ThemedComponent};
+use Papercut\Style\Theme;
 
 /** Renders Components down to a Node. */
 final class Expander
 {
     public const int MAX_DEPTH = 100;
 
-    public static function expand(Node|Component $node): Node
+    public static function expand(Node|Component $node, ?Theme $theme = null): Node
     {
         $depth = 0;
         while (!$node instanceof Node) {
@@ -22,7 +23,7 @@ final class Expander
                     self::MAX_DEPTH,
                 ));
             }
-            $node = $node->render();
+            $node = $theme !== null && $node instanceof ThemedComponent ? $node->renderFor($theme) : $node->render();
         }
         return $node;
     }

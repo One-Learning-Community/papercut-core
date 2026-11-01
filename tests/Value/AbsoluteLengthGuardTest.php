@@ -19,7 +19,7 @@ final class AbsoluteLengthGuardTest extends TestCase
     /** @return iterable<string, array{\Closure(): mixed}> */
     public static function entryPoints(): iterable
     {
-        yield 'spacer size' => [static fn () => Spacer::size(Length::em(2))];
+        yield 'spacer size' => [static fn () => Spacer::fixed(Length::em(2))];
         yield 'page margin length' => [static fn () => Page::a4()->margin(Length::em(2))];
         yield 'page margin edges' => [static fn () => Page::a4()->margin(Edges::of(pt(10), Length::lh(1)))];
         yield 'header gap' => [static fn () => Page::a4()->headerGap(Length::lh(1))];

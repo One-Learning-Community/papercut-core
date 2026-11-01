@@ -50,9 +50,10 @@ final class ContentParityTest extends TestCase
         $document = Document::make(...$pages);
 
         $headerWords = $this->headerWords($document);
+        $toc = $this->hasToc($document);
         self::assertSame(
-            $this->words($this->pdfText($document), $headerWords),
-            $this->words($this->htmlText($document), $headerWords),
+            $this->words($this->pdfText($document), $headerWords, $toc),
+            $this->words($this->htmlText($document), $headerWords, $toc),
         );
     }
 
@@ -66,6 +67,44 @@ final class ContentParityTest extends TestCase
         $document->toHtml();
         $document->toHtml(new \Papercut\Export\HtmlOptions(fontMode: \Papercut\Export\FontMode::Embed));
         self::assertSame($before, $document->toPdf()->bytes());
+    }
+
+    /** Whether the document has a table of contents anywhere in its page bodies. */
+    private function hasToc(Document $document): bool
+    {
+        $finder = new class implements TreeVisitor {
+            public bool $found = false;
+
+            public function enterPage(Page $page, int $index): void
+            {
+            }
+
+            public function leavePage(Page $page, int $index): void
+            {
+            }
+
+            public function enterRegion(Region $region, ComputedStyle $root): void
+            {
+            }
+
+            public function leaveRegion(Region $region): void
+            {
+            }
+
+            public function enter(Node $node, ComputedStyle $style, Visit $at): bool
+            {
+                $this->found = $this->found || $node instanceof \Papercut\Toc;
+
+                return true;
+            }
+
+            public function leave(Node $node, ComputedStyle $style, Visit $at): void
+            {
+            }
+        };
+        (new TreeWalker(new StyleResolver(Theme::default())))->walk($document, $finder);
+
+        return $finder->found;
     }
 
     private function pdfText(Document $document): string
@@ -162,9 +201,10 @@ final class ContentParityTest extends TestCase
 
     /**
      * @param array<string,true> $skip words removed from the count
+     * @param bool $toc whether the document has a table of contents, whose page numbers and leaders HTML does not repeat
      * @return array<string,int> word => occurrences, sorted by word
      */
-    private function words(string $text, array $skip): array
+    private function words(string $text, array $skip, bool $toc = false): array
     {
         // pdftotext dehyphenates a hyphenated word that wraps at the hyphen ("break-after" becomes "breakafter"), which
         // the HTML text cannot show, so hyphens are ignored on both sides.
@@ -172,6 +212,11 @@ final class ContentParityTest extends TestCase
         $words = preg_split('/\s+/u', trim($text), -1, PREG_SPLIT_NO_EMPTY) ?: [];
         $counts = [];
         foreach ($words as $w) {
+            // A table of contents prints page numbers and dot leaders in the PDF; HTML links to the headings instead, so in a
+            // document with one, leader runs and bare numbers are left out of both sides.
+            if ($toc && preg_match('/^(\.+|\d+)$/', $w) === 1) {
+                continue;
+            }
             if (!isset($skip[$w])) {
                 $counts[$w] = ($counts[$w] ?? 0) + 1;
             }

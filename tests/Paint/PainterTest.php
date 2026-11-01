@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Papercut\Tests\Paint;
 
 use Papercut\Layout\{Fragment, PlacedPage};
-use Papercut\Paint\{Clip, DrawSvg, Opacity, PageNumberSlot, Painter, Rect, TextRun};
+use Papercut\Paint\{Anchor, Clip, DrawSvg, Link, Opacity, PageNumberSlot, Painter, Rect, TextRun, TocSlot};
 use Papercut\Tests\Support\FakeBackend;
 use Papercut\Text\{FontRegistry, SvgFonts};
 use Papercut\Vector\SvgDocument;
@@ -100,5 +100,85 @@ final class PainterTest extends TestCase
         self::assertInstanceOf(TextRun::class, $run);
         self::assertSame('2/3', $run->text);
         self::assertEqualsWithDelta(42.5, $run->x, 1e-9); // (100 - 15) / 2
+    }
+
+    private static function tocSlot(string $dest, bool $leaders = true, float $x = 150.0, float $boxWidth = 200.0): TocSlot
+    {
+        $font = new CachedFont(new FakeFont());
+        return new TocSlot($dest, $x, 10.0, $boxWidth - $x, 40.0, $leaders, $font, 10.0, Color::black(), 0.0, $boxWidth, 14.0);
+    }
+
+    private static function anchorFragment(string $name): Fragment
+    {
+        $f = new Fragment(10, 10);
+        $f->addOp(new Anchor($name, 0.0, 0.0));
+        return $f;
+    }
+
+    /**
+     * @param list<Fragment> $fragments one per page
+     * @return list<PlacedPage>
+     */
+    private static function pagesOf(array $fragments): array
+    {
+        return array_map(static function (Fragment $f): PlacedPage {
+            $root = new Fragment(200, 300);
+            $root->addChild(0, 20, $f);
+            return new PlacedPage(200, 300, [['x' => 0.0, 'y' => 0.0, 'fragment' => $root]]);
+        }, $fragments);
+    }
+
+    public function test_toc_slots_get_numbers_leaders_and_links(): void
+    {
+        $toc = new Fragment(200, 14);
+        $toc->addSlot(self::tocSlot('a'));
+        $toc->addSlot(self::tocSlot('b'));
+        $pages = self::pagesOf([$toc, self::anchorFragment('a'), self::anchorFragment('b')]);
+
+        $lists = Painter::paint($pages);
+
+        $runs = array_values(array_filter($lists[0]->ops, static fn ($o): bool => $o instanceof TextRun));
+        self::assertCount(4, $runs);
+        [$numA, $dotsA, $numB, $dotsB] = $runs;
+        self::assertSame(['2', '3'], [$numA->text, $numB->text]);
+        foreach ([$numA, $numB] as $n) {
+            self::assertEqualsWithDelta(150.0 + 50.0, $n->x + $n->font->advance($n->text, $n->size, $n->letterSpacing), 0.01);
+            self::assertEqualsWithDelta(30.0, $n->baseline, 0.01);
+        }
+        foreach ([[$numA, $dotsA], [$numB, $dotsB]] as [$n, $d]) {
+            self::assertMatchesRegularExpression('/^\.+$/', $d->text);
+            self::assertLessThan($n->x, $d->x + $d->font->advance($d->text, $d->size, $d->letterSpacing));
+            self::assertGreaterThanOrEqual(40.0 + 3.0, $d->x);
+        }
+        $links = array_values(array_filter($lists[0]->ops, static fn ($o): bool => $o instanceof Link));
+        self::assertSame(['#a', '#b'], array_map(static fn (Link $l): string => $l->uri, $links));
+        self::assertEqualsWithDelta([0.0, 20.0, 200.0, 14.0], [$links[0]->x, $links[0]->y, $links[0]->width, $links[0]->height], 0.01);
+    }
+
+    public function test_toc_slot_without_leaders_or_room_has_no_dot_run(): void
+    {
+        $toc = new Fragment(200, 14);
+        $toc->addSlot(self::tocSlot('a', leaders: false));
+        $toc->addSlot(self::tocSlot('a', x: 46.0, boxWidth: 50.0));
+        $lists = Painter::paint(self::pagesOf([$toc, self::anchorFragment('a')]));
+
+        $runs = array_values(array_filter($lists[0]->ops, static fn ($o): bool => $o instanceof TextRun));
+        self::assertSame(['2', '2'], array_map(static fn (TextRun $r): string => $r->text, $runs));
+    }
+
+    public function test_anchor_pages_keeps_the_first_occurrence(): void
+    {
+        $pages = self::pagesOf([self::anchorFragment('x'), self::anchorFragment('a'), self::anchorFragment('a'), self::anchorFragment('a')]);
+
+        self::assertSame(['x' => 1, 'a' => 2], Painter::anchorPages($pages));
+    }
+
+    public function test_toc_slot_with_no_anchor_produces_nothing(): void
+    {
+        $toc = new Fragment(200, 14);
+        $toc->addSlot(self::tocSlot('missing'));
+        $lists = Painter::paint(self::pagesOf([$toc]));
+
+        self::assertSame([], $lists[0]->ops);
     }
 }

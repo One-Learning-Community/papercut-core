@@ -245,6 +245,12 @@ trait HasStyle
         return $this->withStyle(new Style(bookmark: $title === false ? '' : $title, bookmarkLevel: $level));
     }
 
+    /** Lists this heading in a table of contents; pass false to leave it out. */
+    public function toc(bool $on = true): static
+    {
+        return $this->withStyle(new Style(toc: $on));
+    }
+
     public function keepWithNext(bool $on = true): static
     {
         return $this->withStyle(new Style(keepWithNext: $on));

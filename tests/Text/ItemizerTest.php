@@ -28,6 +28,28 @@ final class ItemizerTest extends TestCase
         self::assertSame(['word:Hello', 'space: ', 'word:world'], array_map(fn ($i) => $i->kind . ':' . $i->text, $items));
     }
 
+    public function test_invisible_formatting_characters_are_not_drawn(): void
+    {
+        $warnings = [];
+        $text = "soft\u{00AD}hyphen zw\u{200D}j l\u{200E}rm wo\u{2060}rd \u{FEFF}bom";
+        $items = $this->itemizer(function (string $m) use (&$warnings): void {
+            $warnings[] = $m;
+        })->itemize([Span::text($text)], $this->root());
+        self::assertSame(
+            ['word:softhyphen', 'space: ', 'word:zwj', 'space: ', 'word:lrm', 'space: ', 'word:word', 'space: ', 'word:bom'],
+            array_map(fn ($i) => $i->kind . ':' . $i->text, $items),
+        );
+        self::assertSame([], $warnings);
+    }
+
+    public function test_line_and_paragraph_separators_are_newlines(): void
+    {
+        $normal = $this->itemizer()->itemize([Span::text("a\u{2028}b\u{2029}c")], $this->root());
+        self::assertSame(['word:a', 'space: ', 'word:b', 'space: ', 'word:c'], array_map(fn ($i) => $i->kind . ':' . $i->text, $normal));
+        $pre = $this->itemizer()->itemize([Span::text("a\u{2028}b")], $this->preWrap());
+        self::assertSame(['word:a', 'break:', 'word:b'], array_map(fn ($i) => $i->kind . ':' . $i->text, $pre));
+    }
+
     public function test_whitespace_collapses_across_spans_and_widths_use_font(): void
     {
         $items = $this->itemizer()->itemize([Span::text('a '), Span::text(' b', Style::make(fontWeight: 700))], $this->root());

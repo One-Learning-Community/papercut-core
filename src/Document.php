@@ -6,6 +6,7 @@ namespace Papercut;
 
 use Papercut\Export\{ExportOptions, Exporter, HtmlExporter, HtmlOptions, Output, PdfExporter, PdfOptions};
 use Papercut\Paint\DocumentMeta;
+use Papercut\Style\ThemeOverride;
 
 final class Document
 {
@@ -17,6 +18,7 @@ final class Document
     private ?string $keywords = null;
     private ?string $lang = null;
     private ?\DateTimeImmutable $createdAt = null;
+    private ?ThemeOverride $themeOverride = null;
 
     private function __construct()
     {
@@ -70,6 +72,19 @@ final class Document
         $clone = clone $this;
         $clone->createdAt = $v;
         return $clone;
+    }
+
+    /** Theme values for this document, merged onto any set before and over the theme it renders with. */
+    public function theme(ThemeOverride $override): self
+    {
+        $clone = clone $this;
+        $clone->themeOverride = $this->themeOverride?->merge($override) ?? $override;
+        return $clone;
+    }
+
+    public function themeOverride(): ?ThemeOverride
+    {
+        return $this->themeOverride;
     }
 
     /**

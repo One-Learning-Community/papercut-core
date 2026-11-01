@@ -6,6 +6,7 @@ namespace Papercut\Markup;
 
 use Papercut\Backend\ImageFormat;
 use Papercut\Code\CodeHighlighting;
+use Papercut\Component;
 use Papercut\Decorator\{Blockquote, CodeBlock};
 use Papercut\Export\FidelityLevel;
 use Papercut\Image;
@@ -74,7 +75,7 @@ final class HtmlConverter
 
     private InlineRun $run;
 
-    /** @var list<array{Node, bool}> the current frame's blocks, each with whether it is a blank line */
+    /** @var list<array{Node|Component, bool}> the current frame's blocks, each with whether it is a blank line */
     private array $blocks = [];
 
     /** @var list<ListItem>|null the items of the list whose frame is current; null outside a list */
@@ -363,19 +364,19 @@ final class HtmlConverter
         $made = array_splice($this->blocks, $start);
         if ($made !== []) {
             $blank = array_filter($made, static fn (array $b): bool => !$b[1]) === [];
-            $this->blocks[] = [self::dressed(array_map(static fn (array $b): Node => $b[0], $made), $own), $blank];
+            $this->blocks[] = [self::dressed(array_map(static fn (array $b): Node|Component => $b[0], $made), $own), $blank];
         }
     }
 
     /**
      * One node carrying $own: the only node given, or a View of them all.
      *
-     * @param non-empty-list<Node> $nodes
+     * @param non-empty-list<Node|Component> $nodes
      */
-    private static function dressed(array $nodes, Style $own): Node
+    private static function dressed(array $nodes, Style $own): Node|Component
     {
         $node = count($nodes) === 1 ? $nodes[0] : View::make(...$nodes);
-        return $node instanceof Styled ? $node->apply($own) : View::make($node)->apply($own);
+        return $node instanceof Styled || $node instanceof ThemedBlock ? $node->apply($own) : View::make($node)->apply($own);
     }
 
     /** Ends the enclosing paragraph, converts the block's content under its own preset, and ends it too. */
@@ -392,7 +393,7 @@ final class HtmlConverter
      * trimmed from both ends; the enclosing frame is restored afterwards.
      *
      * @param \Closure(): void $fill
-     * @return list<Node>
+     * @return list<Node|Component>
      */
     private function collect(?string $preset, \Closure $fill): array
     {
@@ -528,7 +529,7 @@ final class HtmlConverter
                             if (count($this->blocks) > $made) {
                                 // the caption stays with its table
                                 [$last, $blank] = $this->blocks[count($this->blocks) - 1];
-                                $this->blocks[count($this->blocks) - 1] = [($last instanceof Styled ? $last : View::make($last))->apply(new Style(keepWithNext: true)), $blank];
+                                $this->blocks[count($this->blocks) - 1] = [($last instanceof Styled || $last instanceof ThemedBlock ? $last : View::make($last))->apply(new Style(keepWithNext: true)), $blank];
                             }
                             break;
                         case 'thead':
@@ -860,7 +861,7 @@ final class HtmlConverter
         if ($flat) {
             $this->note(FidelityLevel::Approximated, 'markup inside a code block');
         }
-        $this->blocks[] = [CodeBlock::make($code)->language($language)->highlighting($options)->render(), false];
+        $this->blocks[] = [ThemedBlock::of(CodeBlock::make($code)->language($language)->highlighting($options)), false];
     }
 
     private static function languageOf(\Dom\Element $el): ?string
@@ -919,7 +920,7 @@ final class HtmlConverter
      * The attribution for a Blockquote: a plain string when the text carries no
      * styling of its own, else the Text.
      *
-     * @param non-empty-list<Node> $parts
+     * @param non-empty-list<Node|Component> $parts
      */
     private static function attribution(array $parts): string|Node
     {
@@ -1161,8 +1162,8 @@ final class HtmlConverter
     /**
      * The blocks without the blank lines at either end.
      *
-     * @param list<array{Node, bool}> $blocks
-     * @return list<Node>
+     * @param list<array{Node|Component, bool}> $blocks
+     * @return list<Node|Component>
      */
     private static function trimmed(array $blocks): array
     {
@@ -1172,14 +1173,14 @@ final class HtmlConverter
         while ($blocks !== [] && $blocks[count($blocks) - 1][1]) {
             array_pop($blocks);
         }
-        return array_map(static fn (array $b): Node => $b[0], $blocks);
+        return array_map(static fn (array $b): Node|Component => $b[0], $blocks);
     }
 
     /**
      * A list item's content, a lone `p` paragraph made bare as at the top level.
      *
-     * @param list<Node> $blocks
-     * @return list<Node>
+     * @param list<Node|Component> $blocks
+     * @return list<Node|Component>
      */
     private static function unwrapped(array $blocks): array
     {

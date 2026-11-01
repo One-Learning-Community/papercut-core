@@ -55,6 +55,8 @@ final readonly class ComputedStyle
         /** Not inherited. '' means no bookmark, even for a heading. */
         public ?string $bookmark = null,
         public ?int $bookmarkLevel = null,
+        /** Not inherited. false keeps a heading out of a table of contents. */
+        public ?bool $toc = null,
         /** Inherited: true for a list item and everything under it, so a nested list gets no space after. */
         public bool $inList = false,
         /** Inherited: the family the `monospace` keyword stands for. */
@@ -172,6 +174,7 @@ final readonly class ComputedStyle
             minLines: $style->minLines ?? $this->minLines,
             bookmark: $style->bookmark,
             bookmarkLevel: $style->bookmarkLevel,
+            toc: $style->toc,
             inList: $inList ?? $this->inList,
             monoFamily: $this->monoFamily,
             whiteSpace: $style->whiteSpace ?? $this->whiteSpace,

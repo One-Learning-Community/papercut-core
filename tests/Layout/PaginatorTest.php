@@ -330,7 +330,7 @@ final class PaginatorTest extends TestCase
     public function test_tall_first_header_shortens_only_the_first_body(): void
     {
         $first = \Papercut\Column::make(Text::make('Letterhead'))->height(pt(100));
-        $normal = \Papercut\Column::make(Text::make('Running'))->height(pt(10));
+        $normal = \Papercut\Column::make(Text::make('Running')->size(pt(5)))->height(pt(10));
         $doc = Document::make($this->tall()->headerGap(pt(5))->firstHeader($first)->header($normal)->body(...self::blocks(100)));
         $pages = $this->paginate($doc);
         $a = $this->rects($pages[0]);

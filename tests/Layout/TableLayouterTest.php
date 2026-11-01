@@ -491,6 +491,82 @@ final class TableLayouterTest extends TestCase
         self::assertSame(['H1', 'H2', 'H3', 'r3', 'r4'], array_column(LayoutHarness::runs($roomy->fragment), 'text'));
     }
 
+    /**
+     * A row or group too tall for the page, below a header that leaves less room than its first line needs:
+     * header 22 of 30, so 8 left, and a cell's first slice is 4 + 14.
+     *
+     * @return iterable<string, array{Table, list<string>}>
+     */
+    public static function crowdedSplitCases(): iterable
+    {
+        yield 'row' => [Table::make()->columns('1fr 1fr')->head('H', 'I')->row(TableCell::make('a', 'b', 'c'), 'x')->row('y', 'z'), ['a', 'b', 'c', 'x', 'y', 'z']];
+        yield 'group' => [Table::make()->columns('1fr 1fr')->head('H', 'I')->row(TableCell::make('a', 'b', 'c')->rowspan(2), 'x')->row('y')->row('w', 'z'), ['a', 'b', 'c', 'w', 'x', 'y', 'z']];
+    }
+
+    /** @param list<string> $body */
+    #[\PHPUnit\Framework\Attributes\DataProvider('crowdedSplitCases')]
+    public function test_a_split_never_forces_a_line_below_the_header(Table $t, array $body): void
+    {
+        $h = new LayoutHarness();
+        $first = $h->layout($t, 100, 30);
+        self::assertSame(Status::Partial, $first->status);
+        self::assertNotNull($first->fragment);
+        self::assertLessThanOrEqual(30.0 + 1e-9, self::deepestBox($first->fragment));
+        self::assertSame(['H', 'I'], array_column(LayoutHarness::runs($first->fragment), 'text'), 'the rows start on the next page');
+
+        $texts = [];
+        $token = $first->token;
+        for ($i = 0; $token !== null && $i < 10; $i++) {
+            $res = $h->layout($t, 100, 30, $token);
+            self::assertNotNull($res->fragment);
+            self::assertLessThanOrEqual(30.0 + 1e-9, self::deepestBox($res->fragment), "fragment $i stays on the page");
+            $texts = [...$texts, ...array_column(LayoutHarness::runs($res->fragment), 'text')];
+            $token = $res->token;
+        }
+        self::assertNull($token);
+        self::assertNotContains('H', $texts, 'a repeated header that leaves no room for a line is dropped');
+        sort($texts);
+        self::assertSame($body, $texts);
+        self::assertSame(
+            ['[table] Table header leaves no room for a row; it stands alone on its page', '[table] Table header leaves no room for a row; not repeated on that page'],
+            $h->warnings,
+        );
+    }
+
+    public function test_a_line_forced_inside_a_nested_table_counts_for_the_outer_header(): void
+    {
+        $inner = Table::make()->columns('1fr 1fr')->row(TableCell::make('a', 'b', 'c')->rowspan(2), 'x')->row('y');
+        $t = Table::make()->columns('1fr')->head('H')->row(TableCell::make($inner));
+        $first = (new LayoutHarness())->layout($t, 120, 40);
+        self::assertSame(Status::Partial, $first->status);
+        self::assertNotNull($first->fragment);
+        self::assertSame(['H'], array_column(LayoutHarness::runs($first->fragment), 'text'));
+        self::assertLessThanOrEqual(40.0 + 1e-9, self::deepestBox($first->fragment));
+    }
+
+    public function test_text_spilling_from_a_fixed_height_spanning_cell_keeps_the_header(): void
+    {
+        // The spanning cell is 10pt tall and its six lines don't fit it: Clip mode clips them to the cell, and no line is forced.
+        $t = Table::make()->columns('1fr 1fr')->head('H', 'I')
+            ->row(TableCell::make('s1', 's2', 's3', 's4', 's5', 's6')->rowspan(2)->height(pt(10)), 'x')
+            ->row('y')->row('w', 'z');
+        $h = new LayoutHarness(overflow: OverflowMode::Clip);
+        $first = $h->layout($t, 100, 60);
+        self::assertSame(['H', 'I', 'x'], array_slice(array_column(LayoutHarness::runs($first->fragment), 'text'), 0, 3));
+        self::assertCount(1, $h->warnings);
+        self::assertStringStartsWith('Content clipped: "table > tr[1] > td[0]"', $h->warnings[0]);
+    }
+
+    /** The lowest bottom edge of any box in $f, its own included. */
+    private static function deepestBox(Fragment $f, float $y = 0.0): float
+    {
+        $bottom = $y + $f->height;
+        foreach ($f->children() as $child) {
+            $bottom = max($bottom, self::deepestBox($child['fragment'], $y + $child['y']));
+        }
+        return $bottom;
+    }
+
     // --- Task 13 ---------------------------------------------------------
 
     public function test_row_side_edges_keep_cells_inside_the_row_box(): void

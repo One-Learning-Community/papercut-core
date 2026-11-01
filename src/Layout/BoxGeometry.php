@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Papercut\Layout;
 
+use Papercut\OverflowMode;
+use Papercut\Exception\LayoutOverflow;
 use Papercut\Paint\{Line, Rect};
 use Papercut\Style\{BorderStyle, ComputedStyle, Justify};
 use Papercut\Value\{Auto, Length, Percent};
@@ -17,6 +19,29 @@ final class BoxGeometry
 {
     private function __construct()
     {
+    }
+
+    /**
+     * A box whose height (fixed or max-height) is less than its content needs. Throw mode throws; Clip mode clips the
+     * box to its border box and warns. Inside a trial layout the throw or warning is held back for the rendered one.
+     */
+    public static function contain(Fragment $f, float $needed, float $has, LayoutEngine $engine): void
+    {
+        // Half a point of slack: rounding in line heights must not turn a box that fits into an error.
+        if ($needed <= $has + 0.5) {
+            return;
+        }
+        $ctx = $engine->context();
+        // Only what the content needs: a table measures a cell at more than one height before it settles.
+        $message = sprintf('content is taller than its height or max-height allows (it needs %.2fpt)', $needed);
+        if ($ctx->quiet) {
+            $ctx->holdBack();
+        } elseif ($ctx->overflow === OverflowMode::Throw) {
+            throw LayoutOverflow::tooTall($ctx->path(), $message);
+        } else {
+            $ctx->warnOnce(sprintf('Content clipped: "%s" %s.', $ctx->path(), $message), withPath: false);
+        }
+        $f->clip = [0.0, 0.0, $f->width, $f->height];
     }
 
     /** Border-box width: width resolved against $available, clamped to min/max. */

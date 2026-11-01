@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Papercut\Tests\Tree;
 
-use Papercut\{Component, Document, Node, Page, PageNumber, Row, Table, TableCell, TableRow, Text};
+use Papercut\{Component, Document, Node, Page, PageNumber, Row, Table, TableCell, TableRow, Text, Toc};
+use Papercut\Exception\InvalidStructure;
 use Papercut\Export\PdfOptions;
 use Papercut\Style\{ComputedStyle, StyleResolver, Theme};
 use Papercut\Value\Color;
@@ -43,6 +44,28 @@ final class TreeWalkerTest extends TestCase
             'region:body', 'enter:page[1] > body > text[0]', 'leave:page[1] > body > text[0]', 'leaveRegion:body',
             'leavePage:1',
         ], $this->walk($doc));
+    }
+
+    public function test_a_plain_resolver_expands_themed_components_with_its_theme(): void
+    {
+        $comp = new class implements \Papercut\ThemedComponent {
+            public function render(): Node|Component
+            {
+                return Text::make('none');
+            }
+
+            public function renderFor(Theme $theme): Node|Component
+            {
+                return Text::make('code:' . $theme->codeTheme);
+            }
+        };
+        $theme = Theme::default()->withOverride(new \Papercut\Style\ThemeOverride(codeTheme: 'dark'));
+        $visitor = $this->recorder();
+        (new TreeWalker(styles: new StyleResolver($theme)))->walk(Document::make(Page::a4()->body($comp)), $visitor);
+
+        $node = $visitor->nodes[0] ?? null;
+        self::assertInstanceOf(Text::class, $node);
+        self::assertSame('code:dark', $node->spanList()[0]->text);
     }
 
     public function test_expands_components_in_header_and_table_cells(): void
@@ -190,6 +213,19 @@ final class TreeWalkerTest extends TestCase
     {
         $doc = Document::make(Page::a4()->body('b')->firstHeader(Text::make('x')->apply('nope')));
         self::assertStringContainsString('page > first-header > text[0]', self::messageOf(fn () => $this->walk($doc)));
+    }
+
+    public function test_toc_outside_the_body_throws(): void
+    {
+        foreach (['header', 'footer', 'background'] as $region) {
+            try {
+                $this->walk(Document::make(Page::a4()->$region(Toc::make())));
+                self::fail("a toc in the $region should throw");
+            } catch (InvalidStructure $e) {
+                self::assertStringContainsString('table of contents', $e->getMessage());
+                self::assertStringContainsString("page > $region > toc[0]", $e->getMessage());
+            }
+        }
     }
 
     /** @return list<string> */

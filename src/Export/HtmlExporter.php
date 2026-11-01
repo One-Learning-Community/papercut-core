@@ -7,7 +7,8 @@ namespace Papercut\Export;
 use Papercut\Backend\DefaultBackend;
 use Papercut\Document;
 use Papercut\Html\{Css, FontFaces, FontRequests, FontStack, HtmlWriter, Stylesheet};
-use Papercut\Style\StyleResolver;
+use Papercut\Style\PageThemes;
+use Papercut\Toc\TocIndex;
 use Papercut\Tree\TreeWalker;
 
 final class HtmlExporter implements Exporter
@@ -21,11 +22,12 @@ final class HtmlExporter implements Exporter
         if ($options->fontMode() === FontMode::Sources && $options->fontSources() === []) {
             throw new \InvalidArgumentException('FontMode::Sources needs at least one font source');
         }
-        $styles = new StyleResolver($options->theme());
+        $themes = PageThemes::for($options->theme(), $doc);
+        $styles = $themes->documentStyles();
         $fidelity = new Fidelity('html', $options);
-        NoteReporter::report($doc, $styles, $fidelity);
-        $writer = new HtmlWriter($doc, $fidelity, $options, DefaultBackend::make(false));
-        (new TreeWalker($styles))->walk($doc, $writer);
+        NoteReporter::report($doc, $themes, $fidelity);
+        $writer = new HtmlWriter($doc, $fidelity, $options, DefaultBackend::make(false), TocIndex::collect($doc, $themes), $themes);
+        (new TreeWalker($themes))->walk($doc, $writer);
 
         $meta = $doc->meta();
         $root = $styles->root();

@@ -60,6 +60,7 @@ final readonly class Style
         'min-lines' => ['minLines', 'int>=1'],
         'bookmark' => ['bookmark', 'bookmark'],
         'bookmark-level' => ['bookmarkLevel', 'int>=1'],
+        'toc' => ['toc', 'bool'],
     ];
 
     public function __construct(
@@ -105,6 +106,8 @@ final readonly class Style
         /** A bookmark title; '' turns off a heading's automatic bookmark. */
         public ?string $bookmark = null,
         public ?int $bookmarkLevel = null,
+        /** Whether a heading is listed in a table of contents; null leaves it to the heading's own default. */
+        public ?bool $toc = null,
     ) {
         if ($fontWeight !== null && ($fontWeight < 1 || $fontWeight > 1000)) {
             throw InvalidValue::for('font weight', (string) $fontWeight);
@@ -156,6 +159,7 @@ final readonly class Style
         ?int $minLines = null,
         ?string $bookmark = null,
         ?int $bookmarkLevel = null,
+        ?bool $toc = null,
     ): self {
         return new self(
             width: $width,
@@ -199,6 +203,7 @@ final readonly class Style
             minLines: $minLines,
             bookmark: $bookmark,
             bookmarkLevel: $bookmarkLevel,
+            toc: $toc,
         );
     }
 

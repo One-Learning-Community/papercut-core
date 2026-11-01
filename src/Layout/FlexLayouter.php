@@ -6,7 +6,6 @@ namespace Papercut\Layout;
 
 use Papercut\{Node, PageBreak, Spacer, View};
 use Papercut\Style\{Align, ComputedStyle};
-use Papercut\Tree\Expander;
 use Papercut\Value\{Auto, Length};
 
 /**
@@ -116,6 +115,8 @@ final class FlexLayouter implements Layouter
         if ($fixed === null && $first && $last) {
             $contentHeight = BoxGeometry::capContent($style, $c, $contentHeight);
         }
+        // The height the box allows its content: its fixed height, or its max-height. A cut to the page comes later.
+        $allowed = $fixed !== null || ($first && $last) ? $contentHeight : null;
         if ($capped) {
             $fit = BoxGeometry::fitContent($style, $c, $contentHeight);
             if ($fit === null) {
@@ -125,6 +126,14 @@ final class FlexLayouter implements Layouter
         }
         $f = new Fragment($borderWidth, BoxGeometry::outerHeight($style, $contentHeight, $first, $last));
         BoxGeometry::decorate($f, $style, $first, $last);
+        if ($allowed !== null) {
+            // The bottom of the content itself: a last child's bottom margin is space, not content.
+            $bottom = 0.0;
+            foreach ($placed as $p) {
+                $bottom = max($bottom, $p['y'] + $p['fragment']->height);
+            }
+            BoxGeometry::contain($f, $bottom, $allowed, $engine);
+        }
         $ox = $style->borderWidth->left->points + $style->padding->left->points;
         $oy = $first ? BoxGeometry::topEdge($style) : 0.0;
         foreach ($placed as $p) {
@@ -144,7 +153,7 @@ final class FlexLayouter implements Layouter
         $max = 0.0;
         $n = 0;
         foreach (self::children($node) as $i => $child) {
-            $child = Expander::expand($child);
+            $child = $engine->expand($child);
             if ($child instanceof PageBreak) {
                 continue;
             }
@@ -184,7 +193,7 @@ final class FlexLayouter implements Layouter
     {
         $items = [];
         foreach (self::children($node) as $i => $child) {
-            $child = Expander::expand($child);
+            $child = $engine->expand($child);
             if ($child instanceof PageBreak) {
                 if ($warn) {
                     $engine->context()->warnOnce('PageBreak inside a row is ignored');

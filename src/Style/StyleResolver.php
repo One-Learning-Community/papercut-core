@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Papercut\Style;
 
-use Papercut\{Link, ListItem, ListNode, Node, Place, Styled, TableCell, Text, View};
+use Papercut\{Component, Link, ListItem, ListNode, Node, Place, Styled, TableCell, Text, ThemedComponent, Toc as TocNode, View};
+use Papercut\Tree\Expander;
 use Papercut\Value\Edges;
 
 use function Papercut\pt;
@@ -43,6 +44,12 @@ final class StyleResolver
         $this->endsContainer = new \WeakMap();
         $this->styles = new \WeakMap();
         $this->cellStyles = new \WeakMap();
+    }
+
+    /** The theme this resolver resolves against. */
+    public function theme(): Theme
+    {
+        return $this->theme;
     }
 
     /** The theme's root style, computed once so memoized child styles are shared across pages. */
@@ -93,6 +100,12 @@ final class StyleResolver
         if ($node instanceof Text && $node->preset() !== null) {
             $preset = $node->preset();
             $style = $style->merge($preset === 'p' ? $this->theme->paragraph() : $this->theme->heading((int) substr($preset, 1)));
+            if ($preset !== 'p') {
+                $style = $style->merge($this->theme->named($preset . '?'));
+            }
+        }
+        if ($node instanceof TocNode) {
+            $style = $style->merge($this->theme->named('toc'));
         }
         if ($node instanceof Styled) {
             $name = $node->styleName();
@@ -130,9 +143,8 @@ final class StyleResolver
         if ($children === []) {
             return;
         }
-        // A component last child is left alone: expanding it here would render it an extra time.
-        $last = $children[array_key_last($children)];
-        if ($last instanceof Node) {
+        $last = $this->nodeOf($children[array_key_last($children)]);
+        if ($last !== null) {
             $this->endsContainer[$last] = true;
         }
     }
@@ -162,13 +174,24 @@ final class StyleResolver
         if ($children === []) {
             return 0.0;
         }
-        $child = $children[array_key_last($children)];
-        if (!$child instanceof Node) {
-            // A component is left alone: expanding it here would render it an extra time.
+        $child = $this->nodeOf($children[array_key_last($children)]);
+        if ($child === null) {
             return 0.0;
         }
         $childStyle = $this->resolve($child, $style);
         $own = $childStyle->margin->bottom->points;
         return $own + (($child instanceof View || $child instanceof ListItem || $child instanceof ListNode || $child instanceof Link) ? $this->trailingMargin($child, $childStyle) : 0.0);
+    }
+
+    /**
+     * The node itself, or a themed component expanded with this theme (those memoize per theme, so
+     * the layout gets the same node); other components are left alone, as expanding them here would render them an extra time.
+     */
+    private function nodeOf(Node|Component $child): ?Node
+    {
+        if ($child instanceof Node) {
+            return $child;
+        }
+        return $child instanceof ThemedComponent ? Expander::expand($child, $this->theme) : null;
     }
 }

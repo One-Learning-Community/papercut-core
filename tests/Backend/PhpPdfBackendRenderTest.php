@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Papercut\Tests\Backend;
 
 use Papercut\Backend\PhpPdf\PhpPdfBackend;
-use Papercut\Paint\{Clip, DocumentMeta, DrawImage, Line, Link, Op, Opacity, PageDisplayList, Rect, TextRun};
+use Papercut\Paint\{Anchor, Clip, DocumentMeta, DrawImage, Line, Link, Op, Opacity, PageDisplayList, Rect, TextRun};
 use Papercut\Tests\Support\{FakeFont, PdfInspector, TestImages};
 use Papercut\Text\FontRegistry;
 use Papercut\Value\Color;
@@ -226,5 +226,19 @@ final class PhpPdfBackendRenderTest extends TestCase
     {
         $qdf = PdfInspector::qdf($this->render([new Link(50, 50, 200, 100, 'https://example.com')]));
         self::assertMatchesRegularExpression('/\/Rect\s*\[\s*50(\.0+)?\s+692(\.0+)?\s+250(\.0+)?\s+792(\.0+)?\s*\]/', $qdf);
+    }
+
+    public function test_a_repeated_anchor_resolves_to_its_first_page(): void
+    {
+        $pages = [
+            new PageDisplayList(595, 842, [new Link(10, 10, 50, 10, '#a')]),
+            new PageDisplayList(595, 842, [new Anchor('a', 20, 30)]),
+            new PageDisplayList(595, 842, [new Anchor('a', 20, 30)]),
+            new PageDisplayList(595, 842, [new Anchor('a', 20, 30)]),
+        ];
+        $qdf = PdfInspector::qdf($this->backend->render($this->meta(), $pages));
+
+        self::assertSame(2, \Papercut\Tests\Feature\TocPdfTest::destinationPage($qdf, 'a'));
+        self::assertStringNotContainsString('/URI', $qdf);
     }
 }

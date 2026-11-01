@@ -6,7 +6,7 @@ namespace Papercut;
 
 use Papercut\Backend\{DefaultBackend, PdfPageLoader};
 use Papercut\Exception\InvalidValue;
-use Papercut\Style\Style;
+use Papercut\Style\{Style, ThemeOverride};
 use Papercut\Value\{Edges, Length};
 
 use function Papercut\{mm, pt};
@@ -34,6 +34,7 @@ final class Page implements Node
     private Length $headerGap;
     private Length $footerGap;
     private bool $landscape = false;
+    private ?ThemeOverride $themeOverride = null;
     /** @var list<Node|Component> */
     private array $header = [];
     /** @var list<Node|Component> */
@@ -146,6 +147,19 @@ final class Page implements Node
                 ->because(sprintf('expected one of %s, or use Page::size() for any other size', implode(', ', self::sizeNames())));
         }
         return self::preset($key);
+    }
+
+    /** Theme values for this page, merged onto any set before and over the theme it renders with. */
+    public function theme(ThemeOverride $override): self
+    {
+        $clone = clone $this;
+        $clone->themeOverride = $this->themeOverride?->merge($override) ?? $override;
+        return $clone;
+    }
+
+    public function themeOverride(): ?ThemeOverride
+    {
+        return $this->themeOverride;
     }
 
     public function landscape(): self

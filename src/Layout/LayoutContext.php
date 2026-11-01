@@ -6,9 +6,12 @@ namespace Papercut\Layout;
 
 use Papercut\{Image, Node, OverflowMode, PdfPage};
 use Papercut\Backend\{Backend, ImageHandle, PdfPageHandle, PdfPageLoader};
+use Papercut\Exception\UnsupportedFeature;
 use Papercut\Export\{FidelityLevel, FidelityReport};
-use Papercut\Style\{ComputedStyle, StyleResolver, Theme};
+use Papercut\Page;
+use Papercut\Style\{ComputedStyle, PageThemes, StyleResolver, Theme};
 use Papercut\Text\{FontRegistry, Itemizer, SvgFonts};
+use Papercut\Toc\TocIndex;
 
 /**
  * Shared state for one layout run: fonts, theme, images, warnings, the
@@ -18,7 +21,8 @@ final class LayoutContext
 {
     /** @var list<string> */
     private array $path = [];
-    private ?Itemizer $itemizer = null;
+    /** @var \WeakMap<Theme, Itemizer> one per theme, which the itemizer reads span styles from */
+    private \WeakMap $itemizers;
     /** Open lists by kind, for depth-dependent markers. */
     private int $orderedLists = 0;
     private int $unorderedLists = 0;
@@ -35,16 +39,24 @@ final class LayoutContext
     public private(set) ?string $lastFailurePath = null;
     /** Off while laying out headers, footers and backgrounds, which repeat on every page. */
     public bool $bookmarks = true;
+    /** Off while laying out repeating bands, like $bookmarks. */
+    public bool $anchors = true;
+    /** The headings the document's tables of contents list; empty when there is none. */
+    public TocIndex $toc;
     /** Off for a trial layout that must not clip a too-tall node in place (Clip mode), so the paginator can try the next page instead. */
     public bool $clipInPlace = true;
+    /** Strict export: content the PDF would drop, such as characters no font has, throws `UnsupportedFeature`. */
+    public bool $strict = false;
     /** On inside quietly(). */
     public private(set) bool $quiet = false;
     private bool $heldBack = false;
-    public readonly StyleResolver $styles;
+    public private(set) StyleResolver $styles;
+    /** The theme of each page; when set, usePage() switches to the page's theme. */
+    public ?PageThemes $themes = null;
 
     public function __construct(
         public readonly FontRegistry $fonts,
-        public readonly Theme $theme,
+        public private(set) Theme $theme,
         public readonly Backend $backend,
         public readonly OverflowMode $overflow,
         private readonly ?\Closure $onWarning,
@@ -54,6 +66,8 @@ final class LayoutContext
         public readonly string $format = 'pdf',
     ) {
         $this->styles = new StyleResolver($theme);
+        $this->itemizers = new \WeakMap();
+        $this->toc = TocIndex::empty();
     }
 
     /** The theme's root style, computed once per layout run so memoized child styles are shared across pages. */
@@ -62,11 +76,35 @@ final class LayoutContext
         return $this->styles->root();
     }
 
+    /** Lays out with the page's theme from here on; the same Theme object as before keeps its resolver and itemizer. No-op without page themes. */
+    public function usePage(Page $page): void
+    {
+        if ($this->themes === null) {
+            return;
+        }
+        $this->theme = $this->themes->theme($page);
+        $this->styles = $this->themes->styles($page);
+    }
+
     public function itemizer(): Itemizer
     {
-        return $this->itemizer ??= new Itemizer($this->fonts, function (string $msg): void {
+        // Strict mode checks text on the painted pages (PdfExporter), so a header laid out only to measure it never throws.
+        return $this->itemizers[$this->theme] ??= new Itemizer($this->fonts, function (string $msg): void {
             $this->warn($msg);
         }, $this->fallbackFamilies, $this->theme);
+    }
+
+    /** SVG text with characters no font has prints empty boxes: content the PDF drops, so strict mode throws. */
+    private function missingGlyphs(string $msg): void
+    {
+        if ($this->strict) {
+            throw UnsupportedFeature::from(new FidelityReport(
+                FidelityLevel::Dropped,
+                $this->format,
+                lcfirst($msg) . ' (register a fallback font that has them)',
+                $this->path(),
+            ));
+        }
     }
 
     /**
@@ -200,6 +238,7 @@ final class LayoutContext
     public function svgFonts(ComputedStyle $style): SvgFonts
     {
         return $this->svgFonts[strtolower($style->fontFamily)] ??= new SvgFonts($this->fonts, $style->fontFamily, $this->fallbackFamilies, function (string $msg): void {
+            $this->missingGlyphs($msg);
             $this->warn($msg, withPath: false);
         });
     }

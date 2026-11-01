@@ -24,32 +24,85 @@ final class Painter
     public static function paint(array $pages): array
     {
         $total = count($pages);
+        $anchors = self::anchorPages($pages);
         $out = [];
         foreach ($pages as $i => $page) {
             $ops = [];
             foreach ($page->layers as $layer) {
-                array_push($ops, ...self::flatten($layer['fragment'], $layer['x'], $layer['y'], $i + 1, $total));
+                array_push($ops, ...self::flatten($layer['fragment'], $layer['x'], $layer['y'], $i + 1, $total, $anchors));
             }
             $out[] = new PageDisplayList($page->width, $page->height, $ops);
         }
         return $out;
     }
 
-    /** @return list<Op> */
-    private static function flatten(Fragment $f, float $x, float $y, int $page, int $total): array
+    /**
+     * The 1-based page of the first occurrence of each anchor. A repeated table header row lays its
+     * content out on every page, so later occurrences are ignored.
+     *
+     * @param list<PlacedPage> $pages
+     * @return array<string, int>
+     */
+    public static function anchorPages(array $pages): array
+    {
+        $found = [];
+        foreach ($pages as $i => $page) {
+            foreach ($page->layers as $layer) {
+                self::collectAnchors($layer['fragment'], $i + 1, $found);
+            }
+        }
+        return $found;
+    }
+
+    /** @param array<string, int> $found */
+    private static function collectAnchors(Fragment $f, int $page, array &$found): void
+    {
+        self::collectOpAnchors($f->ops(), $page, $found);
+        foreach ($f->children() as $c) {
+            self::collectAnchors($c['fragment'], $page, $found);
+        }
+    }
+
+    /**
+     * @param list<Op> $ops
+     * @param array<string, int> $found
+     */
+    private static function collectOpAnchors(array $ops, int $page, array &$found): void
+    {
+        foreach ($ops as $op) {
+            if ($op instanceof Anchor) {
+                $found[$op->name] ??= $page;
+            } elseif ($op instanceof Clip || $op instanceof Opacity) {
+                self::collectOpAnchors($op->ops, $page, $found);
+            }
+        }
+    }
+
+    /**
+     * @param array<string, int> $anchors
+     * @return list<Op>
+     */
+    private static function flatten(Fragment $f, float $x, float $y, int $page, int $total, array $anchors): array
     {
         $ops = [];
         foreach ($f->ops() as $op) {
             $ops[] = self::translate($op, $x, $y);
         }
         foreach ($f->slots() as $slot) {
+            if ($slot instanceof TocSlot) {
+                $target = $anchors[$slot->destination] ?? null;
+                if ($target !== null) {
+                    array_push($ops, ...self::resolveTocSlot($slot, $x, $y, $target));
+                }
+                continue;
+            }
             $run = self::resolveSlot($slot, $x, $y, $page, $total);
             if ($run !== null) {
                 $ops[] = $run;
             }
         }
         foreach ($f->children() as $c) {
-            array_push($ops, ...self::flatten($c['fragment'], $x + $c['x'], $y + $c['y'], $page, $total));
+            array_push($ops, ...self::flatten($c['fragment'], $x + $c['x'], $y + $c['y'], $page, $total, $anchors));
         }
         if ($f->clip !== null && $ops !== []) {
             [$cx, $cy, $cw, $ch] = $f->clip;
@@ -71,6 +124,7 @@ final class Painter
             $op instanceof DrawSvg => new DrawSvg($op->x + $dx, $op->y + $dy, $op->width, $op->height, $op->svg, $op->fonts),
             $op instanceof DrawPdfPage => new DrawPdfPage($op->x + $dx, $op->y + $dy, $op->width, $op->height, $op->page),
             $op instanceof Bookmark => new Bookmark($op->level, $op->title, $op->x + $dx, $op->y + $dy),
+            $op instanceof Anchor => new Anchor($op->name, $op->x + $dx, $op->y + $dy),
             $op instanceof Link => new Link($op->x + $dx, $op->y + $dy, $op->width, $op->height, $op->uri),
             $op instanceof Clip => new Clip($op->x + $dx, $op->y + $dy, $op->width, $op->height, array_map(static fn (Op $o): Op => self::translate($o, $dx, $dy), $op->ops)),
             $op instanceof Opacity => new Opacity($op->alpha, array_map(static fn (Op $o): Op => self::translate($o, $dx, $dy), $op->ops)),
@@ -91,5 +145,32 @@ final class Painter
             TextAlign::Left, TextAlign::Justify => 0.0,
         };
         return new TextRun($dx + $s->x + $offset, $dy + $s->baseline, $text, $s->font, $s->size, $s->color, $s->letterSpacing);
+    }
+
+    /**
+     * The page number right-aligned in the slot's number box, dot leaders between the title and the
+     * number, and a link over the whole entry.
+     *
+     * @return list<Op>
+     */
+    private static function resolveTocSlot(TocSlot $s, float $dx, float $dy, int $target): array
+    {
+        $gap = 3.0;
+        $text = (string) $target;
+        $numberWidth = $s->font->advance($text, $s->size, $s->letterSpacing);
+        $numberLeft = $dx + $s->x + $s->width - $numberWidth;
+        $baseline = $dy + $s->baseline;
+        $ops = [new TextRun($numberLeft, $baseline, $text, $s->font, $s->size, $s->color, $s->letterSpacing)];
+        if ($s->leaders) {
+            $start = $dx + $s->leaderStart + $gap;
+            $room = $numberLeft - $gap - $start;
+            $dot = $s->font->advance('.', $s->size, $s->letterSpacing);
+            $count = $dot > 0.0 ? (int) floor($room / $dot) : 0;
+            if ($count > 0) {
+                $ops[] = new TextRun($start, $baseline, str_repeat('.', $count), $s->font, $s->size, $s->color, $s->letterSpacing);
+            }
+        }
+        $ops[] = new Link($dx, $dy, $s->boxWidth, $s->boxHeight, '#' . $s->destination);
+        return $ops;
     }
 }

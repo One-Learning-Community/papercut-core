@@ -11,7 +11,7 @@ There is no browser and no CSS cascade.
 
 **Documentation:** [one-learning-community.github.io/papercut](https://one-learning-community.github.io/papercut/guide/)
 
-> **Status: 0.3, early release.** Before 1.0 a minor version may change the API. Using Laravel? See
+> **Status: 0.6, before 1.0.** Until 1.0 a minor version may change the API; patch versions won't. Using Laravel? See
 > [`papercut/laravel`](../laravel) for the Blade front end of this same engine.
 
 ## Requirements
@@ -48,7 +48,7 @@ Output: `$document->toPdf()` returns an `Output`: `->save($path)`, `->bytes()` (
 | `Document::make(Page ...)` | Root. Metadata: `title`, `author`, `subject`, `keywords`, `lang`, `createdAt`. |
 | `Page::a4()` (also `a3 a5 a6 letter legal`, `size($w, $h)`, and `named()` for those plus `a0 a1 a2 b4 b5 tabloid executive`) | A page. `landscape()`, `margin()`, `header()`, `footer()`, `background()`, `overlay()`, `body()`. `Page::template($pdfPage)` sizes a page from a [PDF template](#pdf-templates). |
 | `Row::make(...)`, `Column::make(...)` | Flex containers (horizontal, vertical). |
-| `Spacer::flex()`, `Spacer::size($length)` | Flexible or fixed gap. |
+| `Spacer::flex()`, `Spacer::fixed($length)` | Flexible or fixed gap. |
 | `Text::make()`, `h1`-`h4`, `p`, `markup()`, `spans()` | Text, with inline spans. |
 | `Image::file()`, `bytes()` | PNG and JPEG; WebP, GIF, BMP and AVIF with `ext-gd`. `fit()` modes. Images shrink to fit the page width, and an image taller than an empty page shrinks to fit it, unless its height is set explicitly. |
 | `Svg::file()`, `fromString()` | An [SVG](#svg) drawn as vector paths, sized like an image. |
@@ -565,9 +565,9 @@ A source that answers with an unsafe URL (a scheme other than http or https, a p
 
 **Limits.** The font stylesheets are built from the families and weights the document uses. Google rejects the stylesheet of a family it does not have, or of a weight it does not offer, and the browser then falls back silently. The library cannot see that, because it never fetches the stylesheet.
 
-## Word export (experimental)
+## Word export
 
-The optional, experimental [`papercut/docx`](../docx/README.md) package exports any document as a Word file:
+The optional [`papercut/docx`](../docx/README.md) package exports any document as a Word file:
 `$document->export(new \Papercut\Docx\DocxExporter())->save('invoice.docx')`. Word, LibreOffice and Google Docs
 paginate it themselves; what Word can't show is reported, as with HTML export.
 

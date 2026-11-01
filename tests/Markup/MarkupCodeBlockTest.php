@@ -19,6 +19,7 @@ final class MarkupCodeBlockTest extends TestCase
         }
         $out = [];
         foreach ($node->children() as $child) {
+            $child = $child instanceof \Papercut\Component ? \Papercut\Tree\Expander::expand($child) : $child;
             if (!$child instanceof View && !$child instanceof Text) {
                 continue;
             }
@@ -138,6 +139,8 @@ final class MarkupCodeBlockTest extends TestCase
         self::assertNotEquals($plain, $v);
         self::assertInstanceOf(View::class, $v);
         $block = $v->children()[0];
+        self::assertInstanceOf(\Papercut\Component::class, $block);
+        $block = \Papercut\Tree\Expander::expand($block);
         self::assertInstanceOf(View::class, $block);
         self::assertSame(20.0, $block->style()->fontSize?->points);
     }
@@ -168,5 +171,33 @@ final class MarkupCodeBlockTest extends TestCase
         $one = Markup::html("<pre><code class=\"language-php\">x\n</code></pre>");
         $bare = Markup::html('<pre><code class="language-php">x</code></pre>');
         self::assertSame(self::plain($bare), self::plain($one));
+    }
+
+    public function test_flattening_keeps_the_code_block_text_and_note(): void
+    {
+        $t = Markup::flatten(Markup::html('<p>Run</p><pre><code class="language-php">echo 1;</code></pre>'));
+        $text = implode('', array_map(static fn ($s) => $s->text, $t->spanList()));
+        self::assertStringContainsString('echo', $text);
+        self::assertStringContainsString('PHP', $text);
+        self::assertSame(['markup block content (flattened into a line)'], array_map(static fn ($n) => $n->feature, $t->notes()));
+    }
+
+    public function test_a_list_ending_in_a_code_block_gets_no_extra_spacing(): void
+    {
+        $v = Markup::html('<ul><li>a<pre><code class="language-php">x</code></pre></li></ul>');
+        self::assertInstanceOf(View::class, $v);
+        $list = $v->children()[0];
+        self::assertInstanceOf(\Papercut\ListNode::class, $list);
+        $style = (new \Papercut\Style\StyleResolver(\Papercut\Style\Theme::default()))->resolve($list, \Papercut\Style\ComputedStyle::root(\Papercut\Style\Theme::default()));
+        self::assertSame(0.0, $style->margin->bottom->points);
+    }
+
+    public function test_one_expansion_of_a_styled_block_is_one_node(): void
+    {
+        $v = Markup::html('<pre class="language-php" style="font-size:20pt">x</pre>', new MarkupOptions(styles: StyleMode::Original));
+        self::assertInstanceOf(View::class, $v);
+        $block = $v->children()[0];
+        self::assertInstanceOf(\Papercut\Component::class, $block);
+        self::assertSame(\Papercut\Tree\Expander::expand($block), \Papercut\Tree\Expander::expand($block));
     }
 }

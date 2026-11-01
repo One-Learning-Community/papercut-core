@@ -9,8 +9,8 @@ use Papercut\Concerns\{HasStyle, HasVariants};
 use Papercut\Exception\InvalidVariant;
 use Papercut\Export\FidelityLevel;
 use Papercut\Markup\Note;
-use Papercut\{Span, Text, View};
-use Papercut\Style\Style;
+use Papercut\{Span, Text, ThemedComponent, View};
+use Papercut\Style\{Style, Theme};
 
 /**
  * A block of source code with syntax highlighting, a muted language label and optional
@@ -19,7 +19,7 @@ use Papercut\Style\Style;
  * Without a highlighter, or for an unknown language or theme, the code is laid out plain and a
  * Dropped note reaches the fidelity report.
  */
-final class CodeBlock implements Decorator
+final class CodeBlock implements Decorator, ThemedComponent
 {
     use HasStyle;
     use HasVariants {
@@ -35,7 +35,8 @@ final class CodeBlock implements Decorator
     private ?string $theme = null;
     private string|false|null $label = null;
     private ?CodeHighlighting $highlighting = null;
-    private ?View $view = null;
+    /** @var array<string, View> built views by the code theme they used */
+    private array $views = [];
 
     private function __construct()
     {
@@ -43,7 +44,7 @@ final class CodeBlock implements Decorator
 
     public function __clone()
     {
-        $this->view = null;
+        $this->views = [];
     }
 
     public static function make(string $code): self
@@ -100,7 +101,20 @@ final class CodeBlock implements Decorator
 
     public function render(): View
     {
-        return $this->view ??= $this->build();
+        return $this->viewFor(null);
+    }
+
+    /** The block's own theme wins, then the page's code theme, then the highlighting config's. */
+    public function renderFor(Theme $theme): View
+    {
+        return $this->viewFor($theme->codeTheme);
+    }
+
+    private function viewFor(?string $pageTheme): View
+    {
+        $config = $this->highlighting ?? CodeHighlighting::default();
+        $name = $this->theme ?? $pageTheme ?? $config->theme;
+        return $this->views[$name] ??= $this->build($name);
     }
 
     /** @param list<string> $variants */
@@ -111,7 +125,7 @@ final class CodeBlock implements Decorator
         }
     }
 
-    private function build(): View
+    private function build(string $theme): View
     {
         $config = $this->highlighting ?? CodeHighlighting::default();
         $block = $this;
@@ -125,7 +139,6 @@ final class CodeBlock implements Decorator
         $lower = $language === null ? null : strtolower($language);
         $wantsHighlight = $lower !== null && !in_array($lower, self::NO_HIGHLIGHT, true) && !in_array($lower, self::PLAIN, true);
         $highlighter = $config->highlighter();
-        $theme = $this->theme ?? $config->theme;
 
         $displayName = null;
         $highlighted = null;

@@ -21,7 +21,10 @@ use Papercut\Value\{Auto, Fr, Length, Percent};
  * after their row boxes. A row no span crosses is a group of one.
  *
  * Fragmentation is by group. Header rows open the first fragment and, when the
- * table repeats its header, every continuation. A group that does not fit
+ * table repeats its header, every continuation, unless they leave the next
+ * group no room: a continuation then leaves its header out, and a first
+ * fragment whose split rows could only force a line below the header holds
+ * the header alone. A group that does not fit
  * after other rows moves to the next fragment: BreakToken(index: k), k its
  * first body row. A lone body row too tall for a fresh page splits its cells
  * in parallel: BreakToken(index: k, parallel: [cell index => ?token]), null
@@ -62,8 +65,11 @@ final class TableLayouter implements Layouter
     private \WeakMap $headerWarned;
     /** @var \WeakMap<Table, true> tables already warned about clamped spans */
     private \WeakMap $clampWarned;
-    /** @var \WeakMap<TableCell, TableCell> cells with the theme's defaults applied; stable identities keep style memos hot */
+    /** @var \WeakMap<Theme, \WeakMap<TableCell, TableCell>> per theme, cells with its defaults applied; stable identities keep style memos hot */
     private \WeakMap $prepared;
+    /** @var \WeakMap<Theme, int> */
+    private \WeakMap $themeTokens;
+    private int $themeCounter = 0;
     /** @var \WeakMap<TableCell, View> the block container each cell is laid out as */
     private \WeakMap $columns;
     /** @var \WeakMap<TableCell, true> prepared cells, which belong to a table */
@@ -78,6 +84,7 @@ final class TableLayouter implements Layouter
         $this->headerWarned = new \WeakMap();
         $this->clampWarned = new \WeakMap();
         $this->prepared = new \WeakMap();
+        $this->themeTokens = new \WeakMap();
         $this->columns = new \WeakMap();
         $this->inTable = new \WeakMap();
         $this->strayWarned = new \WeakMap();
@@ -89,7 +96,16 @@ final class TableLayouter implements Layouter
             $this->warnStray($node, $engine);
             return $this->block->layout($this->column($node), $style, $c, $token, $engine);
         }
-        $table = self::table($node);
+        return $this->layoutTable(self::table($node), $style, $c, $token, $engine, true);
+    }
+
+    /**
+     * One fragment of $table. $repeatHeader false lays a continuation out
+     * without its repeated header, which a split row needs when the header
+     * leaves it no room for a line.
+     */
+    private function layoutTable(Table $table, ComputedStyle $style, Constraints $c, ?BreakToken $token, LayoutEngine $engine, bool $repeatHeader): LayoutResult
+    {
         $first = $token === null;
         $borderWidth = BoxGeometry::borderBoxWidth($style, $c->width);
         $contentWidth = BoxGeometry::contentWidth($style, $c->width);
@@ -117,7 +133,7 @@ final class TableLayouter implements Layouter
 
         /** @var list<array{height: float, fragment: Fragment}> $headerRows */
         $headerRows = [];
-        if ($first || $table->repeatsHeader()) {
+        if ($first || ($repeatHeader && $table->repeatsHeader())) {
             for ($r = 0; $r < $offset; $r = $end + 1) {
                 $end = $tableGrid->groupEnd($r);
                 $headerRows[] = $this->measureUnit($table, $r, $end, $grid, $style, $c->fresh && $headerRows === [], $engine);
@@ -129,10 +145,7 @@ final class TableLayouter implements Layouter
             && $this->crowdsOutRow($table, $offset + $start, $token->parallel !== [] || $token->child !== null, $headerHeight, $available, $grid, $style, $engine)) {
             $headerRows = [];
             $headerHeight = 0.0;
-            if (!isset($this->headerWarned[$table])) {
-                $this->headerWarned[$table] = true;
-                $engine->context()->warn('Table header leaves no room for a row; not repeated on that page');
-            }
+            $this->warnDroppedHeader($table, $engine);
         }
         if ($headerRows !== [] && !$c->fresh && $available !== null && $headerHeight > $available + self::EPSILON) {
             return LayoutResult::doesNotFit();
@@ -180,8 +193,12 @@ final class TableLayouter implements Layouter
                 if ($slice === null) {
                     return LayoutResult::doesNotFit();
                 }
+                if ($this->forcedBelowHeader($slice['reach'], $room, $cursor, $rowsOnPage)) {
+                    return $this->headerAlone($table, $style, $c, $token, $engine, $k, $first, $placed, $cursor, $borderWidth);
+                }
                 $placed[] = ['y' => $cursor, 'fragment' => $slice['fragment']];
-                $cursor += $slice['height'];
+                // A forced line counts, so a table around this one sees it too.
+                $cursor += $slice['reach'];
                 $rowsOnPage++;
                 if ($slice['token'] !== null) {
                     $breakAt = new BreakToken(index: $slice['next'] - $offset, child: $slice['token']);
@@ -196,6 +213,9 @@ final class TableLayouter implements Layouter
             if ($split === null) {
                 return LayoutResult::doesNotFit();
             }
+            if ($this->forcedBelowHeader($split['height'], $room, $cursor, $rowsOnPage)) {
+                return $this->headerAlone($table, $style, $c, $token, $engine, $k, $first, $placed, $cursor, $borderWidth);
+            }
             $placed[] = ['y' => $cursor, 'fragment' => $split['fragment']];
             $cursor += $split['height'];
             $rowsOnPage++;
@@ -209,6 +229,52 @@ final class TableLayouter implements Layouter
             return LayoutResult::doesNotFit();
         }
 
+        return $this->tableFragment($style, $placed, $cursor, $borderWidth, $first, $breakAt);
+    }
+
+    /**
+     * True when the first slice of a split row or group, laid out on a fresh
+     * page below the header rows, is taller than the room they left: its
+     * cells forced a first line that only an empty page may overflow with.
+     */
+    private function forcedBelowHeader(float $height, ?float $room, float $cursor, int $rowsOnPage): bool
+    {
+        return $room !== null && $rowsOnPage === 0 && $cursor > self::EPSILON && $height > $room + self::EPSILON;
+    }
+
+    /**
+     * The header rows leave body row $k no room on this fresh page. A
+     * continuation drops its repeated header and lays the row out at the top;
+     * the first fragment keeps its header alone and starts the rows on the
+     * next page.
+     *
+     * @param list<array{y: float, fragment: Fragment}> $placed the header rows
+     */
+    private function headerAlone(Table $table, ComputedStyle $style, Constraints $c, ?BreakToken $token, LayoutEngine $engine, int $k, bool $first, array $placed, float $cursor, float $borderWidth): LayoutResult
+    {
+        if (!$first) {
+            $this->warnDroppedHeader($table, $engine);
+            return $this->layoutTable($table, $style, $c, $token, $engine, false);
+        }
+        $engine->context()->warnOnce('Table header leaves no room for a row; it stands alone on its page');
+        return $this->tableFragment($style, $placed, $cursor, $borderWidth, true, new BreakToken(index: $k));
+    }
+
+    private function warnDroppedHeader(Table $table, LayoutEngine $engine): void
+    {
+        if (!isset($this->headerWarned[$table])) {
+            $this->headerWarned[$table] = true;
+            $engine->context()->warn('Table header leaves no room for a row; not repeated on that page');
+        }
+    }
+
+    /**
+     * The table box around its placed rows; $breakAt null ends the table.
+     *
+     * @param list<array{y: float, fragment: Fragment}> $placed
+     */
+    private function tableFragment(ComputedStyle $style, array $placed, float $cursor, float $borderWidth, bool $first, ?BreakToken $breakAt): LayoutResult
+    {
         $last = $breakAt === null;
         $f = new Fragment($borderWidth, BoxGeometry::outerHeight($style, $cursor, $first, $last));
         BoxGeometry::decorate($f, $style, $first, $last);
@@ -284,7 +350,7 @@ final class TableLayouter implements Layouter
      */
     private function grid(Table $table, ComputedStyle $style, float $width, LayoutEngine $engine): array
     {
-        $key = self::styleKey($style) . '|' . $width;
+        $key = $this->themeKey($engine) . '|' . self::styleKey($style) . '|' . $width;
         $cached = $this->grids[$table] ?? [];
         if (isset($cached[$key])) {
             return $cached[$key];
@@ -544,6 +610,13 @@ final class TableLayouter implements Layouter
         return $out;
     }
 
+    /** Identifies the current theme in cache keys: cell padding and named styles come from it, not from the table's style. */
+    private function themeKey(LayoutEngine $engine): int
+    {
+        $theme = $engine->context()->theme;
+        return $this->themeTokens[$theme] ??= ++$this->themeCounter; // monotonic: a count() over the WeakMap would reuse tokens of freed themes
+    }
+
     /** Largest left + right padding and border over all rows. */
     private function rowEdge(Table $table, ComputedStyle $style, LayoutEngine $engine): float
     {
@@ -566,7 +639,7 @@ final class TableLayouter implements Layouter
      */
     private function columnContent(Table $table, ComputedStyle $style, LayoutEngine $engine, bool $measureFixed = false): array
     {
-        $key = self::styleKey($style) . ($measureFixed ? '|fixed' : '') . ($engine->breaksAnywhere() ? '|anywhere' : '');
+        $key = $this->themeKey($engine) . '|' . self::styleKey($style) . ($measureFixed ? '|fixed' : '') . ($engine->breaksAnywhere() ? '|anywhere' : '');
         $cached = $this->content[$table] ?? [];
         if (isset($cached[$key])) {
             return $cached[$key];
@@ -709,7 +782,7 @@ final class TableLayouter implements Layouter
      *
      * @param array<int, ?BreakToken> $started
      * @param array{width: float, widths: list<float>, offsets: list<float>} $grid
-     * @return ?array{height: float, fragment: Fragment, next: int, token: ?BreakToken} null when a cell cannot place anything;
+     * @return ?array{height: float, reach: float, fragment: Fragment, next: int, token: ?BreakToken} null when a cell cannot place anything;
      *     next is the all-row index to continue at; token (null once the group is done) continues the group there
      */
     private function layoutGroup(Table $table, int $start, int $from, array $started, array $grid, ComputedStyle $style, ?float $room, bool $fresh, LayoutEngine $engine): ?array
@@ -1016,8 +1089,17 @@ final class TableLayouter implements Layouter
         }
 
         $fragment = new Fragment($grid['width'], $height);
+        // How far the row and cell boxes reach (never their content, which may spill from a fixed-height box):
+        // a line forced onto a fresh page can take a cell past $height.
+        $reach = $height;
+        foreach ($rows as $child) {
+            foreach ($child['fragment']->children() as $cell) {
+                $reach = max($reach, $child['y'] + $cell['y'] + $cell['fragment']->height);
+            }
+        }
         foreach ([...$rows, ...$overlay] as $child) {
             $fragment->addChild($child['x'], $child['y'], $child['fragment']);
+            $reach = max($reach, $child['y'] + $child['fragment']->height);
         }
 
         $token = null;
@@ -1030,7 +1112,7 @@ final class TableLayouter implements Layouter
             }
             $token = new BreakToken(index: $start, parallel: $pending);
         }
-        return ['height' => $height, 'fragment' => $fragment, 'next' => $next, 'token' => $token];
+        return ['height' => $height, 'reach' => $reach, 'fragment' => $fragment, 'next' => $next, 'token' => $token];
     }
 
     /**
@@ -1271,12 +1353,18 @@ final class TableLayouter implements Layouter
      */
     private function prepare(TableCell $cell, Theme $theme): TableCell
     {
-        if (!isset($this->prepared[$cell])) {
+        if (!isset($this->prepared[$theme])) {
+            /** @var \WeakMap<TableCell, TableCell> $fresh */
+            $fresh = new \WeakMap();
+            $this->prepared[$theme] = $fresh;
+        }
+        $cells = $this->prepared[$theme];
+        if (!isset($cells[$cell])) {
             $prepared = self::withThemeDefaults($cell, $theme);
-            $this->prepared[$cell] = $prepared;
+            $cells[$cell] = $prepared;
             $this->inTable[$prepared] = true; // the engine lays this one out; it is not a stray cell
         }
-        return $this->prepared[$cell];
+        return $cells[$cell];
     }
 
     // StyleResolver applies the same defaults as its lowest layer; applying them twice changes nothing.

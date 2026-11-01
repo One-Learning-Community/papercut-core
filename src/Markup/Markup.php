@@ -86,6 +86,9 @@ final class Markup
      */
     private static function collect(Node|Component $node, array &$blocks, array &$notes): void
     {
+        if ($node instanceof ThemedBlock) {
+            $node = $node->render();
+        }
         if ($node instanceof Text) {
             $blocks[] = self::named($node);
             array_push($notes, ...$node->notes());

@@ -32,6 +32,8 @@ final class Theme
         private readonly array $styles = [],
         /** The family the `monospace` font keyword resolves to. */
         public readonly string $monoFamily = self::DEFAULT_MONO_FAMILY,
+        /** The code theme name code blocks use when they name none. */
+        public readonly ?string $codeTheme = null,
     ) {
         if (trim($monoFamily) === '' || strtolower(trim($monoFamily)) === 'monospace') {
             throw new \InvalidArgumentException("The mono family must name a real font family, not '$monoFamily': the keyword `monospace` stands for it.");
@@ -87,15 +89,49 @@ final class Theme
 
     public function withStyle(string $name, Style $style): self
     {
+        self::assertStyleName($name);
+        $styles = $this->styles;
+        $styles[$name] = $style;
+        return $this->withStyles($styles);
+    }
+
+    /** Rejects style names that could never be resolved. */
+    public static function assertStyleName(string $name): void
+    {
         if (preg_match('/\s/', $name) === 1) {
             throw new \InvalidArgumentException("Style name '$name' must not contain whitespace; it could never be resolved.");
         }
         if (str_contains($name, '?')) {
             throw new \InvalidArgumentException("Style name '$name' must not contain '?'; it could never be resolved.");
         }
-        $styles = $this->styles;
-        $styles[$name] = $style;
-        return $this->withStyles($styles);
+    }
+
+    /**
+     * This theme with an override applied: values replace, named styles merge
+     * per name onto the style as this theme resolves it (theme style, else the
+     * built-in default). An empty override returns this same theme.
+     */
+    public function withOverride(ThemeOverride $o): self
+    {
+        if ($o->isEmpty()) {
+            return $this;
+        }
+        $theme = $this->with(
+            fontFamily: $o->fontFamily,
+            fontSize: $o->fontSize?->points,
+            fontWeight: $o->fontWeight,
+            color: $o->color,
+            lineHeight: $o->lineHeight,
+            cellPadding: $o->cellPadding,
+            minLines: $o->minLines,
+            monoFamily: $o->monoFamily,
+            codeTheme: $o->codeTheme,
+        );
+        foreach ($o->styles as $name => $style) {
+            $known = isset($theme->styles[$name]) || DefaultStyles::get($name) !== null;
+            $theme = $theme->withStyle($name, $known ? $theme->named($name)->merge($style) : $style);
+        }
+        return $theme;
     }
 
     /**
@@ -137,6 +173,7 @@ final class Theme
         ?Edges $cellPadding = null,
         ?int $minLines = null,
         ?string $monoFamily = null,
+        ?string $codeTheme = null,
     ): self {
         return new self(
             $fontFamily ?? $this->fontFamily,
@@ -148,6 +185,7 @@ final class Theme
             $minLines ?? $this->minLines,
             $this->styles,
             $monoFamily ?? $this->monoFamily,
+            $codeTheme ?? $this->codeTheme,
         );
     }
 
@@ -166,6 +204,7 @@ final class Theme
             $this->minLines,
             $styles,
             $this->monoFamily,
+            $this->codeTheme,
         );
     }
 }

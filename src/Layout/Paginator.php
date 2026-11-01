@@ -44,6 +44,7 @@ final class Paginator
     private function paginatePage(Page $page, string $name, array &$out): void
     {
         $page->checkMargins($name);
+        $this->ctx->usePage($page);
         $root = $this->ctx->rootStyle();
         $w = $page->width();
         $h = $page->height();
@@ -328,18 +329,19 @@ final class Paginator
     }
 
     /**
-     * Repeating bands would add the same bookmark on every page.
+     * Repeating bands would add the same bookmark or anchor on every page.
      *
      * @param \Closure(): ?Fragment $layout
      */
     private function withoutBookmarks(\Closure $layout): ?Fragment
     {
-        $was = $this->ctx->bookmarks;
+        $was = [$this->ctx->bookmarks, $this->ctx->anchors];
         $this->ctx->bookmarks = false;
+        $this->ctx->anchors = false;
         try {
             return $layout();
         } finally {
-            $this->ctx->bookmarks = $was;
+            [$this->ctx->bookmarks, $this->ctx->anchors] = $was;
         }
     }
 }

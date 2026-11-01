@@ -20,7 +20,7 @@ use Papercut\Backend\{PdfPageHandle, PdfPageLoader};
 use Papercut\Exception\FontNotFound;
 use Papercut\Exception\ImageUnreadable;
 use Papercut\Exception\PdfUnreadable;
-use Papercut\Paint\{Bookmark, Clip, DocumentMeta, DrawImage, DrawPdfPage, DrawSvg, Line, Link, Op, Opacity, PageDisplayList, Rect, TextRun};
+use Papercut\Paint\{Anchor, Bookmark, Clip, DocumentMeta, DrawImage, DrawPdfPage, DrawSvg, Line, Link, Op, Opacity, PageDisplayList, Rect, TextRun};
 use Papercut\Text\CachedFont;
 use Papercut\Value\Color;
 
@@ -29,6 +29,8 @@ final class PhpPdfBackend implements Backend, PdfPageLoader
     /** The document being rendered, for outline entries. */
     private ?PdfDocument $doc = null;
     private int $outlineLevel = 0;
+    /** @var array<string, bool> anchors in the document being rendered; true once registered */
+    private array $destinations = [];
     /** @var array<string, PdfFormXObject> pages of other PDFs imported into the document being rendered, by handle id */
     private array $forms = [];
     private const array TEXT_STATE_PROPERTIES = ['lastFillR', 'lastFillG', 'lastFillB', 'lastCharSpacing'];
@@ -132,6 +134,10 @@ final class PhpPdfBackend implements Backend, PdfPageLoader
         $this->doc = $doc;
         $this->outlineLevel = 0;
         $this->forms = [];
+        $this->destinations = [];
+        foreach ($pages as $page) {
+            self::collectDestinations($page->ops, $this->destinations);
+        }
         $doc->metadata(
             title: $meta->title,
             author: $meta->author,
@@ -157,6 +163,22 @@ final class PhpPdfBackend implements Backend, PdfPageLoader
         } finally {
             $this->doc = null;
             $this->forms = [];
+            $this->destinations = [];
+        }
+    }
+
+    /**
+     * @param list<Op> $ops
+     * @param array<string, bool> $names
+     */
+    private static function collectDestinations(array $ops, array &$names): void
+    {
+        foreach ($ops as $op) {
+            if ($op instanceof Anchor) {
+                $names[$op->name] = false;
+            } elseif ($op instanceof Clip || $op instanceof Opacity) {
+                self::collectDestinations($op->ops, $names);
+            }
         }
     }
 
@@ -174,6 +196,9 @@ final class PhpPdfBackend implements Backend, PdfPageLoader
                 $op instanceof Clip => $this->wrapped($p, fn () => $p->withClipRect($op->x, $h - $op->y - $op->height, $op->width, $op->height, fn () => $this->drawOps($p, $h, $op->ops, $inherited))),
                 $op instanceof Opacity => $this->drawOpacity($p, $h, $op, $inherited),
                 $op instanceof Bookmark => $this->bookmark($p, $h, $op),
+                $op instanceof Anchor => $this->registerDestination($p, $h, $op),
+                // A #name link whose name matches a registered anchor becomes an internal link.
+                $op instanceof Link && $op->uri[0] === '#' && isset($this->destinations[substr($op->uri, 1)]) => $p->addInternalLink($op->x, $h - $op->y - $op->height, $op->width, $op->height, substr($op->uri, 1)),
                 $op instanceof Link => $p->addExternalLink($op->x, $h - $op->y - $op->height, $op->width, $op->height, $op->uri),
                 default => throw new \LogicException('Unsupported op ' . $op::class),
             };
@@ -189,6 +214,16 @@ final class PhpPdfBackend implements Backend, PdfPageLoader
             | ($e->modify ? PdfEncryption::PERM_MODIFY : 0)
             | ($e->annotate ? PdfEncryption::PERM_ANNOTATE | PdfEncryption::PERM_FILL_FORMS : 0)
             | ($e->assemble ? PdfEncryption::PERM_ASSEMBLE : 0);
+    }
+
+    /** php-pdf keeps the last registration of a name, so only the first occurrence registers (a repeated header row anchors on every page). */
+    private function registerDestination(PdfPage $p, float $h, Anchor $a): void
+    {
+        if (($this->destinations[$a->name] ?? true) === true) {
+            return;
+        }
+        $this->destinations[$a->name] = true;
+        $this->doc?->registerDestination($a->name, $p, $a->x, $h - $a->y);
     }
 
     /** Nests under the previous entry at most one level deeper, so an h3 straight after an h1 sits under it. */

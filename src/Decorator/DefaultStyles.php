@@ -137,6 +137,14 @@ final class DefaultStyles
         $s['key-value.label'] = Style::make(padding: self::sides(2, 12, 2, 0), color: self::c('slate-600'));
         $s['key-value.value'] = Style::make(padding: Edges::of(pt(2), $zero));
 
+        $s['toc'] = Style::make(margin: self::sides(0, 0, 12, 0));
+        $s['toc.title'] = Style::make(fontSize: pt(14), fontWeight: 700, margin: self::sides(0, 0, 8, 0));
+        $s['toc.entry'] = Style::make(margin: self::sides(0, 0, 3, 0));
+        $s['toc.level-1'] = Style::make(fontWeight: 700, margin: self::sides(6, 0, 0, 0));
+        foreach ([2 => 12, 3 => 24, 4 => 36] as $level => $indent) {
+            $s['toc.level-' . $level] = Style::make(padding: self::sides(0, 0, 0, $indent));
+        }
+
         $s['badge'] = Style::make(alignSelf: Align::Start, padding: Edges::of(pt(1.5), pt(6)), radius: pt(8), fontSize: Length::em(0.9), fontWeight: 700);
         foreach (['neutral' => 'slate', 'note' => 'sky', 'tip' => 'emerald', 'warning' => 'amber', 'danger' => 'red'] as $tone => $hue) {
             $s['badge.' . $tone] = Style::make(background: self::c($hue . '-100'), color: self::c($hue . '-800'));

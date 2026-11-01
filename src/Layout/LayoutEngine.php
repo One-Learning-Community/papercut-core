@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Papercut\Layout;
 
-use Papercut\{Component, Image, Link, ListNode, Node, OverflowMode, PageBreak, PageNumber, PdfPage, Place, QrCode, Spacer, Svg, Table, TableCell, Text, View};
+use Papercut\{Component, Image, Link, ListNode, Node, OverflowMode, PageBreak, PageNumber, PdfPage, Place, QrCode, Spacer, Svg, Table, TableCell, Text, Toc, View};
 use Papercut\Exception\{InvalidValue, UnknownAttribute};
-use Papercut\Paint\Bookmark;
+use Papercut\Paint\{Anchor, Bookmark};
 use Papercut\Style\{ComputedStyle, Direction};
+use Papercut\Toc\{HeadingText, TocLine};
 use Papercut\Tree\{Expander, NodePath};
 
 /**
@@ -57,6 +58,9 @@ final class LayoutEngine
         $this->layouters[PageNumber::class] = $leaf;
         $this->layouters[ListNode::class] = new ListLayouter();
         $this->layouters[MarkedItem::class] = new MarkedItemLayouter();
+        $toc = new TocLayouter($this->block);
+        $this->layouters[Toc::class] = $toc;
+        $this->layouters[TocLine::class] = $toc;
     }
 
     public function blockLayouter(): BlockLayouter
@@ -74,6 +78,12 @@ final class LayoutEngine
         return $this->table;
     }
 
+    /** Renders components down to a node, with the current page's theme for those that depend on it. */
+    public function expand(Node|Component $node): Node
+    {
+        return Expander::expand($node, $this->ctx->theme);
+    }
+
     public function context(): LayoutContext
     {
         return $this->ctx;
@@ -86,7 +96,7 @@ final class LayoutEngine
      */
     public function layout(Node|Component $node, ComputedStyle $parent, Constraints $c, ?BreakToken $token = null, ?int $index = null, ?string $pathName = null): LayoutResult
     {
-        $node = Expander::expand($node);
+        $node = $this->expand($node);
         $this->ctx->pushPath($pathName ?? NodePath::segment($node, null, $index));
         try {
             $style = $this->enter($node, $parent, $index, $pathName);
@@ -96,6 +106,12 @@ final class LayoutEngine
                 $bookmark = self::bookmark($node, $style);
                 if ($bookmark !== null) {
                     $result->fragment->addOp($bookmark);
+                }
+            }
+            if ($token === null && $this->ctx->anchors && $this->ctx->toc->hasToc() && $result->fragment !== null) {
+                $entry = $this->ctx->toc->forKey($this->ctx->path());
+                if ($entry !== null) {
+                    $result->fragment->addOp(new Anchor($entry->destination, 0.0, 0.0));
                 }
             }
             if ($result->status === Status::DoesNotFit && $c->fresh) {
@@ -182,7 +198,7 @@ final class LayoutEngine
     /** @return array{min: float, max: float} */
     public function intrinsic(Node|Component $node, ComputedStyle $parent, ?int $index = null): array
     {
-        $node = Expander::expand($node);
+        $node = $this->expand($node);
         $cache = $this->anywhere ? $this->anywhereIntrinsics : $this->intrinsics;
         $byParent = $cache[$node] ?? null;
         if ($byParent !== null && isset($byParent[$parent])) {
@@ -234,21 +250,13 @@ final class LayoutEngine
     /** A heading's automatic bookmark, or the one set with bookmark(); placed on the block's first fragment only. */
     private static function bookmark(Node $node, ComputedStyle $style): ?Bookmark
     {
-        $heading = $node instanceof Text && in_array($node->preset(), ['h1', 'h2', 'h3', 'h4'], true) ? (int) substr((string) $node->preset(), 1) : null;
-        $title = $style->bookmark ?? ($heading !== null ? self::plainText($node) : null);
+        $heading = $node instanceof Text ? HeadingText::level($node) : null;
+        $title = $style->bookmark ?? ($node instanceof Text && $heading !== null ? HeadingText::plain($node) : null);
         $title = $title === null ? '' : trim((string) preg_replace('/\s+/u', ' ', $title));
         if ($title === '') {
             return null;
         }
         return new Bookmark($style->bookmarkLevel ?? $heading ?? 1, $title, 0.0, 0.0);
-    }
-
-    private static function plainText(Node $node): string
-    {
-        if (!$node instanceof Text) {
-            return '';
-        }
-        return implode('', array_map(static fn (\Papercut\Span $s): string => $s->lineBreak ? ' ' : $s->text, $node->spanList()));
     }
 
     private function layouterFor(Node $node, ComputedStyle $style): Layouter

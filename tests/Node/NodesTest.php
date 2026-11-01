@@ -68,12 +68,27 @@ final class NodesTest extends TestCase
         self::assertSame(4.0, $v->style()->padding?->left->points);
     }
 
+    public function test_size_on_a_spacer_sets_its_gap_and_keeps_its_style(): void
+    {
+        $s = Spacer::flex(2)->background('red-500')->size(pt(9));
+        self::assertSame(9.0, $s->fixedSize()?->points);
+        self::assertSame(2.0, $s->style()->grow);
+        self::assertNotNull($s->style()->background);
+        self::assertSame(12.0, Spacer::fixed(pt(4))->size(pt(12))->fixedSize()?->points);
+    }
+
+    public function test_a_spacer_gap_must_be_absolute(): void
+    {
+        $this->expectException(\Papercut\Exception\InvalidValue::class);
+        Spacer::flex()->size(\Papercut\Value\Length::em(2));
+    }
+
     public function test_leaf_nodes(): void
     {
         self::assertSame(ImageFit::Cover, Image::file('x.png')->fit(ImageFit::Cover)->fitMode());
         self::assertSame(ImageFit::Contain, Image::bytes('...')->fitMode());
         self::assertSame(['kind' => 'file', 'value' => 'x.png'], Image::file('x.png')->source());
-        self::assertSame(10.0, Spacer::size(pt(10))->fixedSize()?->points);
+        self::assertSame(10.0, Spacer::fixed(pt(10))->fixedSize()?->points);
         self::assertSame(2.0, Spacer::flex(2)->style()->grow);
         self::assertSame('Page {page} of {total}', PageNumber::make('Page {page} of {total}')->format());
         self::assertSame('page-break', PageBreak::make()->debugName());
@@ -109,7 +124,7 @@ final class NodesTest extends TestCase
 
     public function test_styled_nodes_implement_the_styled_interface(): void
     {
-        $nodes = [View::make(), Text::make('x'), Image::bytes('x'), Spacer::size(pt(1)), PageBreak::make(), PageNumber::make('{page}'),
+        $nodes = [View::make(), Text::make('x'), Image::bytes('x'), Spacer::fixed(pt(1)), PageBreak::make(), PageNumber::make('{page}'),
             Link::to('https://x.test', 'x'), \Papercut\Table::make(), \Papercut\TableRow::make(), \Papercut\TableCell::make('x')];
         foreach ($nodes as $n) {
             self::assertInstanceOf(\Papercut\Styled::class, $n, $n::class);

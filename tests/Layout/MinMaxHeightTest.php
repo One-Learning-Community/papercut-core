@@ -56,13 +56,18 @@ final class MinMaxHeightTest extends TestCase
         $h = new LayoutHarness();
         self::assertEqualsWithDelta(80.0, self::frag($h->layout(Text::make('x')->border(pt(1))->minHeight(pt(80)), 200))->height, 0.001);
         self::assertEqualsWithDelta(80.0, self::frag($h->layout(Text::make('x')->height(pt(80)), 200))->height, 0.001);
-        self::assertEqualsWithDelta(20.0, self::frag($h->layout(Text::markup("a<br>b<br>c<br>d")->maxHeight(pt(20)), 200))->height, 0.001);
+        $clip = new LayoutHarness(overflow: OverflowMode::Clip);
+        self::assertEqualsWithDelta(20.0, self::frag($clip->layout(Text::markup("a<br>b<br>c<br>d")->maxHeight(pt(20)), 200))->height, 0.001);
     }
 
     public function test_max_height_caps_a_content_sized_box(): void
     {
-        $r = (new LayoutHarness())->layout(View::make(Text::make('a'), Text::make('b'), Text::make('c'), Text::make('d'))->maxHeight(pt(20)), 200);
+        // Too tall for its max-height: in Clip mode the box keeps the height and clips what doesn't fit.
+        $h = new LayoutHarness(overflow: OverflowMode::Clip);
+        $r = $h->layout(View::make(Text::make('a'), Text::make('b'), Text::make('c'), Text::make('d'))->maxHeight(pt(20)), 200);
         self::assertEqualsWithDelta(20.0, self::frag($r)->height, 0.001);
+        self::assertSame([0.0, 0.0, 200.0, 20.0], self::frag($r)->clip);
+        self::assertCount(1, $h->warnings);
     }
 
     public function test_empty_field_with_lines_is_that_tall(): void
@@ -86,7 +91,7 @@ final class MinMaxHeightTest extends TestCase
 
     public function test_max_height_box_does_not_split_near_a_page_break(): void
     {
-        $h = new LayoutHarness();
+        $h = new LayoutHarness(overflow: OverflowMode::Clip);
         $box = View::make(...array_map(fn (int $i) => Text::make("line $i"), range(1, 10)))->maxHeight(pt(20));
 
         // 50pt left on a page with content: the capped 20pt box fits, so it is placed whole.
@@ -100,7 +105,7 @@ final class MinMaxHeightTest extends TestCase
 
     public function test_text_with_height_or_max_height_does_not_split(): void
     {
-        $h = new LayoutHarness();
+        $h = new LayoutHarness(overflow: OverflowMode::Clip);
         $lines = Text::markup(implode('<br>', range(1, 10)));
         foreach ([$lines->height(pt(20)), $lines->maxHeight(pt(20))] as $text) {
             $r = $h->layout($text, 200, 50.0, null, false);

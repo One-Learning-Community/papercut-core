@@ -44,8 +44,9 @@ final class Itemizer
                 $atStart = true;
                 continue;
             }
+            $text = self::drawable($span->text);
             if ($style->whiteSpace === WhiteSpace::PreWrap) {
-                $own = $this->preWrap($span, $style, $font);
+                $own = $this->preWrap($span, $text, $style, $font);
                 if ($own !== []) {
                     // A pending normal space is flushed only by a pre-wrap span that produced items.
                     if ($pending !== null) {
@@ -57,7 +58,7 @@ final class Itemizer
                 }
                 continue;
             }
-            $parts = preg_split('/([ \t\n\r\f]+)/', $span->text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+            $parts = preg_split('/([ \t\n\r\f]+)/', $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
             foreach ($parts === false ? [] : $parts as $part) {
                 if (preg_match('/^[ \t\n\r\f]+$/', $part) === 1) {
                     if (!$atStart && $pending === null) {
@@ -91,11 +92,11 @@ final class Itemizer
      *
      * @return list<InlineItem>
      */
-    private function preWrap(Span $span, ComputedStyle $style, CachedFont $font): array
+    private function preWrap(Span $span, string $text, ComputedStyle $style, CachedFont $font): array
     {
         $space = $font->advance(' ', $style->fontSize, $style->letterSpacing);
         $out = [];
-        $parts = preg_split('/(\r\n|\r|\n|\t|[ \f])/', $span->text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+        $parts = preg_split('/(\r\n|\r|\n|\t|[ \f])/', $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
         foreach ($parts === false ? [] : $parts as $part) {
             array_push($out, ...match (true) {
                 $part === "\t" => [new InlineItem('tab', "\t", $font, $style->fontSize, 4 * $space, $style, $span->href)],
@@ -105,6 +106,20 @@ final class Itemizer
             });
         }
         return $out;
+    }
+
+    /**
+     * The text as drawn: invisible formatting characters (soft hyphens, zero-width joiners and spaces, direction
+     * marks, word joiners, byte order marks) have no glyph and would print as empty boxes, so they are left out.
+     * The line and paragraph separators are newlines.
+     */
+    private static function drawable(string $text): string
+    {
+        if (preg_match('/[^\x00-\x7F]/', $text) !== 1) {
+            return $text;
+        }
+        $text = str_replace(["\u{2028}", "\u{2029}"], "\n", $text);
+        return preg_replace('/\p{Cf}+/u', '', $text) ?? $text;
     }
 
     private function primary(ComputedStyle $style): CachedFont

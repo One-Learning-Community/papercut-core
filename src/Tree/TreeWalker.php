@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Papercut\Tree;
 
-use Papercut\{Component, Document, Link, ListItem, ListNode, Node, Page, Place, Table, TableCell, TableRow, View};
-use Papercut\Exception\{InvalidValue, UnknownAttribute};
-use Papercut\Style\{ComputedStyle, StyleResolver};
+use Papercut\{Component, Document, Link, ListItem, ListNode, Node, Page, Place, Table, TableCell, TableRow, Toc, View};
+use Papercut\Exception\{InvalidStructure, InvalidValue, UnknownAttribute};
+use Papercut\Style\{ComputedStyle, PageThemes, StyleResolver, Theme};
 
 /**
  * Walks a Document's expanded node tree without laying it out: pages, then
@@ -16,15 +16,24 @@ use Papercut\Style\{ComputedStyle, StyleResolver};
  */
 final class TreeWalker
 {
-    public function __construct(private readonly StyleResolver $styles)
+    private StyleResolver $styles;
+    private ?Theme $theme = null;
+    private readonly StyleResolver|PageThemes $source;
+
+    /** With PageThemes, each page walks with its own theme's styles. */
+    public function __construct(StyleResolver|PageThemes $styles)
     {
+        $this->source = $styles;
+        $this->styles = $styles instanceof PageThemes ? $styles->documentStyles() : $styles;
     }
 
     public function walk(Document $doc, TreeVisitor $visitor): void
     {
         $pages = $doc->pages();
-        $root = $this->styles->root();
         foreach ($pages as $i => $page) {
+            $this->styles = $this->source instanceof PageThemes ? $this->source->styles($page) : $this->source;
+            $this->theme = $this->source instanceof PageThemes ? $this->source->theme($page) : $this->source->theme();
+            $root = $this->styles->root();
             $name = count($pages) > 1 ? sprintf('page[%d]', $i) : 'page';
             $visitor->enterPage($page, $i);
             foreach ($this->regions($page) as [$region, $nodes]) {
@@ -33,7 +42,7 @@ final class TreeWalker
                 }
                 $visitor->enterRegion($region, $root);
                 foreach ($nodes as $j => $node) {
-                    $this->visit(Expander::expand($node), $root, $name . ' > ' . $region->value, $j, $visitor, $region);
+                    $this->visit(Expander::expand($node, $this->theme), $root, $name . ' > ' . $region->value, $j, $visitor, $region);
                 }
                 $visitor->leaveRegion($region);
             }
@@ -71,6 +80,9 @@ final class TreeWalker
         if ($node instanceof Place && ($region !== Region::Overlay || $parentNode !== null)) {
             throw new \LogicException(sprintf('A place only works in a page overlay; add it with Page::overlay(), not inside other content (at %s).', $path));
         }
+        if ($node instanceof Toc && $region !== Region::Body) {
+            throw new InvalidStructure(sprintf('A table of contents only works in a page body (at %s).', $path));
+        }
 
         $at = new Visit($path, $index, $parentNode, $inHeader, $region);
         if ($visitor->enter($node, $style, $at)) {
@@ -83,7 +95,7 @@ final class TreeWalker
     {
         if ($node instanceof View || $node instanceof Link || $node instanceof TableCell || $node instanceof ListItem || $node instanceof Place) {
             foreach ($node->children() as $i => $child) {
-                $this->visit(Expander::expand($child), $style, $path, $i, $visitor, $region, $node, $inHeader);
+                $this->visit(Expander::expand($child, $this->theme), $style, $path, $i, $visitor, $region, $node, $inHeader);
             }
         } elseif ($node instanceof ListNode) {
             foreach ($node->items() as $i => $item) {

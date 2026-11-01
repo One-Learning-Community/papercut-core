@@ -147,7 +147,7 @@ final class HtmlExporterTest extends TestCase
     {
         $doc = Document::make(Page::a4()->body(Column::make(
             Link::to('#top', Text::make('x')),
-            Spacer::size(pt(12)),
+            Spacer::fixed(pt(12)),
             Spacer::flex(2),
             Text::make('g')->grow(1),
         )));

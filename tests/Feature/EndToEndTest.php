@@ -20,7 +20,7 @@ final class EndToEndTest extends TestCase
         $courses = array_map(fn (int $i) => ["Course $i", (string) ($i % 4 + 1), ['A', 'B', 'C'][$i % 3]], range(1, $rows));
         return Document::make(
             Page::a4()->margin(mm(20))
-                ->header(Row::make(Text::make('Official Transcript')->bold()->size(pt(16)), Spacer::flex(), Text::make('OLC')))
+                ->header(Row::make(Text::make('Official Transcript')->bold()->size(pt(16)), Spacer::flex(), Text::make('Registrar')))
                 ->body(Column::make(
                     Text::h2('Student: Ada Lovelace'),
                     Table::make()->columns('3fr 25mm 20mm')->head('Course', 'Credits', 'Grade')

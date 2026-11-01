@@ -6,7 +6,7 @@ namespace Papercut\Html;
 
 use Papercut\Backend\Backend;
 use Papercut\Export\LoadedImage;
-use Papercut\{Document, Image, Link, ListItem, ListNode, Node, Page, PageBreak, PageNumber, PdfPage, Place, QrCode, Spacer, Svg, Table, TableCell, TableRow, Text, View};
+use Papercut\{Document, Image, Link, ListItem, ListNode, Node, Page, PageBreak, PageNumber, PdfPage, Place, QrCode, Spacer, Svg, Table, TableCell, TableRow, Text, Toc, View};
 use Papercut\Barcode\Bacon\BaconQrSvg;
 use Papercut\Barcode\ModuleRects;
 use Papercut\Exception\InvalidValue;
@@ -15,6 +15,7 @@ use Papercut\Layout\{GridCell, TableGrid, WidthResolver};
 use Papercut\Style\{ComputedStyle, Justify, ListMarker, StyleName};
 use Papercut\Text\FontStyle;
 use Papercut\Value\{Auto, Fr, Length, Percent};
+use Papercut\Toc\TocIndex;
 use Papercut\Tree\{Region, TreeVisitor, Visit};
 
 /** Turns a tree walk into HTML. One method per node type, so new node types slot in without touching the walk. */
@@ -22,7 +23,9 @@ final class HtmlWriter implements TreeVisitor
 {
     private string $out = '';
     private readonly int $pageCount;
-    private readonly \Papercut\Style\Theme $theme;
+    /** The theme of the page being written. */
+    private \Papercut\Style\Theme $theme;
+    private readonly \Papercut\Style\PageThemes $themes;
     private ?Page $page = null;
     /** Output held back while a hidden region is walked; null outside one. */
     private ?string $held = null;
@@ -54,16 +57,27 @@ final class HtmlWriter implements TreeVisitor
     private array $openLists = [];
     /** @var array<string, LoadedImage> images already loaded this export, by source */
     private array $images = [];
+    /** @var array<string, string> element id of each table-of-contents heading, by node path */
+    private array $slugs = [];
+    private readonly TocIndex $toc;
 
     public function __construct(
         Document $doc,
         private readonly Fidelity $fidelity,
         private readonly HtmlOptions $options,
         private readonly Backend $backend,
+        ?TocIndex $toc = null,
+        ?\Papercut\Style\PageThemes $themes = null,
     ) {
+        $this->themes = $themes ?? \Papercut\Style\PageThemes::for($options->theme(), $doc);
+        $this->toc = $toc ?? TocIndex::empty();
+        $taken = [];
+        foreach ($this->toc->entries(1, 4) as $entry) {
+            $this->slugs[$entry->key] = self::slug($entry->text, $taken);
+        }
         $this->strays = new \WeakMap();
         $this->pageCount = count($doc->pages());
-        $this->theme = $options->theme();
+        $this->theme = $this->themes->document();
     }
 
     public static function esc(string $s): string
@@ -112,6 +126,7 @@ final class HtmlWriter implements TreeVisitor
     public function enterPage(Page $page, int $index): void
     {
         $this->page = $page;
+        $this->theme = $this->themes->theme($page);
         $path = $this->pageCount > 1 ? sprintf('page[%d]', $index) : 'page';
         $page->checkMargins($path);
         $this->fidelity->approximated('page box', $path);
@@ -139,7 +154,26 @@ final class HtmlWriter implements TreeVisitor
             'min-height' => Css::pt($page->height()),
             'padding' => Css::pt($m->top->points) . ' ' . Css::pt($m->right->points) . ' ' . Css::pt($m->bottom->points) . ' ' . Css::pt($m->left->points),
             ...($page->overlayPlaces() === [] ? [] : ['position' => 'relative']),
+            ...$this->pageTextCss($page),
         ]) . '">';
+    }
+
+    /**
+     * The text declarations a page's root style adds to the document root, which the .papercut div carries;
+     * everything inside the page is written relative to the page root, so the cascade stays right.
+     *
+     * @return array<string,string>
+     */
+    private function pageTextCss(Page $page): array
+    {
+        $root = $this->themes->styles($page)->root();
+        $document = $this->themes->documentStyles()->root();
+        if ($root === $document) {
+            return [];
+        }
+        $fonts = $this->options->fonts();
+
+        return Css::text($root, $document, $fonts->fallbacks, $fonts);
     }
 
     public function leavePage(Page $page, int $index): void
@@ -232,6 +266,7 @@ final class HtmlWriter implements TreeVisitor
             $node instanceof TableCell => $this->tableCell($node, $style, $at),
             $node instanceof ListNode => $this->list($node, $style, $parent, $at),
             $node instanceof ListItem => $this->listItem($node, $style, $parent, $at),
+            $node instanceof Toc => $this->tocNav($node, $style, $parent, $at),
             default => throw new \LogicException('HTML export of ' . $node->debugName() . ' is not supported'),
         };
         $this->styles[] = $style;
@@ -316,6 +351,69 @@ final class HtmlWriter implements TreeVisitor
         return '</li>';
     }
 
+    /**
+     * A lowercase id from the heading text: letters and digits of any script, other runs as one hyphen. Unique among $taken.
+     *
+     * @param array<string, true> $taken
+     */
+    private static function slug(string $text, array &$taken): string
+    {
+        $base = trim((string) preg_replace('/[^\p{L}\p{M}\p{N}]+/u', '-', mb_strtolower($text)), '-');
+        $base = $base === '' ? 'section' : $base;
+        $slug = $base;
+        for ($n = 2; isset($taken[$slug]); $n++) {
+            $slug = $base . '-' . $n;
+        }
+        $taken[$slug] = true;
+
+        return $slug;
+    }
+
+    /** The contents list is a nav of nested ordered lists of links; the page numbers and leaders are left out. */
+    private function tocNav(Toc $n, ComputedStyle $s, ComputedStyle $parent, Visit $at): string
+    {
+        $this->checkDecoration($s, $parent, $at->path());
+        $this->fidelity->approximated('table of contents page numbers', $at->path());
+        $this->out .= '<nav class="papercut-toc"' . self::styleAttr([...Css::box($s), ...($this->parentIsFlex($at) ? Css::flexItem($s) : []), ...Css::pagination($s, $parent), ...$this->textCss($s, $parent, $at->path())]) . '>';
+        if ($n->titleText() !== null) {
+            $title = $s->child($this->theme->named('toc.title'));
+            $this->out .= '<p class="papercut-toc-title"' . self::styleAttr(['margin' => '0', ...Css::box($title), ...$this->textCss($title, $s, $at->path())]) . '>' . self::esc($n->titleText()) . '</p>';
+        }
+        $entries = $this->toc->entries($n->fromLevel(), $n->toLevel());
+        $listStyle = self::styleAttr(['list-style-type' => 'none', 'margin' => '0', 'padding' => '0']);
+        /** @var list<int> the level of each open list's items; a skipped level still opens one list per step down */
+        $open = [];
+        foreach ($entries as $entry) {
+            $level = $entry->level;
+            if ($open === []) {
+                $this->out .= '<ol' . $listStyle . '>';
+                $open[] = $level;
+            } elseif ($level > end($open)) {
+                $this->out .= '<ol' . $listStyle . '>';
+                $open[] = $level;
+            } else {
+                $this->out .= '</li>';
+                // Close deeper lists. An entry between two open levels (a skipped level) joins the deeper list as its sibling.
+                while (count($open) > 1 && $level < end($open)) {
+                    if ($level > $open[count($open) - 2]) {
+                        $open[array_key_last($open)] = $level;
+                        break;
+                    }
+                    array_pop($open);
+                    $this->out .= '</ol></li>';
+                }
+            }
+            $style = $s->child($this->theme->named('toc.entry toc.level-' . max(1, min(4, $level))));
+            $decls = [...Css::box($style), 'display' => 'block', 'color' => 'inherit', 'text-decoration' => 'none', ...$this->textCss($style, $s, $at->path())];
+            $this->out .= '<li><a href="#' . self::esc($this->slugs[$entry->key]) . '"' . self::styleAttr($decls) . '>' . self::esc($entry->text) . '</a>';
+        }
+        if ($entries !== []) {
+            $this->out .= '</li>' . str_repeat('</ol></li>', count($open) - 1) . '</ol>';
+        }
+
+        return '</nav>';
+    }
+
     private function text(Text $t, ComputedStyle $s, ComputedStyle $parent, Visit $at): string
     {
         $override = self::overridesDecoration($s, $parent);
@@ -331,7 +429,8 @@ final class HtmlWriter implements TreeVisitor
             // The browser's own pre rules (margin, font, tab width, white-space: pre) are replaced by the style's; long lines wrap like the PDF's.
             $decls = ['margin' => '0', 'overflow-wrap' => 'anywhere', 'tab-size' => '4', ...$this->fontCss($s), ...$decls, 'white-space' => $s->whiteSpace->value];
         }
-        $this->out .= '<' . $tag . self::styleAttr($decls) . '>';
+        $id = isset($this->slugs[$at->path()]) ? ' id="' . self::esc($this->slugs[$at->path()]) . '"' : '';
+        $this->out .= '<' . $tag . $id . self::styleAttr($decls) . '>';
         $inner = '';
         if ($pre && $t->isHtmlCode()) {
             $language = preg_replace('/[^A-Za-z0-9_+#.-]/', '', (string) $t->htmlCodeLanguage());

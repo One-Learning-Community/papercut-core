@@ -106,7 +106,7 @@ final class BlockLayouterTest extends TestCase
 
     public function test_keep_with_next_pop_restores_height(): void
     {
-        $col = Column::make(Text::make('intro'), Text::make('Heading')->keepWithNext(), Spacer::size(pt(50)));
+        $col = Column::make(Text::make('intro'), Text::make('Heading')->keepWithNext(), Spacer::fixed(pt(50)));
         $r = (new LayoutHarness())->layout($col, 100, 40);
         self::assertSame(1, $r->token?->index);
         self::assertSame(14.0, $r->fragment?->height);
@@ -116,12 +116,12 @@ final class BlockLayouterTest extends TestCase
     public function test_keep_with_next_chain_walks_back(): void
     {
         $h = new LayoutHarness();
-        $col = Column::make(Text::make('intro'), Text::make('H1')->keepWithNext(), Text::make('H2')->keepWithNext(), Spacer::size(pt(50)));
+        $col = Column::make(Text::make('intro'), Text::make('H1')->keepWithNext(), Text::make('H2')->keepWithNext(), Spacer::fixed(pt(50)));
         $r = $h->layout($col, 100, 50);
         self::assertSame(1, $r->token?->index);
         self::assertSame(14.0, $r->fragment?->height);
 
-        $headsOnly = Column::make(Text::make('H1')->keepWithNext(), Text::make('H2')->keepWithNext(), Spacer::size(pt(50)));
+        $headsOnly = Column::make(Text::make('H1')->keepWithNext(), Text::make('H2')->keepWithNext(), Spacer::fixed(pt(50)));
         self::assertSame(Status::DoesNotFit, $h->layout($headsOnly, 100, 40, fresh: false)->status);
         $fresh = $h->layout($headsOnly, 100, 40, fresh: true);
         self::assertSame(Status::Partial, $fresh->status);
@@ -248,15 +248,15 @@ final class BlockLayouterTest extends TestCase
     public function test_first_child_not_fitting_returns_does_not_fit(): void
     {
         $h = new LayoutHarness();
-        self::assertSame(Status::DoesNotFit, $h->layout(Column::make(Spacer::size(pt(50))), 100, 20, fresh: false)->status);
-        $fresh = $h->layout(Column::make(Spacer::size(pt(50))), 100, 20, fresh: true);
+        self::assertSame(Status::DoesNotFit, $h->layout(Column::make(Spacer::fixed(pt(50))), 100, 20, fresh: false)->status);
+        $fresh = $h->layout(Column::make(Spacer::fixed(pt(50))), 100, 20, fresh: true);
         self::assertSame(Status::Complete, $fresh->status);
         self::assertSame(20.0, $fresh->fragment?->height); // truncated on a fresh page
     }
 
     public function test_keep_with_next_on_first_child_of_page_is_ignored(): void
     {
-        $col = Column::make(Text::make('Heading')->keepWithNext(), Spacer::size(pt(50)), Text::make('x'));
+        $col = Column::make(Text::make('Heading')->keepWithNext(), Spacer::fixed(pt(50)), Text::make('x'));
         $r = (new LayoutHarness())->layout($col, 100, 40, fresh: true);
         self::assertSame(Status::Partial, $r->status);
         self::assertSame(1, $r->token?->index);
@@ -396,7 +396,7 @@ final class BlockLayouterTest extends TestCase
     public function test_keep_with_next_at_end_of_nested_container_moves_with_next_sibling(): void
     {
         $h = new LayoutHarness();
-        $col = Column::make(Column::make(Text::make('intro'), Text::make('Heading')->keepWithNext()), Spacer::size(pt(50)));
+        $col = Column::make(Column::make(Text::make('intro'), Text::make('Heading')->keepWithNext()), Spacer::fixed(pt(50)));
         $r = $h->layout($col, 100, 40);
         self::assertSame(Status::Partial, $r->status);
         self::assertSame(['intro'], array_column(LayoutHarness::runs($r->fragment), 'text'));
@@ -410,7 +410,7 @@ final class BlockLayouterTest extends TestCase
     {
         $h = new LayoutHarness();
         $inner = Column::make(Text::make('a'), Column::make(Text::make('b'), Text::make('H1')->keepWithNext(), Text::make('H2')->keepWithNext()));
-        $col = Column::make($inner, Spacer::size(pt(50)));
+        $col = Column::make($inner, Spacer::fixed(pt(50)));
         $r = $h->layout($col, 100, 60);
         self::assertSame(['a', 'b'], array_column(LayoutHarness::runs($r->fragment), 'text'));
         $rest = $h->layout($col, 100, null, $r->token);
@@ -420,12 +420,12 @@ final class BlockLayouterTest extends TestCase
     public function test_nested_container_that_is_only_keep_with_next_joins_the_chain(): void
     {
         $h = new LayoutHarness();
-        $col = Column::make(Text::make('intro'), Column::make(Text::make('Heading')->keepWithNext()), Spacer::size(pt(50)));
+        $col = Column::make(Text::make('intro'), Column::make(Text::make('Heading')->keepWithNext()), Spacer::fixed(pt(50)));
         $r = $h->layout($col, 100, 40);
         self::assertSame(1, $r->token?->index);
         self::assertNull($r->token->child);
         self::assertSame(['intro'], array_column(LayoutHarness::runs($r->fragment), 'text'));
-        $alone = Column::make(Column::make(Text::make('Heading')->keepWithNext()), Spacer::size(pt(50)));
+        $alone = Column::make(Column::make(Text::make('Heading')->keepWithNext()), Spacer::fixed(pt(50)));
         self::assertSame(Status::DoesNotFit, $h->layout($alone, 100, 40, fresh: false)->status);
     }
 }

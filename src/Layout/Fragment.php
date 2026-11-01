@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Papercut\Layout;
 
-use Papercut\Paint\{Op, PageNumberSlot};
+use Papercut\Paint\{Op, PageNumberSlot, TocSlot};
 
 /**
  * A laid-out box in local coordinates (top-left origin). Mutable only while
@@ -18,7 +18,7 @@ final class Fragment
     private array $ops = [];
     /** @var list<array{x: float, y: float, fragment: Fragment}> */
     private array $children = [];
-    /** @var list<PageNumberSlot> */
+    /** @var list<PageNumberSlot|TocSlot> */
     private array $slots = [];
 
     public ?float $opacity = null;
@@ -39,7 +39,7 @@ final class Fragment
         $this->children[] = ['x' => $x, 'y' => $y, 'fragment' => $f];
     }
 
-    public function addSlot(PageNumberSlot $s): void
+    public function addSlot(PageNumberSlot|TocSlot $s): void
     {
         $this->slots[] = $s;
     }
@@ -56,7 +56,7 @@ final class Fragment
         return $this->children;
     }
 
-    /** @return list<PageNumberSlot> */
+    /** @return list<PageNumberSlot|TocSlot> */
     public function slots(): array
     {
         return $this->slots;

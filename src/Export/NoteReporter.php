@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Papercut\Export;
 
 use Papercut\{Annotated, Document, Node, Page};
-use Papercut\Style\{ComputedStyle, StyleResolver};
+use Papercut\Style\{ComputedStyle, PageThemes, StyleResolver};
 use Papercut\Tree\{Region, TreeVisitor, TreeWalker, Visit};
 
 /** Reports every conversion note in the tree through Fidelity, once per export. */
@@ -15,7 +15,7 @@ final class NoteReporter implements TreeVisitor
     {
     }
 
-    public static function report(Document $doc, StyleResolver $styles, Fidelity $fidelity): void
+    public static function report(Document $doc, StyleResolver|PageThemes $styles, Fidelity $fidelity): void
     {
         (new TreeWalker($styles))->walk($doc, new self($fidelity));
     }
