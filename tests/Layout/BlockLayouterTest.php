@@ -312,6 +312,33 @@ final class BlockLayouterTest extends TestCase
         self::assertSame(90.0, $runs[0]['x']);
     }
 
+    /** @return array{x: float, width: float} */
+    private static function onlyChild(?Fragment $f): array
+    {
+        self::assertNotNull($f);
+        $children = $f->children();
+        self::assertCount(1, $children);
+        return ['x' => $children[0]['x'], 'width' => $children[0]['fragment']->width];
+    }
+
+    public function test_percent_width_of_an_aligned_child_is_a_share_of_the_parent(): void
+    {
+        foreach ([[Align::End, 120.0], [Align::Start, 0.0], [Align::Center, 60.0]] as [$align, $x]) {
+            $col = Column::make(View::make(Text::make('ab'))->width(percent(40))->alignSelf($align));
+            $child = self::onlyChild((new LayoutHarness())->layout($col, 200)->fragment);
+            self::assertSame(80.0, $child['width'], $align->name);
+            self::assertSame($x, $child['x'], $align->name);
+        }
+    }
+
+    public function test_percent_width_of_an_aligned_table_is_a_share_of_the_parent(): void
+    {
+        $table = \Papercut\Table::make()->row('Subtotal', '1')->width(percent(50))->alignSelf(Align::End);
+        $child = self::onlyChild((new LayoutHarness())->layout(Column::make($table), 200)->fragment);
+        self::assertSame(100.0, $child['width']);
+        self::assertSame(100.0, $child['x']);
+    }
+
     public function test_fixed_height_box_never_returns_partial_for_nested_forced_break(): void
     {
         $col = Column::make(Column::make(Text::make('a'), PageBreak::make(), Text::make('b')))->height(pt(100));

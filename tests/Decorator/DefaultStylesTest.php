@@ -53,4 +53,32 @@ final class DefaultStylesTest extends TestCase
         self::assertSame('0.75em', (string) $m?->height);
         self::assertNull($m?->margin, 'the one-line slot centres the marker; no hand-tuned offset');
     }
+
+    public function test_built_in_variants(): void
+    {
+        $line = DefaultStyles::get('field.line');
+        self::assertEquals(Edges::of(Length::zero(), Length::zero(), pt(1), Length::zero()), $line?->borderWidth);
+        self::assertEquals(Length::zero(), $line?->radius);
+
+        $outline = DefaultStyles::get('badge.outline');
+        self::assertEquals(Color::named('transparent'), $outline?->background);
+        self::assertEquals(Edges::all(pt(0.75)), $outline?->borderWidth);
+        self::assertEquals(Color::named('amber-300'), DefaultStyles::get('badge.warning')?->borderColor);
+
+        $flat = DefaultStyles::get('card.flat');
+        self::assertEquals(Edges::all(Length::zero()), $flat?->borderWidth);
+        self::assertEquals(Color::named('slate-50'), $flat?->background);
+        self::assertNotNull(DefaultStyles::get('card.title.flat'));
+
+        self::assertSame(1.35, DefaultStyles::get('section.title.large')?->fontSize?->factor);
+        self::assertSame(1.35, DefaultStyles::get('section.number.large')?->fontSize?->factor);
+        self::assertNotNull(DefaultStyles::get('section.large'));
+    }
+
+    public function test_new_decorators_have_styles(): void
+    {
+        foreach (['stat', 'stat.label', 'stat.value', 'stat.note', 'totals', 'totals.label', 'totals.value', 'totals.total-label', 'totals.total-value', 'signature', 'signature.line', 'signature.name', 'signature.role', 'signature.date'] as $name) {
+            self::assertNotNull(DefaultStyles::get($name), $name);
+        }
+    }
 }

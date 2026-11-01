@@ -10,6 +10,7 @@ use Papercut\Paint\{Anchor, Bookmark};
 use Papercut\Style\{ComputedStyle, Direction};
 use Papercut\Toc\{HeadingText, TocLine};
 use Papercut\Tree\{Expander, NodePath};
+use Papercut\Value\Auto;
 
 /**
  * Dispatches nodes to their layouters. Expands Components, resolves the
@@ -215,6 +216,29 @@ final class LayoutEngine
             }
             $byParent[$parent] = $size;
             return $size;
+        } finally {
+            $this->ctx->popPath();
+        }
+    }
+
+    /**
+     * The node's intrinsic size with its own width left out: what its content needs, as for a flex item's
+     * automatic minimum (CSS `min-width: auto`). A node with no width of its own is measured as usual.
+     *
+     * @return array{min: float, max: float}
+     */
+    public function contentIntrinsic(Node|Component $node, ComputedStyle $parent, ?int $index = null): array
+    {
+        $node = $this->expand($node);
+        $this->ctx->pushPath(NodePath::segment($node, null, $index));
+        try {
+            $style = $this->enter($node, $parent, $index);
+            if ($style->width instanceof Auto) {
+                return $this->intrinsic($node, $parent, $index);
+            }
+            $auto = new ComputedStyle(...[...get_object_vars($style), 'width' => Auto::instance()]);
+
+            return $this->layouterFor($node, $auto)->intrinsic($node, $auto, $this);
         } finally {
             $this->ctx->popPath();
         }

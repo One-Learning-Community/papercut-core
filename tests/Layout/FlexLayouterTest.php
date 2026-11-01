@@ -127,6 +127,27 @@ final class FlexLayouterTest extends TestCase
         self::assertEqualsWithDelta(50 - 30 * 50 / 110, $widths[0], 1e-9);
     }
 
+    public function test_an_explicit_width_shrinks_no_further_than_its_content(): void
+    {
+        // CSS min-width: auto. The long item is 300 wide (60 letters), the fixed one 150; in 100 they shrink in
+        // proportion to their bases, which would leave the fixed one 33.3, narrower than its 50pt word.
+        $long = View::make(str_repeat('aaaa ', 12))->grow(1);
+        $row = Row::make($long, View::make('wwwwwwwwww xx')->width(pt(150)));
+        $f = (new LayoutHarness())->layout($row, 100)->fragment;
+        $widths = array_map(fn (array $c): float => $c['fragment']->width, $f?->children() ?? []);
+        self::assertEqualsWithDelta(50.0, $widths[1], 1e-9);
+        self::assertEqualsWithDelta(50.0, $widths[0], 1e-9);
+    }
+
+    public function test_an_explicit_width_below_its_content_is_its_floor(): void
+    {
+        // the specified width caps the automatic minimum: 30, though the word needs 50
+        $row = Row::make(View::make(str_repeat('aaaa ', 12))->grow(1), View::make('wwwwwwwwww')->width(pt(30)));
+        $f = (new LayoutHarness(overflow: \Papercut\OverflowMode::Clip))->layout($row, 100)->fragment;
+        $widths = array_map(fn (array $c): float => $c['fragment']->width, $f?->children() ?? []);
+        self::assertEqualsWithDelta(30.0, $widths[1], 1e-9);
+    }
+
     public function test_parallel_resume_draws_only_unfinished_items(): void
     {
         $row = Row::make(Column::make('a', 'b', 'c')->minLines(1), Column::make('x', 'y')->minLines(1));

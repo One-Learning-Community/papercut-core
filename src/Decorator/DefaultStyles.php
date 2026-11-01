@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Papercut\Decorator;
 
 use Papercut\Style\{Align, Direction, Justify, Style, TextAlign, WhiteSpace};
-use Papercut\Value\{Color, Edges, Length};
+use Papercut\Value\{Color, Edges, Length, Percent};
 
 use function Papercut\pt;
 
@@ -62,6 +62,9 @@ final class DefaultStyles
             fontWeight: 700,
         );
         $s['card.body'] = Style::make(padding: Edges::all(pt(10)), gap: pt(6));
+        // Built-in variant: a tinted panel with no border.
+        $s['card.flat'] = Style::make(borderWidth: Edges::all($zero), background: self::c('slate-50'));
+        $s['card.title.flat'] = Style::make(radius: pt(4), borderWidth: Edges::all($zero));
 
         $s['callout'] = Style::make(
             padding: Edges::of(pt(8), pt(10)),
@@ -99,6 +102,10 @@ final class DefaultStyles
         $s['section.body'] = Style::make(gap: pt(6));
         $s['section.title'] = Style::make(fontWeight: 700);
         $s['section.number'] = Style::make(fontWeight: 700, color: self::c('slate-500'), minWidth: pt(18));
+        // Built-in variant: a bigger heading with more room around it.
+        $s['section.large'] = Style::make(gap: pt(8), margin: self::sides(0, 0, 10, 0));
+        $s['section.title.large'] = Style::make(fontSize: Length::em(1.35));
+        $s['section.number.large'] = Style::make(fontSize: Length::em(1.35));
         $s['section.rule'] = Style::make(
             borderWidth: Edges::of($zero, $zero, pt(0.75), $zero),
             borderColor: self::c('slate-200'),
@@ -113,6 +120,13 @@ final class DefaultStyles
         );
         $s['field.label'] = Style::make(fontSize: Length::em(0.9), color: self::c('slate-600'));
         $s['field.placeholder'] = Style::make(italic: true, color: self::c('slate-400'));
+        // Built-in variant: a form line, only a rule along the bottom.
+        $s['field.line'] = Style::make(
+            borderWidth: Edges::of($zero, $zero, pt(1), $zero),
+            borderColor: self::c('slate-400'),
+            radius: $zero,
+            padding: Edges::of(pt(2), $zero),
+        );
 
         $s['choice'] = Style::make(gap: pt(4));
         $s['choice.option'] = Style::make(gap: pt(6));
@@ -147,8 +161,48 @@ final class DefaultStyles
 
         $s['badge'] = Style::make(alignSelf: Align::Start, padding: Edges::of(pt(1.5), pt(6)), radius: pt(8), fontSize: Length::em(0.9), fontWeight: 700);
         foreach (['neutral' => 'slate', 'note' => 'sky', 'tip' => 'emerald', 'warning' => 'amber', 'danger' => 'red'] as $tone => $hue) {
-            $s['badge.' . $tone] = Style::make(background: self::c($hue . '-100'), color: self::c($hue . '-800'));
+            // The border colour only shows when a border is drawn, as in the outline variant.
+            $s['badge.' . $tone] = Style::make(background: self::c($hue . '-100'), color: self::c($hue . '-800'), borderColor: self::c($hue . '-300'));
         }
+        $s['badge.outline'] = Style::make(background: self::c('transparent'), borderWidth: Edges::all(pt(0.75)));
+
+        $s['stat'] = Style::make(background: self::c('slate-50'), radius: pt(6), padding: Edges::of(pt(10), pt(12)), gap: pt(2));
+        $s['stat.label'] = Style::make(fontSize: Length::em(0.75), fontWeight: 700, color: self::c('slate-500'));
+        $s['stat.value'] = Style::make(fontSize: Length::em(1.8), fontWeight: 700, color: self::c('slate-900'), lineHeight: 1.15);
+        $s['stat.note'] = Style::make(fontSize: Length::em(0.8), color: self::c('slate-600'));
+
+        // Beside a growing paragraph in a row, the totals keep their width and the paragraph gives way.
+        $s['totals'] = Style::make(width: Percent::of(45), alignSelf: Align::End, shrink: 0.0);
+        $s['totals.label'] = Style::make(padding: self::sides(2, 12, 2, 0), color: self::c('slate-600'));
+        $s['totals.value'] = Style::make(padding: Edges::of(pt(2), $zero), textAlign: TextAlign::Right);
+        $s['totals.total-label'] = Style::make(
+            fontWeight: 700,
+            fontSize: Length::em(1.1),
+            color: self::c('slate-900'),
+            padding: self::sides(4, 12, 2, 0),
+            borderWidth: Edges::of(pt(1), $zero, $zero, $zero),
+            borderColor: self::c('slate-300'),
+        );
+        $s['totals.total-value'] = Style::make(
+            fontWeight: 700,
+            fontSize: Length::em(1.1),
+            color: self::c('slate-900'),
+            padding: self::sides(4, 0, 2, 0),
+            borderWidth: Edges::of(pt(1), $zero, $zero, $zero),
+            borderColor: self::c('slate-300'),
+        );
+
+        $s['signature'] = Style::make(width: pt(216), keepTogether: true);
+        $s['signature.line'] = Style::make(
+            minHeight: pt(30),
+            justify: Justify::End,
+            padding: self::sides(0, 0, 2, 0),
+            borderWidth: Edges::of($zero, $zero, pt(0.75), $zero),
+            borderColor: self::c('slate-700'),
+        );
+        $s['signature.name'] = Style::make(fontWeight: 700, margin: self::sides(4, 0, 0, 0));
+        $s['signature.role'] = Style::make(fontSize: Length::em(0.85), color: self::c('slate-600'));
+        $s['signature.date'] = Style::make(fontSize: Length::em(0.85), color: self::c('slate-600'));
 
         // Preformatted text: the theme's mono family at 0.9em, spaces and line breaks kept.
         $s['pre'] = Style::make(

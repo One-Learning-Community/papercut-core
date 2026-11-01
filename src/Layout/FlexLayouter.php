@@ -202,9 +202,16 @@ final class FlexLayouter implements Layouter
             }
             $cs = $engine->styleOf($child, $style, $i);
             $explicit = BoxGeometry::resolve($cs->basis, $width) ?? BoxGeometry::resolve($cs->width, $width);
-            $intrinsic = $explicit === null ? $engine->intrinsic($child, $style, $i) : null;
+            $intrinsic = $child instanceof Spacer ? null : $engine->intrinsic($child, $style, $i);
             $base = $explicit ?? ($child instanceof Spacer && $child->fixedSize() === null ? 0.0 : $intrinsic['max'] ?? 0.0);
-            $min = BoxGeometry::resolve($cs->minWidth, $width) ?? ($intrinsic === null || $child instanceof Spacer ? 0.0 : $intrinsic['min']);
+            // CSS min-width: auto. An item shrinks no further than its content's minimum, or its own width when that is smaller.
+            $specified = BoxGeometry::resolve($cs->width, $width);
+            $auto = match (true) {
+                $intrinsic === null => 0.0,
+                $specified === null => $intrinsic['min'],
+                default => min($specified, $engine->contentIntrinsic($child, $style, $i)['min']),
+            };
+            $min = BoxGeometry::resolve($cs->minWidth, $width) ?? $auto;
             $max = BoxGeometry::resolve($cs->maxWidth, $width) ?? \INF;
             $items[] = [
                 'node' => $child,
@@ -274,9 +281,10 @@ final class FlexLayouter implements Layouter
     }
 
     /**
-     * Grows or shrinks one line's items to fill $space (width minus gaps).
-     * One clamp pass: items that hit min/max are frozen and the rest is
-     * redistributed once.
+     * Grows or shrinks one line's items to fill $space (width minus gaps), as CSS resolves flexible lengths:
+     * the clamped (hypothetical) sizes decide between growing and shrinking, the free space is measured from the
+     * base sizes, and an item already held by its min or max in that direction keeps it. One clamp pass: items
+     * that hit min/max are frozen and the rest is redistributed once.
      *
      * @param list<array{node: Node, style: ComputedStyle, index: int, base: float, hyp: float, min: float, max: float, margin: float}> $items
      * @return list<float>
@@ -284,13 +292,23 @@ final class FlexLayouter implements Layouter
     private static function flex(array $items, float $space): array
     {
         $sizes = array_column($items, 'hyp');
+        $used = 0.0;
+        foreach ($items as $item) {
+            $used += $item['hyp'] + $item['margin'];
+        }
+        $growing = $used < $space;
         $frozen = [];
+        foreach ($items as $j => $item) {
+            $factor = $growing ? $item['style']->grow : $item['style']->shrink;
+            if ($factor <= 0.0 || ($growing ? $item['base'] > $item['hyp'] : $item['base'] < $item['hyp'])) {
+                $frozen[$j] = true;
+            }
+        }
         for ($pass = 0; $pass < 2; $pass++) {
             $free = $space;
             foreach ($items as $j => $item) {
-                $free -= (isset($frozen[$j]) ? $sizes[$j] : $item['hyp']) + $item['margin'];
+                $free -= (isset($frozen[$j]) ? $sizes[$j] : $item['base']) + $item['margin'];
             }
-            $growing = $free > 0.0;
             $weights = [];
             foreach ($items as $j => $item) {
                 if (!isset($frozen[$j])) {
@@ -298,7 +316,7 @@ final class FlexLayouter implements Layouter
                 }
             }
             $total = array_sum($weights);
-            if (abs($free) <= self::EPSILON || $total <= 0.0) {
+            if (abs($free) <= self::EPSILON || $total <= 0.0 || ($free > 0.0) !== $growing) {
                 foreach ($weights as $j => $_) {
                     $sizes[$j] = $items[$j]['hyp'];
                 }
@@ -306,7 +324,7 @@ final class FlexLayouter implements Layouter
             }
             $clamped = false;
             foreach ($weights as $j => $w) {
-                $target = $items[$j]['hyp'] + $free * $w / $total;
+                $target = $items[$j]['base'] + $free * $w / $total;
                 $sizes[$j] = max($items[$j]['min'], min($items[$j]['max'], $target));
                 if (abs($sizes[$j] - $target) > self::EPSILON) {
                     $frozen[$j] = true;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Papercut\Decorator;
 
+use InvalidArgumentException;
 use Papercut\{Component, Node, Table, TableCell, View};
 use Papercut\Concerns\{HasStyle, HasVariants};
 use Papercut\Value\{Auto, Fr, Length, Percent};
@@ -27,14 +28,14 @@ final class KeyValueList implements Decorator
     public static function make(KeyValuePair ...$pairs): self
     {
         $list = new self();
-        $list->pairs = array_values($pairs);
+        $list->pairs = self::plain(array_values($pairs));
         return $list;
     }
 
     public function add(KeyValuePair ...$pairs): self
     {
         $clone = clone $this;
-        $clone->pairs = [...$this->pairs, ...array_values($pairs)];
+        $clone->pairs = [...$this->pairs, ...self::plain(array_values($pairs))];
         return $clone;
     }
 
@@ -43,6 +44,20 @@ final class KeyValueList implements Decorator
         $clone = clone $this;
         $clone->pairs[] = KeyValuePair::of($label, $value);
         return $clone;
+    }
+
+    /**
+     * @param list<KeyValuePair> $pairs
+     * @return list<KeyValuePair>
+     */
+    private static function plain(array $pairs): array
+    {
+        foreach ($pairs as $pair) {
+            if ($pair->total) {
+                throw new InvalidArgumentException('A total row belongs in Totals, not KeyValueList.');
+            }
+        }
+        return $pairs;
     }
 
     /** Fixes the label column so long labels wrap instead of squeezing the values. */

@@ -6,7 +6,7 @@ namespace Papercut\Layout;
 
 use Papercut\{Link, Node, PageBreak, Spacer, View};
 use Papercut\Style\{Align, ComputedStyle, Direction};
-use Papercut\Value\Length;
+use Papercut\Value\{Length, Percent};
 
 /**
  * Column-direction Views (and Links): children stacked top to bottom with
@@ -100,7 +100,9 @@ final class BlockLayouter implements Layouter
             $slot = max(0.0, $contentWidth - $cs->margin->horizontal());
             $align = $cs->alignSelf ?? $style->alignItems;
             $width = $slot;
-            if ($align !== Align::Stretch && !$child instanceof Spacer) {
+            if ($align !== Align::Stretch && !$child instanceof Spacer && !$cs->width instanceof Percent) {
+                // Shrink to the content. A percentage width is a share of this box instead, so that child
+                // keeps the whole slot to resolve it against; alignment then uses the width it ends up with.
                 $width = min($engine->intrinsic($child, $style, $i)['max'], $slot);
             }
             // Inside a monolithic box every child is laid out as if on a fresh page, so leading forced breaks are ignored.
