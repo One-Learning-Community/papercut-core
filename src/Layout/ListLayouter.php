@@ -12,6 +12,8 @@ use Papercut\Style\{ComputedStyle, ListMarker};
  * stacking, gaps and page splits; each item reserves a gutter as wide as the
  * widest marker label (each measured in its item's style) plus half the
  * list's font size.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final class ListLayouter implements Layouter
 {

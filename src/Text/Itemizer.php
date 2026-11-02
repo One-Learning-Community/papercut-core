@@ -7,6 +7,7 @@ namespace Papercut\Text;
 use Papercut\Span;
 use Papercut\Style\{ComputedStyle, Theme, WhiteSpace};
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final class Itemizer
 {
     private const string BREAK_AFTER = "-\u{2013}\u{2014}/";

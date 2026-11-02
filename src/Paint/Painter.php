@@ -10,6 +10,8 @@ use Papercut\Style\TextAlign;
 /**
  * Flattens placed fragment trees into absolute-coordinate display lists,
  * wrapping opacity and clip groups and resolving page-number slots.
+ *
+ * @internal Part of the display list between layout and the PDF writer. It may change in any release.
  */
 final class Painter
 {

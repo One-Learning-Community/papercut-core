@@ -10,6 +10,8 @@ use Papercut\Vector\SvgDocument;
 /**
  * An SVG drawn so that its view box fills this rectangle; the layout clips it to its box.
  * Its text is set in the fonts $fonts picks.
+ *
+ * @internal Part of the display list between layout and the PDF writer. It may change in any release.
  */
 final readonly class DrawSvg implements Op
 {

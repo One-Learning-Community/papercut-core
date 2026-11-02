@@ -19,6 +19,8 @@ use Papercut\Value\Color;
 /**
  * Draws a QR code's modules as an SVG with BaconQrCode, an optional package. Papercut encodes
  * the grid; Bacon only draws it, so styled and plain codes carry the same modules.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final class BaconQrSvg
 {

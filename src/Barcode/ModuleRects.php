@@ -7,6 +7,8 @@ namespace Papercut\Barcode;
 /**
  * Covers a grid's dark modules with few rectangles: each row's runs, merged with identical runs
  * in the rows below. Fewer shapes means a smaller file and fewer hairline seams in viewers.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final class ModuleRects
 {

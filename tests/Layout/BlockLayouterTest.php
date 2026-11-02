@@ -339,6 +339,40 @@ final class BlockLayouterTest extends TestCase
         self::assertSame(100.0, $child['x']);
     }
 
+    public function test_percent_min_width_of_an_aligned_child_is_a_share_of_the_parent(): void
+    {
+        foreach ([[Align::End, 120.0], [Align::Start, 0.0], [Align::Center, 60.0]] as [$align, $x]) {
+            $col = Column::make(View::make(Text::make('ab'))->minWidth(percent(40))->alignSelf($align));
+            $child = self::onlyChild((new LayoutHarness())->layout($col, 200)->fragment);
+            self::assertSame(80.0, $child['width'], $align->name);
+            self::assertSame($x, $child['x'], $align->name);
+        }
+    }
+
+    public function test_percent_max_width_of_an_aligned_child_is_a_share_of_the_parent(): void
+    {
+        // FakeFont: 5pt a letter, so the text wants 105pt; 25% of the 200pt parent caps it at 50pt.
+        $col = Column::make(View::make(Text::make('abcdefghij abcdefghij'))->maxWidth(percent(25))->alignSelf(Align::End));
+        $child = self::onlyChild((new LayoutHarness())->layout($col, 200)->fragment);
+        self::assertSame(50.0, $child['width']);
+        self::assertSame(150.0, $child['x']);
+    }
+
+    public function test_percent_min_width_wins_over_percent_max_width_on_an_aligned_child(): void
+    {
+        $col = Column::make(View::make(Text::make('ab'))->minWidth(percent(30))->maxWidth(percent(20))->alignSelf(Align::Start));
+        $child = self::onlyChild((new LayoutHarness())->layout($col, 200)->fragment);
+        self::assertSame(60.0, $child['width']);
+    }
+
+    public function test_a_percent_min_width_leaves_a_wider_fixed_width_alone(): void
+    {
+        $col = Column::make(View::make(Text::make('ab'))->width(pt(300))->minWidth(percent(10))->alignSelf(Align::Center));
+        $child = self::onlyChild((new LayoutHarness())->layout($col, 200)->fragment);
+        self::assertSame(300.0, $child['width']);
+        self::assertSame(-50.0, $child['x']);
+    }
+
     public function test_fixed_height_box_never_returns_partial_for_nested_forced_break(): void
     {
         $col = Column::make(Column::make(Text::make('a'), PageBreak::make(), Text::make('b')))->height(pt(100));

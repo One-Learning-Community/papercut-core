@@ -6,6 +6,7 @@ namespace Papercut\Paint;
 
 use Papercut\Backend\ImageHandle;
 
+/** @internal Part of the display list between layout and the PDF writer. It may change in any release. */
 final readonly class DrawImage implements Op
 {
     public function __construct(

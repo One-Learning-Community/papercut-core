@@ -7,7 +7,11 @@ namespace Papercut\Html;
 use Papercut\Export\Fidelity;
 use Papercut\Text\FontStyle;
 
-/** The result of asking an ordered stack of font sources about every family a document uses. */
+/**
+ * The result of asking an ordered stack of font sources about every family a document uses.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ */
 final readonly class FontStack
 {
     /** @param list<string> $links */

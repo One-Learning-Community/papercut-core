@@ -8,11 +8,14 @@ use Papercut\{Column, Component, Document, Node, OverflowMode, Page, PageVariant
 use Papercut\Value\{Length, Percent};
 use Papercut\Exception\LayoutOverflow;
 use Papercut\Style\ComputedStyle;
+use Papercut\Tree\Region;
 
 /**
  * Flows each Page template's body across physical pages between its header
  * and footer, with its background behind. Header, footer and background
  * fragments are laid out once per template (once per variant) and reused on the pages that use them.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final class Paginator
 {
@@ -65,14 +68,14 @@ final class Paginator
 
         $background = null;
         if ($page->backgroundNodes() !== []) {
-            $background = $this->withoutBookmarks(fn (): ?Fragment => $this->engine->layout(Column::make(...$page->backgroundNodes()), $root, new Constraints($w, null, true, $h), pathName: 'background')->fragment);
+            $background = $this->inRegion(Region::Background, fn (): ?Fragment => $this->withoutBookmarks(fn (): ?Fragment => $this->engine->layout(Column::make(...$page->backgroundNodes()), $root, new Constraints($w, null, true, $h), pathName: 'background')->fragment));
         }
 
         /** @var list<array{x: float, y: float, fragment: Fragment}> $layers */
         $layers = [];
         $template = $page->templatePage();
         if ($template !== null) {
-            $fragment = $this->engine->layout($template, $root, new Constraints($w, null, true, $h), pathName: 'template')->fragment;
+            $fragment = $this->inRegion(Region::Background, fn (): ?Fragment => $this->engine->layout($template, $root, new Constraints($w, null, true, $h), pathName: 'template')->fragment);
             if ($fragment !== null) {
                 $layers[] = ['x' => 0.0, 'y' => 0.0, 'fragment' => $fragment];
             }
@@ -145,7 +148,7 @@ final class Paginator
             }
             // Last resort: the engine clips single overflowing nodes, so this is only reached when the body
             // itself cannot progress.
-            $res = $this->engine->layout($body, $root, new Constraints($contentWidth, null, true), $token, pathName: 'body');
+            $res = $this->inRegion(Region::Body, fn (): LayoutResult => $this->engine->layout($body, $root, new Constraints($contentWidth, null, true), $token, pathName: 'body'));
             if ($res->fragment !== null) {
                 $clip = new Fragment($contentWidth, $bodyHeight);
                 $clip->clip = [0.0, 0.0, $contentWidth, $bodyHeight];
@@ -225,7 +228,7 @@ final class Paginator
         $was = $this->ctx->clipInPlace;
         $this->ctx->clipInPlace = $clipInPlace;
         try {
-            return $this->engine->layout($body, $root, new Constraints($contentWidth, $bodyHeight, true), $token, pathName: 'body');
+            return $this->inRegion(Region::Body, fn (): LayoutResult => $this->engine->layout($body, $root, new Constraints($contentWidth, $bodyHeight, true), $token, pathName: 'body'));
         } finally {
             $this->ctx->clipInPlace = $was;
         }
@@ -281,7 +284,7 @@ final class Paginator
                 $width = $given === null
                     ? min($w, $this->engine->intrinsic($box, $root)['max'])
                     : max(0.0, self::resolve($given, $w));
-                $fragment = $this->withoutBookmarks(fn (): ?Fragment => $this->engine->layout($box, $root, new Constraints($width, null, true), pathName: sprintf('place[%d]', $i))->fragment);
+                $fragment = $this->inRegion(Region::Overlay, fn (): ?Fragment => $this->withoutBookmarks(fn (): ?Fragment => $this->engine->layout($box, $root, new Constraints($width, null, true), pathName: sprintf('place[%d]', $i))->fragment));
                 if ($fragment === null) {
                     continue;
                 }
@@ -325,7 +328,19 @@ final class Paginator
         if ($nodes === []) {
             return null;
         }
-        return $this->withoutBookmarks(fn (): ?Fragment => $this->engine->layout(Column::make(...$nodes), $root, new Constraints($width, null, true), pathName: $pathName)->fragment);
+        // The slot names are the region names.
+        $region = Region::from($pathName);
+        return $this->inRegion($region, fn (): ?Fragment => $this->withoutBookmarks(fn (): ?Fragment => $this->engine->layout(Column::make(...$nodes), $root, new Constraints($width, null, true), pathName: $pathName)->fragment));
+    }
+
+    /**
+     * @template T
+     * @param \Closure(): T $layout
+     * @return T
+     */
+    private function inRegion(Region $region, \Closure $layout): mixed
+    {
+        return $this->ctx->inRegion($region, $layout);
     }
 
     /**

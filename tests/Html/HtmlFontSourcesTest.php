@@ -182,8 +182,8 @@ final class HtmlFontSourcesTest extends TestCase
         $invoice = (require __DIR__ . '/../../../../examples/core/documents/invoice.php')->createdAt(new \DateTimeImmutable('2026-01-01T00:00:00Z'));
         $link = static fn (FontFace $f): string => 'fonts/' . basename($f->path);
 
-        self::assertSame('59b33bf557e69da41cec835f3d399268', md5($invoice->toHtml(new HtmlOptions(fullPage: true))->bytes()));
-        self::assertSame('5dbf1621a3644898628136581d358f1b', md5($invoice->toHtml(new HtmlOptions(fullPage: true, fontMode: FontMode::Embed))->bytes()));
-        self::assertSame('2396d6b6a3acaf3e68d786a56ed034d9', md5($invoice->toHtml(new HtmlOptions(fullPage: true, fontMode: FontMode::Link, fontUrl: $link))->bytes()));
+        self::assertSame('b2b7d198b97c93226b80b45d29893375', md5($invoice->toHtml(new HtmlOptions(fullPage: true))->bytes()));
+        self::assertSame('c80b44db3d11a57f731b6cc2fcff1a13', md5($invoice->toHtml(new HtmlOptions(fullPage: true, fontMode: FontMode::Embed))->bytes()));
+        self::assertSame('2039a561bc6f895c5e504ebb8b526a1e', md5($invoice->toHtml(new HtmlOptions(fullPage: true, fontMode: FontMode::Link, fontUrl: $link))->bytes()));
     }
 }

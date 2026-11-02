@@ -8,7 +8,11 @@ use Dskripchenko\PhpPdf\Barcode\{QrEccLevel, QrEncoder as PhpPdfEncoder};
 use Papercut\Barcode\{ErrorCorrection, QrEncoder};
 use Papercut\Exception\InvalidValue;
 
-/** php-pdf's encoder: QR versions 1 to 10, so up to 213 bytes at Medium. */
+/**
+ * php-pdf's encoder: QR versions 1 to 10, so up to 213 bytes at Medium.
+ *
+ * @internal Part of Papercut's PDF writer. Custom backends aren't supported, and it may change in any release.
+ */
 final class PhpPdfQrEncoder implements QrEncoder
 {
     public function encode(string $data, ErrorCorrection $level): array

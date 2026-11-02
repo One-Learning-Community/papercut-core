@@ -11,6 +11,8 @@ use Papercut\Value\Color;
 /**
  * A page-number placeholder carried in fragments. The Painter replaces
  * {page} and {total}, then aligns the text within $width.
+ *
+ * @internal Part of the display list between layout and the PDF writer. It may change in any release.
  */
 final readonly class PageNumberSlot
 {

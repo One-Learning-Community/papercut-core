@@ -6,7 +6,11 @@ namespace Papercut\Html;
 
 use Papercut\Text\{FontSet, FontStyle};
 
-/** Turns what a document used into one FontRequest per family, with the node that first needed it. */
+/**
+ * Turns what a document used into one FontRequest per family, with the node that first needed it.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ */
 final class FontRequests
 {
     /**

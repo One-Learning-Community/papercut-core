@@ -188,8 +188,10 @@ final class HtmlConverter
         $own = $css['style'] ?? new Style();
         switch ($tag) {
             case 'p':
-            case 'div':
                 $this->styled($own, $preset, fn () => $this->block($el, $style, $href, $preset, 'p'));
+                return;
+            case 'div':
+                $this->flowed($css, $preset, fn () => $this->block($el, $style, $href, $preset, 'p'));
                 return;
             case 'h1':
             case 'h2':
@@ -299,7 +301,7 @@ final class HtmlConverter
             $this->children($el, $style->merge($own), $href, $preset);
             return;
         }
-        $this->styled($own, $preset, fn () => $this->block($el, $style, $href, $preset, 'p'));
+        $this->flowed($css, $preset, fn () => $this->block($el, $style, $href, $preset, 'p'));
     }
 
     /**
@@ -310,7 +312,9 @@ final class HtmlConverter
      * grid; a cell also takes no margin); a cell's notes are made once per
      * table; 'rule' (an hr) takes its colours as the border colour.
      *
-     * @return array{style: Style, dropped: list<string>, float: bool, marker: ?ListMarker}|null
+     * `columns` is set only where the element may become a column flow and its CSS has a column count.
+     *
+     * @return array{style: Style, dropped: list<string>, float: bool, marker: ?ListMarker, columns: ?array{count: ?int, gap: ?Length, rule: ?array{width: Length, color: Color}}, columnDeclarations: list<string>, notes: list<array{FidelityLevel, string}>}|null
      */
     private function css(\Dom\Element $el, bool $inline, bool $list, ?string $part = null): ?array
     {
@@ -343,7 +347,59 @@ final class HtmlConverter
         foreach ($css['dropped'] as $declaration) {
             $each(FidelityLevel::Dropped, 'markup CSS "' . $declaration . '"');
         }
+        if ($css['columns'] !== null && ($css['columns']['count'] === null || !self::flowable($el->localName))) {
+            foreach ($css['columnDeclarations'] as $declaration) {
+                $each(FidelityLevel::Dropped, 'markup CSS "' . $declaration . '"');
+            }
+            $css['columns'] = null;
+            $css['notes'] = [];
+        }
+        foreach ($css['notes'] as [$level, $feature]) {
+            $each($level, $feature);
+        }
         return $css;
+    }
+
+    /** Whether column CSS on this tag makes a flow: a div or an unmapped block, not table parts or `pre`. */
+    private static function flowable(string $tag): bool
+    {
+        return $tag === 'div'
+            || (in_array($tag, self::UNKNOWN_BLOCKS, true) && !in_array($tag, ['pre', 'table', 'caption', 'thead', 'tbody', 'tfoot', 'tr', 'td', 'th'], true));
+    }
+
+    /**
+     * Like styled(), and when the element's CSS has a column count, wraps what it made in a markup column flow.
+     * Box styles go on a plain View around the flow, since a flow takes none of its own.
+     *
+     * @param array{style: Style, columns: ?array{count: ?int, gap: ?Length, rule: ?array{width: Length, color: Color}}}|null $css
+     * @param \Closure(): void $convert
+     */
+    private function flowed(?array $css, ?string $outer, \Closure $convert): void
+    {
+        $columns = $css['columns'] ?? null;
+        if ($columns === null || $columns['count'] === null) {
+            $this->styled($css['style'] ?? new Style(), $outer, $convert);
+            return;
+        }
+        $this->flush($outer);
+        $start = count($this->blocks);
+        $convert();
+        $made = array_splice($this->blocks, $start);
+        if ($made === []) {
+            return;
+        }
+        $flow = View::make(...array_map(static fn (array $b): Node|Component => $b[0], $made))->columns($columns['count']);
+        if ($columns['gap'] !== null) {
+            $flow = $flow->columnGap($columns['gap']);
+        }
+        if ($columns['rule'] !== null) {
+            $flow = $flow->columnRule($columns['rule']['width'], $columns['rule']['color']);
+        }
+        $spec = $flow->columnSpec() ?? throw new \LogicException('columns() always sets a spec.');
+        $flow = $flow->withColumnSpec($spec->withFromMarkup());
+        $own = $css['style'] ?? new Style();
+        $blank = array_filter($made, static fn (array $b): bool => !$b[1]) === [];
+        $this->blocks[] = [$own->isEmpty() ? $flow : View::make($flow)->apply($own), $blank];
     }
 
     /**

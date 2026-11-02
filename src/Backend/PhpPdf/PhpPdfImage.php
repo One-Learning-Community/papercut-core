@@ -7,6 +7,7 @@ namespace Papercut\Backend\PhpPdf;
 use Dskripchenko\PhpPdf\Image\PdfImage;
 use Papercut\Backend\ImageHandle;
 
+/** @internal Part of Papercut's PDF writer. Custom backends aren't supported, and it may change in any release. */
 final class PhpPdfImage implements ImageHandle
 {
     public function __construct(

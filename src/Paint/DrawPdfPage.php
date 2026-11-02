@@ -6,7 +6,11 @@ namespace Papercut\Paint;
 
 use Papercut\Backend\PdfPageHandle;
 
-/** A page of another PDF, drawn to fill this rectangle. */
+/**
+ * A page of another PDF, drawn to fill this rectangle.
+ *
+ * @internal Part of the display list between layout and the PDF writer. It may change in any release.
+ */
 final readonly class DrawPdfPage implements Op
 {
     public function __construct(

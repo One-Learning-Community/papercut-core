@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Papercut\Tests\Feature;
 
-use Papercut\{Document, Page, Text, Toc};
+use Papercut\{ColumnFlow, Document, Page, Text, Toc};
 use Papercut\Export\PdfOptions;
 use Papercut\Tests\Support\PdfInspector;
 use PHPUnit\Framework\TestCase;
@@ -83,5 +83,19 @@ final class TocPdfTest extends TestCase
         self::assertContains('3', $first);
         self::assertContains('3', $second);
         self::assertNotContains('2', $second);
+    }
+
+    public function test_a_toc_inside_a_column_flow_lists_headings_inside_and_outside_it(): void
+    {
+        $pdf = Document::make(
+            Page::a6()->body(
+                Text::h1('Outside heading'),
+                ColumnFlow::make(Toc::make(), Text::h1('Inside heading'), Text::make('Body text')),
+            ),
+        )->toPdf()->bytes();
+
+        $words = self::words($pdf, 1);
+        self::assertSame(2, count(array_keys($words, 'Outside')), 'listed once and set once');
+        self::assertSame(2, count(array_keys($words, 'Inside')), 'listed once and set once');
     }
 }

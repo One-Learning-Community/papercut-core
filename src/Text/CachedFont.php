@@ -6,6 +6,7 @@ namespace Papercut\Text;
 
 use Papercut\Backend\FontHandle;
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final class CachedFont implements FontHandle
 {
     /** @var array<string, float> unit-size advances keyed by text */

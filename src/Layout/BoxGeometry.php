@@ -14,6 +14,8 @@ use Papercut\Value\{Auto, Length, Percent};
  * Box-model helpers. Widths and heights are border-box sizes. Margins are
  * applied by the parent when it positions a child, so $available here is the
  * space left after the parent removed the child's horizontal margins.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final class BoxGeometry
 {

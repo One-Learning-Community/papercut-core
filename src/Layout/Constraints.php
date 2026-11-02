@@ -15,6 +15,8 @@ namespace Papercut\Layout;
  * background and side borders reach the slice bottom), and $open, which says
  * the box's rows go on in the next slice, so it draws no bottom edge even if
  * its own content is done.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final readonly class Constraints
 {

@@ -15,6 +15,8 @@ use Papercut\View;
  * A table of contents: the title, then one line per listed heading, stacked by
  * the block layouter. Each line keeps room for a page number and carries a
  * TocSlot the Painter fills in once the heading's page is known.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final class TocLayouter implements Layouter
 {

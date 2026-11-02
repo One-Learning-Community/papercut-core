@@ -10,6 +10,8 @@ namespace Papercut\Layout;
  * height; split() lays them out in parallel within a height, each child
  * keeping its own break token (null = finished; on resume finished children
  * draw nothing).
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final class ParallelSplit
 {

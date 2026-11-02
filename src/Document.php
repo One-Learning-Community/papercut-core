@@ -95,6 +95,7 @@ final class Document
         return $this->pages;
     }
 
+    /** @internal */
     public function meta(): DocumentMeta
     {
         return new DocumentMeta($this->title, $this->author, $this->subject, $this->keywords, $this->lang, $this->createdAt);

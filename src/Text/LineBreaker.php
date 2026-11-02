@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Papercut\Text;
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final class LineBreaker
 {
     private const float EPS = 1e-9;

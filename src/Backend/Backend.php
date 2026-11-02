@@ -7,6 +7,7 @@ namespace Papercut\Backend;
 use Papercut\Paint\DocumentMeta;
 use Papercut\Paint\PageDisplayList;
 
+/** @internal Part of Papercut's PDF writer. Custom backends aren't supported, and it may change in any release. */
 interface Backend
 {
     /** @throws \Papercut\Exception\FontNotFound */

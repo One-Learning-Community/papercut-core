@@ -11,6 +11,8 @@ use Papercut\Paint\{Op, PageNumberSlot, TocSlot};
  * the layouter that created it builds it: once returned from layout() it is
  * immutable. Never mutate a fragment you did not create; the paginator
  * reuses header and footer fragments across pages.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final class Fragment
 {

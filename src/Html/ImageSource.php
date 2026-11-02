@@ -9,7 +9,11 @@ use Papercut\Export\LoadedImage;
 use Papercut\Image;
 use Papercut\Paint\Link;
 
-/** Decides what goes in an img src: the caller's URL when it is safe, otherwise the image itself as a data URI. */
+/**
+ * Decides what goes in an img src: the caller's URL when it is safe, otherwise the image itself as a data URI.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ */
 final class ImageSource
 {
     /**

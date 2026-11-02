@@ -11,7 +11,7 @@ There is no browser and no CSS cascade.
 
 **Documentation:** [one-learning-community.github.io/papercut](https://one-learning-community.github.io/papercut/guide/)
 
-> **Status: 0.6, before 1.0.** Until 1.0 a minor version may change the API; patch versions won't. Using Laravel? See
+> **Status: 0.8, before 1.0.** Until 1.0 a minor version may change the API; patch versions won't. Using Laravel? See
 > [`papercut/laravel`](../laravel) for the Blade front end of this same engine.
 
 ## Requirements
@@ -496,11 +496,11 @@ the primary font lacks.
 ```php
 use Papercut\{Column, Document, Page, Text};
 use Papercut\Export\PdfOptions;
-use Papercut\Text\{FontFace, FontRegistry, FontSet};
+use Papercut\Text\{FontFace, FontSet};
 use function Papercut\{mm, pt};
 
 // Add your own family (paths to TTFs), here reusing the bundled files under another name:
-$inter = dirname((new ReflectionClass(FontRegistry::class))->getFileName(), 3) . '/resources/fonts/Inter';
+$inter = dirname((new ReflectionClass(FontSet::class))->getFileName(), 3) . '/resources/fonts/Inter';
 $fonts = (new FontSet())
     ->with(new FontFace('Brand', $inter . '/Inter-Regular.ttf', 400), new FontFace('Brand', $inter . '/Inter-Bold.ttf', 700))
     ->withFallbacks('Inter');

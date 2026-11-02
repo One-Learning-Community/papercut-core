@@ -13,6 +13,8 @@ use Papercut\Value\Length;
  * An SVG is monolithic, sized like an image from its natural size. Its view box is placed in the
  * content box by preserveAspectRatio, and anything drawn outside the box is clipped, as a
  * browser does.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final class SvgLayouter implements Layouter
 {

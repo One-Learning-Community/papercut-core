@@ -7,6 +7,7 @@ namespace Papercut\Text;
 use Papercut\Backend\Backend;
 use Papercut\Exception\{FontNotFound, InvalidValue};
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final class FontRegistry
 {
     /** @var array<string, array{name: string, faces: array<string, string>}> family key => faces "weight|style" => path */

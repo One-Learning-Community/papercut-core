@@ -13,6 +13,8 @@ use Papercut\Style\{ComputedStyle, PageThemes, StyleResolver, Theme};
  * regions (background, header, body, footer, overlay), then nodes, with computed styles
  * and paths. Paths match layout's in every region, so errors read the same
  * as from toPdf().
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final class TreeWalker
 {
@@ -66,7 +68,8 @@ final class TreeWalker
         ];
     }
 
-    private function visit(Node $node, ComputedStyle $parent, string $parentPath, int $index, TreeVisitor $visitor, Region $region, ?Node $parentNode = null, bool $inHeader = false, ?ComputedStyle $rowStyle = null): void
+    /** @param list<array{node: Node, style: ComputedStyle}> $ancestors */
+    private function visit(Node $node, ComputedStyle $parent, string $parentPath, int $index, TreeVisitor $visitor, Region $region, ?Node $parentNode = null, bool $inHeader = false, ?ComputedStyle $rowStyle = null, array $ancestors = []): void
     {
         $provisional = $parentPath . ' > ' . NodePath::segment($node, null, $index);
         try {
@@ -84,31 +87,32 @@ final class TreeWalker
             throw new InvalidStructure(sprintf('A table of contents only works in a page body (at %s).', $path));
         }
 
-        $at = new Visit($path, $index, $parentNode, $inHeader, $region);
+        $at = new Visit($path, $index, $parentNode, $inHeader, $region, $ancestors);
         if ($visitor->enter($node, $style, $at)) {
-            $this->children($node, $style, $path, $visitor, $region, $inHeader);
+            $this->children($node, $style, $path, $visitor, $region, $inHeader, [...$ancestors, ['node' => $node, 'style' => $style]]);
         }
         $visitor->leave($node, $style, $at);
     }
 
-    private function children(Node $node, ComputedStyle $style, string $path, TreeVisitor $visitor, Region $region, bool $inHeader): void
+    /** @param list<array{node: Node, style: ComputedStyle}> $ancestors the node and its ancestors */
+    private function children(Node $node, ComputedStyle $style, string $path, TreeVisitor $visitor, Region $region, bool $inHeader, array $ancestors): void
     {
         if ($node instanceof View || $node instanceof Link || $node instanceof TableCell || $node instanceof ListItem || $node instanceof Place) {
             foreach ($node->children() as $i => $child) {
-                $this->visit(Expander::expand($child, $this->theme), $style, $path, $i, $visitor, $region, $node, $inHeader);
+                $this->visit(Expander::expand($child, $this->theme), $style, $path, $i, $visitor, $region, $node, $inHeader, null, $ancestors);
             }
         } elseif ($node instanceof ListNode) {
             foreach ($node->items() as $i => $item) {
-                $this->visit($item, $style, $path, $i, $visitor, $region, $node, $inHeader);
+                $this->visit($item, $style, $path, $i, $visitor, $region, $node, $inHeader, null, $ancestors);
             }
         } elseif ($node instanceof Table) {
             $headers = count($node->headerRows());
             foreach ([...$node->headerRows(), ...$node->bodyRows()] as $r => $row) {
-                $this->visit($row, $style, $path, $r, $visitor, $region, $node, $r < $headers);
+                $this->visit($row, $style, $path, $r, $visitor, $region, $node, $r < $headers, null, $ancestors);
             }
         } elseif ($node instanceof TableRow) {
             foreach ($node->cells() as $j => $cell) {
-                $this->visit($cell, $style, $path, $j, $visitor, $region, $node, $inHeader, $style);
+                $this->visit($cell, $style, $path, $j, $visitor, $region, $node, $inHeader, $style, $ancestors);
             }
         }
     }

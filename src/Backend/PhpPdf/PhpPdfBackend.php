@@ -24,6 +24,11 @@ use Papercut\Paint\{Anchor, Bookmark, Clip, DocumentMeta, DrawImage, DrawPdfPage
 use Papercut\Text\CachedFont;
 use Papercut\Value\Color;
 
+/**
+ * Papercut's PDF writer, on php-pdf. Making one with its constructor options and passing it to
+ * `PdfOptions(backend:)` is supported (for example to cache fonts as PHP files for opcache). Its other
+ * methods are internal and may change in any release.
+ */
 final class PhpPdfBackend implements Backend, PdfPageLoader
 {
     /** The document being rendered, for outline entries. */

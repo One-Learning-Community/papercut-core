@@ -7,7 +7,11 @@ namespace Papercut\Tree;
 use Papercut\{Component, Node, ThemedComponent};
 use Papercut\Style\Theme;
 
-/** Renders Components down to a Node. */
+/**
+ * Renders Components down to a Node.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ */
 final class Expander
 {
     public const int MAX_DEPTH = 100;

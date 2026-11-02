@@ -6,7 +6,11 @@ namespace Papercut\Code;
 
 use Papercut\Value\Color;
 
-/** Muted chrome colours for a code block (label, border, strip bar, caption rule), chosen by the background's brightness. */
+/**
+ * Muted chrome colours for a code block (label, border, strip bar, caption rule), chosen by the background's brightness.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ */
 final readonly class CodeColors
 {
     private function __construct(

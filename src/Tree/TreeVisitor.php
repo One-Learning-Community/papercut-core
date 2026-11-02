@@ -7,6 +7,7 @@ namespace Papercut\Tree;
 use Papercut\{Node, Page};
 use Papercut\Style\ComputedStyle;
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 interface TreeVisitor
 {
     public function enterPage(Page $page, int $index): void;

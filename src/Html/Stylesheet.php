@@ -7,7 +7,11 @@ namespace Papercut\Html;
 use Papercut\Document;
 use Papercut\Export\HtmlOptions;
 
-/** The fixed stylesheet shared by every HTML export; only the page box and @font-face rules vary. */
+/**
+ * The fixed stylesheet shared by every HTML export; only the page box and @font-face rules vary.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ */
 final class Stylesheet
 {
     public static function css(Document $doc, HtmlOptions $o, string $fontFaces): string
@@ -35,6 +39,7 @@ final class Stylesheet
             '.papercut .pc-header,.papercut .pc-body,.papercut .pc-footer,.papercut .pc-background{display:flex;flex-direction:column;align-items:stretch}',
             '.papercut .pc-background{position:absolute;inset:0;z-index:-1}',
             '.papercut .pc-break{break-before:page}',
+            '.papercut .pc-column-break{break-before:column}',
             ...($pageRule === null ? [] : [$pageRule]),
             '@media print{.papercut{background:none;padding:0}.papercut .pc-page{max-width:none;min-height:0;margin:0;padding:0;box-shadow:none;break-after:page}.papercut tr{break-inside:avoid}}',
         ]);

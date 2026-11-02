@@ -6,6 +6,7 @@ namespace Papercut\Text;
 
 use Papercut\Style\ComputedStyle;
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final readonly class InlineItem
 {
     /**

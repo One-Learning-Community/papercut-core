@@ -52,6 +52,8 @@ use Papercut\Value\{Auto, Fr, Length, Percent};
  * Column measures and resolved grids are cached per Table instance (keyed by
  * the inherited style and width), so continuations and retries neither
  * re-measure cells nor repeat column warnings.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final class TableLayouter implements Layouter
 {
@@ -262,7 +264,7 @@ final class TableLayouter implements Layouter
 
     private function warnDroppedHeader(Table $table, LayoutEngine $engine): void
     {
-        if (!isset($this->headerWarned[$table])) {
+        if (!$engine->context()->muted && !isset($this->headerWarned[$table])) {
             $this->headerWarned[$table] = true;
             $engine->context()->warn('Table header leaves no room for a row; not repeated on that page');
         }

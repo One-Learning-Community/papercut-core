@@ -14,6 +14,8 @@ use Papercut\Value\Color;
  * Parses the small inline tag vocabulary into spans. Tags are recognised
  * first; entities are decoded afterwards, only inside text, so escaped
  * markup (&lt;b&gt;) can never become a tag.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final class InlineMarkup
 {

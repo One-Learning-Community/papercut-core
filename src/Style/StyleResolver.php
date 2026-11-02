@@ -13,6 +13,8 @@ use function Papercut\pt;
 /**
  * Resolves a node's computed style from the theme. Independent of layout, so
  * every exporter resolves styles identically.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final class StyleResolver
 {

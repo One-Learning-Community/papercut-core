@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Papercut\Tree;
 
 use Papercut\Node;
+use Papercut\Style\ComputedStyle;
 
 /**
  * Where a node sits in the walk. Built by TreeWalker; visitors only read it.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final readonly class Visit
 {
@@ -18,6 +21,8 @@ final readonly class Visit
         private ?Node $parent,
         private bool $inHeader,
         private Region $region,
+        /** @var list<array{node: Node, style: ComputedStyle}> */
+        private array $ancestors = [],
     ) {
     }
 
@@ -42,6 +47,17 @@ final readonly class Visit
     public function inHeader(): bool
     {
         return $this->inHeader;
+    }
+
+    /**
+     * Every enclosing node with its computed style, from the region's top-level node down to the parent
+     * (empty for a top-level node). Table rows, cells and list items are included.
+     *
+     * @return list<array{node: Node, style: ComputedStyle}>
+     */
+    public function ancestors(): array
+    {
+        return $this->ancestors;
     }
 
     public function region(): Region

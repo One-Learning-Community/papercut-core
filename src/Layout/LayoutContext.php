@@ -12,10 +12,13 @@ use Papercut\Page;
 use Papercut\Style\{ComputedStyle, PageThemes, StyleResolver, Theme};
 use Papercut\Text\{FontRegistry, Itemizer, SvgFonts};
 use Papercut\Toc\TocIndex;
+use Papercut\Tree\Region;
 
 /**
  * Shared state for one layout run: fonts, theme, images, warnings, the
  * current node path and the overflow mode.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final class LayoutContext
 {
@@ -37,6 +40,12 @@ final class LayoutContext
     private array $svgFonts = [];
     /** Path of the deepest node that returned DoesNotFit under fresh constraints; the paginator resets it. */
     public private(set) ?string $lastFailurePath = null;
+    /** The region being laid out; the paginator sets it around each call. Body unless it says otherwise. */
+    public Region $region = Region::Body;
+    /** @var list<array{node: Node, style: ComputedStyle}> every node being laid out, outermost first, the current one last */
+    private array $stack = [];
+    /** Stack index of the region root while inRegion() runs, or null outside it. */
+    private ?int $rootIndex = null;
     /** Off while laying out headers, footers and backgrounds, which repeat on every page. */
     public bool $bookmarks = true;
     /** Off while laying out repeating bands, like $bookmarks. */
@@ -50,6 +59,8 @@ final class LayoutContext
     /** On inside quietly(). */
     public private(set) bool $quiet = false;
     private bool $heldBack = false;
+    /** On inside trial(): warnings, fidelity notes and failure paths are discarded. */
+    public private(set) bool $muted = false;
     public private(set) StyleResolver $styles;
     /** The theme of each page; when set, usePage() switches to the page's theme. */
     public ?PageThemes $themes = null;
@@ -130,6 +141,28 @@ final class LayoutContext
         }
     }
 
+    /**
+     * Runs $fn for a layout whose result may be thrown away (a column flow trying heights): nothing it
+     * reports is kept, whether a warning, a fidelity note or the failure path, and a too-tall node is not
+     * clipped in place.
+     *
+     * @template T
+     * @param \Closure(): T $fn
+     * @return T
+     */
+    public function trial(\Closure $fn): mixed
+    {
+        [$muted, $clip] = [$this->muted, $this->clipInPlace];
+        $this->muted = true;
+        $this->clipInPlace = false;
+        try {
+            return $this->quietly($fn)[0];
+        } finally {
+            $this->muted = $muted;
+            $this->clipInPlace = $clip;
+        }
+    }
+
     /** Inside quietly(): notes that a report or throw was held back. */
     public function holdBack(): void
     {
@@ -141,7 +174,7 @@ final class LayoutContext
     {
         $report = new FidelityReport(FidelityLevel::Approximated, $this->format, $feature, $this->path());
         $key = "\0approximated\0" . $report->path . "\0" . $feature;
-        if ($this->onWarning === null || isset($this->warned[$key])) {
+        if ($this->muted || $this->onWarning === null || isset($this->warned[$key])) {
             return;
         }
         $this->warned[$key] = true;
@@ -154,7 +187,7 @@ final class LayoutContext
     /** $withPath false: the message already names its node. */
     public function warn(string $msg, bool $withPath = true): void
     {
-        if ($this->onWarning === null) {
+        if ($this->muted || $this->onWarning === null) {
             return;
         }
         $path = $withPath ? $this->path() : '';
@@ -165,7 +198,7 @@ final class LayoutContext
     public function warnOnce(string $msg, bool $withPath = true): void
     {
         $key = ($withPath ? $this->path() : '') . "\0" . $msg;
-        if (isset($this->warned[$key])) {
+        if ($this->muted || isset($this->warned[$key])) {
             return;
         }
         $this->warned[$key] = true;
@@ -181,6 +214,60 @@ final class LayoutContext
     public function popPath(): void
     {
         array_pop($this->path);
+    }
+
+    /** @internal LayoutEngine only: the node being laid out, after its style is resolved. */
+    public function pushNode(Node $node, ComputedStyle $style): void
+    {
+        $this->stack[] = ['node' => $node, 'style' => $style];
+    }
+
+    /** @internal */
+    public function popNode(): void
+    {
+        array_pop($this->stack);
+    }
+
+    /**
+     * Runs $fn with the region set; the first node laid out inside is the region's root (the body View,
+     * a header or footer column, the background), which ancestors() and lineage() leave out.
+     *
+     * @template T
+     * @param \Closure(): T $fn
+     * @return T
+     */
+    public function inRegion(Region $region, \Closure $fn): mixed
+    {
+        $was = [$this->region, $this->rootIndex];
+        $this->region = $region;
+        $this->rootIndex = count($this->stack);
+        try {
+            return $fn();
+        } finally {
+            [$this->region, $this->rootIndex] = $was;
+        }
+    }
+
+    /**
+     * The nodes around the one being laid out, from just below the region root to its parent: what a
+     * layouter needs to judge itself. Outside inRegion() (a direct engine call) nothing is dropped.
+     *
+     * @return list<array{node: Node, style: ComputedStyle}>
+     */
+    public function ancestors(): array
+    {
+        return array_slice($this->lineage(), 0, -1);
+    }
+
+    /**
+     * Like ancestors() but ending with the node being laid out: what a layouter needs to judge its own
+     * children, which are not pushed until they are laid out.
+     *
+     * @return list<array{node: Node, style: ComputedStyle}>
+     */
+    public function lineage(): array
+    {
+        return array_slice($this->stack, $this->rootIndex === null ? 0 : $this->rootIndex + 1);
     }
 
     public function path(): string
@@ -205,6 +292,9 @@ final class LayoutContext
 
     public function setLastFailurePath(?string $path): void
     {
+        if ($this->muted) {
+            return;
+        }
         $this->lastFailurePath = $path;
     }
 

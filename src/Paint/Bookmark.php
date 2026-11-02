@@ -7,6 +7,8 @@ namespace Papercut\Paint;
 /**
  * An entry in the PDF's bookmarks panel, pointing at the top-left of the block that set it.
  * It draws nothing.
+ *
+ * @internal Part of the display list between layout and the PDF writer. It may change in any release.
  */
 final readonly class Bookmark implements Op
 {

@@ -8,6 +8,8 @@ namespace Papercut\Text;
  * Picks the font for each SVG <text> from the registered families, so SVG text is embedded
  * like any other text. A font-family the document registered wins; otherwise the SVG element's
  * own family is used. Text that font cannot show tries the fallback families.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final class SvgFonts
 {

@@ -16,6 +16,8 @@ use Papercut\Vector\SvgDocument;
  * A QR code is a monolithic square. Its side is the width (or height) when set, else 25mm,
  * clamped by min/max-width and the space available; an empty page that is too short shrinks it.
  * A plain code is drawn as rectangles; a styled one as the SVG Bacon draws, quiet zone included.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final class QrCodeLayouter implements Layouter
 {

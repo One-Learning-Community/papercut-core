@@ -9,7 +9,11 @@ use Papercut\Backend\ImageFormat;
 use Papercut\Exception\ImageUnreadable;
 use Papercut\Image;
 
-/** An image the backend accepted, with the bytes and facts HTML needs. */
+/**
+ * An image the backend accepted, with the bytes and facts HTML needs.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ */
 final readonly class LoadedImage
 {
     private function __construct(

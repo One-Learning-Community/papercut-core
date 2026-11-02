@@ -10,6 +10,8 @@ use Papercut\Style\ComputedStyle;
 
 /**
  * Sizing for replaced content with an intrinsic size and aspect ratio: images and SVG.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final class ReplacedBox
 {

@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Papercut\Backend;
 
-/** A backend that can draw pages of existing PDFs. Backends without it cannot draw a PdfPage. */
+/**
+ * A backend that can draw pages of existing PDFs. Backends without it cannot draw a PdfPage.
+ *
+ * @internal Part of Papercut's PDF writer. Custom backends aren't supported, and it may change in any release.
+ */
 interface PdfPageLoader
 {
     /**

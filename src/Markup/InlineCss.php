@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Papercut\Markup;
 
 use Papercut\Exception\InvalidValue;
+use Papercut\Export\FidelityLevel;
 use Papercut\Style\ListMarker;
 use Papercut\Style\Style;
 use Papercut\Style\TextAlign;
 use Papercut\Value\Color;
+use Papercut\Value\ColumnSpec;
 use Papercut\Value\Edges;
 use Papercut\Value\Length;
 use Papercut\Value\Percent;
@@ -28,6 +30,8 @@ final class InlineCss
     /** Properties that apply to span-level elements. */
     private const array TEXT = ['color', 'font-size', 'font-weight', 'font-style', 'text-decoration', 'background-color'];
 
+    private const array COLUMN = ['column-count', 'columns', 'column-gap', 'column-rule'];
+
     private const array BOX = [
         'width' => 'width', 'height' => 'height',
         'min-width' => 'minWidth', 'max-width' => 'maxWidth',
@@ -35,7 +39,10 @@ final class InlineCss
     ];
 
     /**
-     * @return array{style: Style, dropped: list<string>, float: bool, marker: ?ListMarker}
+     * `columns` is null unless a column declaration was read; `columnDeclarations` are those declarations as
+     * written; `notes` are features kept in part (a `columns` width, a non-solid rule style).
+     *
+     * @return array{style: Style, dropped: list<string>, float: bool, marker: ?ListMarker, columns: ?array{count: ?int, gap: ?Length, rule: ?array{width: Length, color: Color}}, columnDeclarations: list<string>, notes: list<array{FidelityLevel, string}>}
      */
     public static function parse(string $declarations, bool $inline, bool $list = false, bool $rule = false): array
     {
@@ -43,6 +50,10 @@ final class InlineCss
         $dropped = [];
         $float = false;
         $marker = null;
+        /** @var array{count: ?int, gap: ?Length, rule: ?array{width: Length, color: Color}}|null $columns */
+        $columns = null;
+        $columnDeclarations = [];
+        $notes = [];
         foreach (explode(';', $declarations) as $declaration) {
             $declaration = trim($declaration);
             if ($declaration === '') {
@@ -55,6 +66,17 @@ final class InlineCss
             $value = trim(preg_replace('/!\s*important\s*$/i', '', $value) ?? $value);
             if ($inline && !in_array($property, self::TEXT, true)) {
                 if ($property !== 'float' || strtolower($value) !== 'none') {
+                    $dropped[] = $declaration;
+                }
+                continue;
+            }
+            if (in_array($property, self::COLUMN, true)) {
+                $columnDeclarations[] = $declaration;
+                try {
+                    $columns ??= ['count' => null, 'gap' => null, 'rule' => null];
+                    /** @var array{count: ?int, gap: ?Length, rule: ?array{width: Length, color: Color}} $columns */
+                    $columns = [...$columns, ...self::column($property, $value, $declaration, $notes)];
+                } catch (InvalidValue) {
                     $dropped[] = $declaration;
                 }
                 continue;
@@ -84,7 +106,111 @@ final class InlineCss
         }
 
         /** @var array<string, mixed> $props */
-        return ['style' => new Style(...$props), 'dropped' => $dropped, 'float' => $float, 'marker' => $marker];
+        return ['style' => new Style(...$props), 'dropped' => $dropped, 'float' => $float, 'marker' => $marker, 'columns' => $columns, 'columnDeclarations' => $columnDeclarations, 'notes' => $notes];
+    }
+
+    /**
+     * The column settings one declaration changes.
+     *
+     * @param list<array{FidelityLevel, string}> $notes
+     * @return array<string, mixed>
+     * @throws InvalidValue
+     */
+    private static function column(string $property, string $value, string $declaration, array &$notes): array
+    {
+        $keyword = strtolower($value);
+        switch ($property) {
+            case 'column-count':
+                return ['count' => self::count($keyword, $declaration, $notes)];
+            case 'columns':
+                $count = null;
+                foreach (preg_split('/\s+/', $keyword) ?: [] as $part) {
+                    if ($part === 'auto') {
+                        continue;
+                    }
+                    if (preg_match('/^\d+$/', $part) === 1) {
+                        $count = $count === null ? self::count($part, $declaration, $notes) : throw InvalidValue::for('columns', $value);
+                        continue;
+                    }
+                    Length::parse(self::units($part))->absolute('column width');
+                    $notes[] = [FidelityLevel::Dropped, 'markup CSS "' . $declaration . '" (column width part)'];
+                }
+                if ($count === null) {
+                    throw InvalidValue::for('columns', $value);
+                }
+                return ['count' => $count];
+            case 'column-gap':
+                if ($keyword === 'normal') {
+                    return ['gap' => null];
+                }
+                $gap = Length::parse(self::units($value))->absolute('column gap');
+                if ($gap->points < 0) {
+                    throw InvalidValue::for('column gap', $value);
+                }
+                return ['gap' => $gap];
+        }
+        return ['rule' => self::rule($keyword, $value, $declaration, $notes)];
+    }
+
+    /**
+     * @param list<array{FidelityLevel, string}> $notes
+     * @throws InvalidValue
+     */
+    private static function count(string $value, string $declaration, array &$notes): int
+    {
+        if (preg_match('/^\d+$/', $value) !== 1) {
+            throw InvalidValue::for('column count', $value);
+        }
+        $digits = ltrim($value, '0');
+        if ($digits === '') {
+            throw InvalidValue::for('column count', $value);
+        }
+        // compare as text first, so a value too big for an int never gets cast
+        if (strlen($digits) > 3 || (int) $digits > ColumnSpec::MAX_COLUMNS) {
+            $notes[] = [FidelityLevel::Approximated, 'markup CSS "' . $declaration . '" (column count limited to ' . ColumnSpec::MAX_COLUMNS . ')'];
+            return ColumnSpec::MAX_COLUMNS;
+        }
+        return (int) $digits;
+    }
+
+    /**
+     * @param list<array{FidelityLevel, string}> $notes
+     * @return array{width: Length, color: Color}|null null for no rule
+     * @throws InvalidValue
+     */
+    private static function rule(string $keyword, string $value, string $declaration, array &$notes): ?array
+    {
+        $width = null;
+        $color = null;
+        $style = null;
+        preg_match_all('/[^\s(]+(?:\([^)]*\))?/', $value, $parts);
+        foreach ($parts[0] as $part) {
+            $lower = strtolower($part);
+            if (in_array($lower, ['none', 'hidden', 'solid', 'dashed', 'dotted', 'double', 'groove', 'ridge', 'inset', 'outset'], true)) {
+                $style = $style === null ? $lower : throw InvalidValue::for('column rule', $value);
+                continue;
+            }
+            $thick = ['thin' => '1px', 'medium' => '3px', 'thick' => '5px'][$lower] ?? null;
+            if ($thick !== null || preg_match('/^[+\-.\d]/', $lower) === 1) {
+                $length = Length::parse(self::units($thick ?? $lower))->absolute('column rule width');
+                if ($length->points < 0) {
+                    throw InvalidValue::for('column rule width', $part);
+                }
+                $width = $width === null ? $length : throw InvalidValue::for('column rule', $value);
+                continue;
+            }
+            $color = $color === null ? ($lower === 'currentcolor' ? Color::black() : Color::parse($part)) : throw InvalidValue::for('column rule', $value);
+        }
+        if ($style === null) {
+            throw InvalidValue::for('column rule', $value)->because('give a line style');
+        }
+        if ($style === 'none' || $style === 'hidden' || ($width !== null && $width->points <= 0)) {
+            return null;
+        }
+        if ($style !== 'solid') {
+            $notes[] = [FidelityLevel::Approximated, 'markup CSS "' . $declaration . '" (' . $style . ' rule drawn solid)'];
+        }
+        return ['width' => $width ?? Length::parse('3px'), 'color' => $color ?? Color::black()];
     }
 
     /**

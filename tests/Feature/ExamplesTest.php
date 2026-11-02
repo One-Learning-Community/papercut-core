@@ -15,7 +15,7 @@ final class ExamplesTest extends TestCase
     /** @return array<string, array{string, int, int}> name, min pages, max pages */
     public static function examples(): array
     {
-        return ['invoice' => ['invoice', 1, 1], 'transcript' => ['transcript', 2, \PHP_INT_MAX], 'report' => ['report', 2, \PHP_INT_MAX], 'responses' => ['responses', 1, 1], 'guide' => ['guide', 3, 3], 'certificate' => ['certificate', 1, 1], 'article' => ['article', 2, 2]];
+        return ['invoice' => ['invoice', 1, 1], 'transcript' => ['transcript', 2, \PHP_INT_MAX], 'report' => ['report', 2, \PHP_INT_MAX], 'responses' => ['responses', 1, 1], 'guide' => ['guide', 3, 3], 'certificate' => ['certificate', 1, 1], 'article' => ['article', 2, 2], 'paper' => ['paper', 2, 2]];
     }
 
     #[DataProvider('examples')]
@@ -46,6 +46,47 @@ final class ExamplesTest extends TestCase
         // Strict mode throws on anything it can't convert, so reaching the assertion means there were no warnings.
         $bytes = $document->toPdf(new PdfOptions(strict: true))->bytes();
         self::assertStringStartsWith('%PDF', $bytes);
+    }
+
+    public function test_paper_has_two_column_body_and_full_width_abstract(): void
+    {
+        $document = require dirname(__DIR__, 4) . '/examples/core/documents/paper.php';
+        self::assertInstanceOf(Document::class, $document);
+        $words = PdfInspector::words($document->toPdf()->bytes(), 1);
+        $at = static function (string $text) use ($words): array {
+            foreach ($words as $w) {
+                if ($w['text'] === $text) {
+                    return $w;
+                }
+            }
+            self::fail("No word '$text' on page 1");
+        };
+        $margin = 18 / 25.4 * 72;
+        $bodyWidth = $document->pages()[0]->width() - 2 * $margin;
+        $secondColumn = $margin + ($bodyWidth - 6 / 25.4 * 72) / 2 + 6 / 25.4 * 72;
+
+        // The abstract sits in a padded box (8pt) and its lines run across the whole body width.
+        $abstract = $at('Abstract');
+        $intro = $at('1.');
+        self::assertEqualsWithDelta($margin + 8, $abstract['xMin'], 1.0);
+        $right = 0.0;
+        foreach ($words as $w) {
+            if ($w['yMin'] > $abstract['yMin'] && $w['yMax'] < $intro['yMin']) {
+                $right = max($right, $w['xMax']);
+            }
+        }
+        self::assertGreaterThan($secondColumn + 100, $right, 'the abstract runs past where column two starts');
+
+        // The body below it starts at the left margin and, in column two, at the second column's edge.
+        self::assertEqualsWithDelta($margin, $intro['xMin'], 1.0);
+        $starts = [];
+        foreach ($words as $w) {
+            if ($w['yMin'] > $intro['yMin'] - 1) {
+                $starts[(int) round($w['xMin'])] = true;
+            }
+        }
+        self::assertArrayHasKey((int) round($margin), $starts);
+        self::assertArrayHasKey((int) round($secondColumn), $starts);
     }
 
     public function test_certificate_has_the_template_and_overlay_text(): void

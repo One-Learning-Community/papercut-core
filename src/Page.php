@@ -104,7 +104,7 @@ final class Page implements Node
      * on it, background included, as for a certificate or a letterhead. The PDF is read now,
      * to learn its size.
      *
-     * @param PdfPageLoader|null $loader reads the PDF (null = the default backend)
+     * @param PdfPageLoader|null $loader internal, for tests: reads the PDF (null = the default backend)
      * @throws \Papercut\Exception\PdfUnreadable
      */
     public static function template(PdfPage $pdf, ?PdfPageLoader $loader = null): self

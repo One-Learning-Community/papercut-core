@@ -8,7 +8,11 @@ use Papercut\{Link, Node};
 use Papercut\Paint\Link as LinkOp;
 use Papercut\Style\ComputedStyle;
 
-/** A Link lays out like a column block and adds a link annotation over each fragment. */
+/**
+ * A Link lays out like a column block and adds a link annotation over each fragment.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ */
 final class LinkLayouter implements Layouter
 {
     public function __construct(private readonly BlockLayouter $block)

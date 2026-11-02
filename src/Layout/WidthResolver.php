@@ -14,6 +14,8 @@ use Papercut\Toc\TocIndex;
 /**
  * Horizontal sizes from the layout engine's own flex and table calculations,
  * without pagination, so layout-free exporters match the PDF horizontally.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final class WidthResolver
 {

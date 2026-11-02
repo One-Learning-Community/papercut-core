@@ -11,6 +11,7 @@ use Papercut\Style\PageThemes;
 use Papercut\Toc\TocIndex;
 use Papercut\Tree\TreeWalker;
 
+/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final class HtmlExporter implements Exporter
 {
     public function export(Document $doc, ExportOptions $options): Output

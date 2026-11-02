@@ -6,7 +6,11 @@ namespace Papercut\Export;
 
 use Papercut\Exception\UnsupportedFeature;
 
-/** Collects what an exporter could not render faithfully; strict mode turns drops into exceptions. */
+/**
+ * Collects what an exporter could not render faithfully; strict mode turns drops into exceptions.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ */
 final class Fidelity
 {
     /** @var list<FidelityReport> */

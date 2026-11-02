@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Papercut\Backend;
 
+/** @internal Part of Papercut's PDF writer. Custom backends aren't supported, and it may change in any release. */
 interface FontHandle
 {
     /** Stable identifier, e.g. sha1 of the font file path. */

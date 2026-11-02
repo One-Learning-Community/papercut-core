@@ -7,6 +7,8 @@ namespace Papercut\Layout;
 /**
  * One physical page: its size and the fragments placed on it in paint order
  * (background, header, body, footer), at absolute page coordinates.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final readonly class PlacedPage
 {

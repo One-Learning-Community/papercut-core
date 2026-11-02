@@ -6,6 +6,7 @@ namespace Papercut\Paint;
 
 use Papercut\Exception\InvalidValue;
 
+/** @internal Part of the display list between layout and the PDF writer. It may change in any release. */
 final readonly class Link implements Op
 {
     /** The validated URI, leading whitespace removed. */

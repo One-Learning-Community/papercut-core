@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Papercut\Layout;
 
-use Papercut\{Link, Node, PageBreak, Spacer, View};
+use Papercut\{ColumnBreak, Link, Node, PageBreak, Spacer, View};
+use Papercut\Tree\{ColumnFlows, NodePath};
 use Papercut\Style\{Align, ComputedStyle, Direction};
 use Papercut\Value\{Length, Percent};
 
@@ -16,6 +17,8 @@ use Papercut\Value\{Length, Percent};
  * space goes to grow children, then to justify. An Auto-height box laid out
  * with a definiteHeight (flex stretch) stays splittable; when it completes in
  * a single slice it fills at least that height the same way.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final class BlockLayouter implements Layouter
 {
@@ -68,7 +71,14 @@ final class BlockLayouter implements Layouter
             $child = $engine->expand($children[$i]);
             $resuming = $resumeToken !== null && $i === $start;
 
-            if ($child instanceof PageBreak) {
+            if ($child instanceof PageBreak || $child instanceof ColumnBreak) {
+                if ($child instanceof ColumnBreak && !ColumnFlows::columnBreakAllowed($engine->context()->lineage())) {
+                    $ctx = $engine->context();
+                    $ctx->pushPath(NodePath::segment($child, null, $i));
+                    $path = $ctx->path();
+                    $ctx->popPath();
+                    throw ColumnFlows::strayBreak($path);
+                }
                 if ($monolithic || $i === $count - 1) {
                     continue;
                 }
@@ -78,14 +88,14 @@ final class BlockLayouter implements Layouter
                     }
                     return LayoutResult::doesNotFit();
                 }
-                $breakAt = new BreakToken(index: $i + 1);
+                $breakAt = new BreakToken(index: $i + 1, forced: self::kind($child));
                 break;
             }
 
             $cs = $engine->styleOf($child, $style, $i);
             if ($cs->breakBefore && !$resuming && !$monolithic) {
                 if ($placed !== []) {
-                    $breakAt = new BreakToken(index: $i);
+                    $breakAt = new BreakToken(index: $i, forced: ForcedBreak::Page);
                     break;
                 }
                 if (!$c->fresh) {
@@ -104,6 +114,16 @@ final class BlockLayouter implements Layouter
                 // Shrink to the content. A percentage width is a share of this box instead, so that child
                 // keeps the whole slot to resolve it against; alignment then uses the width it ends up with.
                 $width = min($engine->intrinsic($child, $style, $i)['max'], $slot);
+                if ($cs->minWidth instanceof Percent || $cs->maxWidth instanceof Percent) {
+                    // Percentage limits are shares of this box too: clamp against the slot, then pin the child to
+                    // that width so it doesn't resolve them again against its shrunk width.
+                    $max = BoxGeometry::resolve($cs->maxWidth, $slot);
+                    $min = BoxGeometry::resolve($cs->minWidth, $slot);
+                    // A fixed width is kept even when it's wider than the slot, as it would be without the limits.
+                    $base = $cs->width instanceof Length ? $cs->width->points : $width;
+                    $width = max($min ?? 0.0, min($base, $max ?? \INF));
+                    $child = ExactWidth::pin($child, $width, $cs);
+                }
             }
             // Inside a monolithic box every child is laid out as if on a fresh page, so leading forced breaks are ignored.
             $fresh = $monolithic || ($c->fresh && $placed === []);
@@ -184,13 +204,14 @@ final class BlockLayouter implements Layouter
             $cursor = $y + $f->height;
 
             if ($res->status === Status::Partial && $res->token !== null) {
-                $breakAt = new BreakToken(index: $i, child: $res->token);
+                $breakAt = new BreakToken(index: $i, child: $res->token, forced: $res->token->forced);
                 break;
             }
             // Margin-bottom is truncated at the page end, never pushing the box past c.height.
             $cursor = $available === null ? $cursor + $mb : max($cursor, min($cursor + $mb, $available));
-            if (!$monolithic && $i < $count - 1 && self::forcesBreakAfter($child, $cs, $engine)) {
-                $breakAt = new BreakToken(index: $i + 1);
+            $forcedAfter = !$monolithic && $i < $count - 1 ? self::forcesBreakAfter($child, $cs, $engine) : null;
+            if ($forcedAfter !== null) {
+                $breakAt = new BreakToken(index: $i + 1, forced: $forcedAfter);
                 break;
             }
         }
@@ -251,7 +272,7 @@ final class BlockLayouter implements Layouter
         $max = 0.0;
         foreach (self::children($node) as $i => $child) {
             $child = $engine->expand($child);
-            if ($child instanceof Spacer || $child instanceof PageBreak) {
+            if ($child instanceof Spacer || $child instanceof PageBreak || $child instanceof ColumnBreak) {
                 continue;
             }
             $margin = $engine->styleOf($child, $style, $i)->margin->horizontal();
@@ -261,6 +282,11 @@ final class BlockLayouter implements Layouter
         }
         $edges = $style->padding->horizontal() + $style->borderWidth->horizontal();
         return ['min' => $min + $edges, 'max' => $max + $edges];
+    }
+
+    private static function kind(Node $break): ForcedBreak
+    {
+        return $break instanceof ColumnBreak ? ForcedBreak::Column : ForcedBreak::Page;
     }
 
     /** @return list<\Papercut\Node|\Papercut\Component> */
@@ -273,25 +299,26 @@ final class BlockLayouter implements Layouter
     }
 
     /**
-     * True when laying out $node ends with a forced break: its own breakAfter,
-     * or (recursively) a trailing PageBreak / breakAfter as its last child.
+     * The kind of forced break laying out $node ends with: its own breakAfter,
+     * or (recursively) a trailing PageBreak / ColumnBreak / breakAfter as its
+     * last child. Null when it ends without one.
      */
-    private static function forcesBreakAfter(Node $node, ComputedStyle $style, LayoutEngine $engine): bool
+    private static function forcesBreakAfter(Node $node, ComputedStyle $style, LayoutEngine $engine): ?ForcedBreak
     {
         if ($style->breakAfter) {
-            return true;
+            return ForcedBreak::Page;
         }
         if (!($node instanceof View || $node instanceof Link) || $style->height instanceof Length) {
-            return false;
+            return null;
         }
         $children = $node->children();
         if ($children === [] || $style->direction !== Direction::Column) {
-            return false;
+            return null;
         }
         $i = count($children) - 1;
         $last = $engine->expand($children[$i]);
-        if ($last instanceof PageBreak) {
-            return true;
+        if ($last instanceof PageBreak || $last instanceof ColumnBreak) {
+            return self::kind($last);
         }
         return self::forcesBreakAfter($last, $engine->styleOf($last, $style, $i), $engine);
     }
@@ -311,7 +338,7 @@ final class BlockLayouter implements Layouter
         }
         $i = count($children) - 1;
         $last = $engine->expand($children[$i]);
-        if ($last instanceof PageBreak) {
+        if ($last instanceof PageBreak || $last instanceof ColumnBreak) {
             return false;
         }
         $ls = $engine->styleOf($last, $style, $i);

@@ -8,6 +8,41 @@ use PHPUnit\Framework\TestCase;
 
 final class ArchitectureTest extends TestCase
 {
+    /** The backend, display list, layout engine, tree walk and HTML writer are internal; the public list says why each exception stays public. */
+    public function test_engine_types_are_internal(): void
+    {
+        $src = realpath(__DIR__ . '/../src');
+        self::assertIsString($src);
+        $public = [
+            // configured through PdfOptions(backend:)
+            'Backend/PhpPdf/PhpPdfBackend.php', 'Backend/PhpPdf/FontStateCache.php',
+            // the web-font extension point (guide: HTML export, web fonts)
+            'Html/FontSource.php', 'Html/FontRequest.php', 'Html/FontAnswer.php', 'Html/FontFaceSrc.php',
+            'Html/FontVariant.php', 'Html/GoogleFonts.php', 'Html/LocalFonts.php',
+        ];
+        $missing = [];
+        $dirs = ['Backend', 'Paint', 'Layout', 'Tree', 'Html', '../../docx/src/Map', '../../docx/src/Package', '../../docx/src/Walk',
+            '../../laravel/src/Components', '../../laravel/src/Console', '../../laravel/src/Preview', '../../laravel/src/Rendering'];
+        foreach ($dirs as $dir) {
+            if (!is_dir($src . '/' . $dir)) {
+                continue; // the docx and laravel packages are only next to the core in the monorepo
+            }
+            $it = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($src . '/' . $dir, \FilesystemIterator::SKIP_DOTS));
+            foreach ($it as $file) {
+                $rel = str_replace('../../', '', substr($file->getPathname(), strlen($src) + 1));
+                if ($file->getExtension() !== 'php' || in_array($rel, $public, true)) {
+                    continue;
+                }
+                $code = (string) file_get_contents($file->getPathname());
+                if (preg_match('/\/\*\*(?:(?!\*\/).)*@internal(?:(?!\*\/).)*\*\/\s*(?:#\[[^\n]*\]\s*)*(?:final |abstract |readonly )*(?:class|interface|enum|trait) /s', $code) !== 1) {
+                    $missing[] = $rel;
+                }
+            }
+        }
+        sort($missing);
+        self::assertSame([], $missing, 'Mark these @internal, or add them to the public list with a reason');
+    }
+
     public function test_only_phppdf_backend_imports_dskripchenko(): void
     {
         $src = realpath(__DIR__ . '/../src');

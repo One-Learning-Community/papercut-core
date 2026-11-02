@@ -6,9 +6,13 @@ namespace Papercut\Html;
 
 use Papercut\Style\{Align, ComputedStyle, Justify, Theme, WhiteSpace};
 use Papercut\Text\{FontClass, FontSet};
-use Papercut\Value\{Auto, Color, Edges, Length, Percent};
+use Papercut\Value\{Auto, Color, ColumnSpec, Edges, Length, Percent};
 
-/** Pure mapping from resolved style values to CSS declarations. Only values that differ from the root defaults are emitted. */
+/**
+ * Pure mapping from resolved style values to CSS declarations. Only values that differ from the root defaults are emitted.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ */
 final class Css
 {
     public static function num(float $v): string
@@ -158,6 +162,21 @@ final class Css
         }
         if ($s->wrap) {
             $d['flex-wrap'] = 'wrap';
+        }
+        return $d;
+    }
+
+    /**
+     * CSS multi-column declarations for a ColumnFlow. CSS has one gap and equal widths, so the
+     * first gap stands in for them all; the caller reports unequal widths or gaps.
+     *
+     * @return array<string,string>
+     */
+    public static function columns(ColumnSpec $spec): array
+    {
+        $d = ['column-count' => (string) $spec->count, 'column-gap' => self::pt($spec->gaps[0] ?? ColumnSpec::DEFAULT_GAP), 'column-fill' => 'balance'];
+        if ($spec->rule !== null) {
+            $d['column-rule'] = self::pt($spec->rule->width) . ' solid ' . self::color($spec->rule->color);
         }
         return $d;
     }

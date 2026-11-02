@@ -7,6 +7,7 @@ namespace Papercut\Backend\PhpPdf;
 use Dskripchenko\PhpPdf\Pdf\PdfFont;
 use Papercut\Backend\FontHandle;
 
+/** @internal Part of Papercut's PDF writer. Custom backends aren't supported, and it may change in any release. */
 final class PhpPdfFont implements FontHandle
 {
     public function __construct(

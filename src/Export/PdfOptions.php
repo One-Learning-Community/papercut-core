@@ -16,6 +16,7 @@ final readonly class PdfOptions extends ExportOptions
 
     /**
      * @param (\Closure(string, ?FidelityReport=): void)|null $onWarning
+     * @param Backend|null $backend a configured PhpPdfBackend; other Backend implementations aren't supported
      * @param string|false|null $cacheDir directory for the default backend's font cache
      *        (null = sys_get_temp_dir()/papercut-cache-<uid>, false = no disk cache); ignored when $backend is given
      * @param bool $bookmarks false leaves the PDF without a bookmarks panel, even for headings
@@ -39,6 +40,8 @@ final readonly class PdfOptions extends ExportOptions
     /**
      * Returns the given backend, or a new PhpPdfBackend on each call.
      * Callers should call this once and reuse the result.
+     *
+     * @internal
      */
     public function backend(): Backend
     {

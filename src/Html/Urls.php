@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Papercut\Html;
 
-/** URL rules shared by images, font stylesheets and font files. */
+/**
+ * URL rules shared by images, font stylesheets and font files.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ */
 final class Urls
 {
     /** Not empty, no control characters and no edge whitespace: browsers drop those inside schemes. */

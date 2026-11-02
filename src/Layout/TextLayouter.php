@@ -15,6 +15,8 @@ use Papercut\Value\Length;
  * lines, honouring min-lines as both orphans and widows. Box styles
  * (width, padding, border, background, opacity) apply via BoxGeometry with
  * sliced semantics; margins are the parent's job.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final class TextLayouter implements Layouter
 {

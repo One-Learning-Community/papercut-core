@@ -9,6 +9,8 @@ use Papercut\TableCell;
 /**
  * One cell's resolved position in a table grid. Rows are indexed across the
  * header rows followed by the body rows; $rowspan is already clamped to its section.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final readonly class GridCell
 {

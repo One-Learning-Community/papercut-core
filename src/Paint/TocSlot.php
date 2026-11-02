@@ -14,6 +14,8 @@ use Papercut\Value\Color;
  * box on the entry's last line, $baseline that line's baseline, $leaderStart
  * where the title's last line ends. $boxWidth and $boxHeight cover the whole
  * entry from (0, 0), the area its link takes.
+ *
+ * @internal Part of the display list between layout and the PDF writer. It may change in any release.
  */
 final readonly class TocSlot
 {

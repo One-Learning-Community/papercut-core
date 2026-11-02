@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Papercut\Layout;
 
-use Papercut\{Node, PageBreak, PageNumber, Spacer};
+use Papercut\{ColumnBreak, Node, PageBreak, PageNumber, Spacer};
 use Papercut\Paint\PageNumberSlot;
 use Papercut\Style\ComputedStyle;
 use Papercut\Text\{CachedFont, FontStyle};
@@ -13,12 +13,14 @@ use Papercut\Text\{CachedFont, FontStyle};
  * Spacer, PageBreak and PageNumber. Forced breaks and flex growth are the
  * parent's job; a Spacer here only takes its fixed (or stretched) height. A
  * PageNumber is one line box carrying a PageNumberSlot the Painter fills in.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final class LeafLayouter implements Layouter
 {
     public function layout(Node $node, ComputedStyle $style, Constraints $c, ?BreakToken $token, LayoutEngine $engine): LayoutResult
     {
-        if ($node instanceof PageBreak) {
+        if ($node instanceof PageBreak || $node instanceof ColumnBreak) {
             return LayoutResult::complete(new Fragment($c->width, 0.0));
         }
         if ($node instanceof PageNumber) {

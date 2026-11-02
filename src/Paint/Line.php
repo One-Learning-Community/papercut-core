@@ -6,6 +6,7 @@ namespace Papercut\Paint;
 
 use Papercut\Value\Color;
 
+/** @internal Part of the display list between layout and the PDF writer. It may change in any release. */
 final readonly class Line implements Op
 {
     public function __construct(

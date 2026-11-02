@@ -12,6 +12,8 @@ use Papercut\Value\Length;
 /**
  * Images are monolithic: taller than the space left means DoesNotFit, even
  * on a fresh page (the paginator owns the overflow policy).
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final class ImageLayouter implements Layouter
 {

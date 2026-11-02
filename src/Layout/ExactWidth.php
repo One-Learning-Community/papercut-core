@@ -14,6 +14,8 @@ use function Papercut\pt;
  * resolved main size, a table cell's column span). A node whose own
  * width/min/max would resolve to something else gets them pinned to that
  * width; any node built on HasStyle can be pinned. Spacers only hold space.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
 final class ExactWidth
 {

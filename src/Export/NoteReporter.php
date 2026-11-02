@@ -8,7 +8,11 @@ use Papercut\{Annotated, Document, Node, Page};
 use Papercut\Style\{ComputedStyle, PageThemes, StyleResolver};
 use Papercut\Tree\{Region, TreeVisitor, TreeWalker, Visit};
 
-/** Reports every conversion note in the tree through Fidelity, once per export. */
+/**
+ * Reports every conversion note in the tree through Fidelity, once per export.
+ *
+ * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ */
 final class NoteReporter implements TreeVisitor
 {
     private function __construct(private readonly Fidelity $fidelity)
