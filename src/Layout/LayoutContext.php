@@ -21,8 +21,8 @@ final class LayoutContext
 {
     /** @var list<string> */
     private array $path = [];
-    /** @var \WeakMap<Theme, Itemizer> one per theme, which the itemizer reads span styles from */
-    private \WeakMap $itemizers;
+    /** @var \SplObjectStorage<Theme, Itemizer> one per theme, which the itemizer reads span styles from */
+    private \SplObjectStorage $itemizers;
     /** Open lists by kind, for depth-dependent markers. */
     private int $orderedLists = 0;
     private int $unorderedLists = 0;
@@ -66,7 +66,7 @@ final class LayoutContext
         public readonly string $format = 'pdf',
     ) {
         $this->styles = new StyleResolver($theme);
-        $this->itemizers = new \WeakMap();
+        $this->itemizers = new \SplObjectStorage();
         $this->toc = TocIndex::empty();
     }
 

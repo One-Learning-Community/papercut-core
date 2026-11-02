@@ -18,12 +18,12 @@ use Papercut\Value\Length;
  */
 final class TextLayouter implements Layouter
 {
-    /** @var \WeakMap<Node, array<string, array{style: ComputedStyle, theme: \Papercut\Style\Theme, lines: list<Line>, boxes: list<array{baseline: float, height: float}>}>> */
-    private \WeakMap $lineCache;
+    /** @var \SplObjectStorage<Node, array<string, array{style: ComputedStyle, theme: \Papercut\Style\Theme, lines: list<Line>, boxes: list<array{baseline: float, height: float}>}>> */
+    private \SplObjectStorage $lineCache;
 
     public function __construct()
     {
-        $this->lineCache = new \WeakMap();
+        $this->lineCache = new \SplObjectStorage();
     }
 
     public function layout(Node $node, ComputedStyle $style, Constraints $c, ?BreakToken $token, LayoutEngine $engine): LayoutResult

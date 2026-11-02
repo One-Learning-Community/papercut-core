@@ -57,21 +57,21 @@ final class TableLayouter implements Layouter
 {
     private const float EPSILON = 1e-9;
 
-    /** @var \WeakMap<Table, array<string, list<array{min: float, max: float}>>> */
-    private \WeakMap $content;
-    /** @var \WeakMap<Table, array<string, array{width: float, widths: list<float>, offsets: list<float>}>> */
-    private \WeakMap $grids;
+    /** @var \SplObjectStorage<Table, array<string, list<array{min: float, max: float}>>> */
+    private \SplObjectStorage $content;
+    /** @var \SplObjectStorage<Table, array<string, array{width: float, widths: list<float>, offsets: list<float>}>> */
+    private \SplObjectStorage $grids;
     /** @var \WeakMap<Table, true> tables already warned about a dropped repeated header */
     private \WeakMap $headerWarned;
     /** @var \WeakMap<Table, true> tables already warned about clamped spans */
     private \WeakMap $clampWarned;
-    /** @var \WeakMap<Theme, \WeakMap<TableCell, TableCell>> per theme, cells with its defaults applied; stable identities keep style memos hot */
-    private \WeakMap $prepared;
+    /** @var \SplObjectStorage<Theme, \SplObjectStorage<TableCell, TableCell>> per theme, cells with its defaults applied; stable identities keep style memos hot */
+    private \SplObjectStorage $prepared;
     /** @var \WeakMap<Theme, int> */
     private \WeakMap $themeTokens;
     private int $themeCounter = 0;
-    /** @var \WeakMap<TableCell, View> the block container each cell is laid out as */
-    private \WeakMap $columns;
+    /** @var \SplObjectStorage<TableCell, View> the block container each cell is laid out as */
+    private \SplObjectStorage $columns;
     /** @var \WeakMap<TableCell, true> prepared cells, which belong to a table */
     private \WeakMap $inTable;
     /** @var \WeakMap<TableCell, true> bare cells already warned about */
@@ -79,13 +79,13 @@ final class TableLayouter implements Layouter
 
     public function __construct(private readonly BlockLayouter $block)
     {
-        $this->content = new \WeakMap();
-        $this->grids = new \WeakMap();
+        $this->content = new \SplObjectStorage();
+        $this->grids = new \SplObjectStorage();
         $this->headerWarned = new \WeakMap();
         $this->clampWarned = new \WeakMap();
-        $this->prepared = new \WeakMap();
+        $this->prepared = new \SplObjectStorage();
         $this->themeTokens = new \WeakMap();
-        $this->columns = new \WeakMap();
+        $this->columns = new \SplObjectStorage();
         $this->inTable = new \WeakMap();
         $this->strayWarned = new \WeakMap();
     }
@@ -1354,8 +1354,8 @@ final class TableLayouter implements Layouter
     private function prepare(TableCell $cell, Theme $theme): TableCell
     {
         if (!isset($this->prepared[$theme])) {
-            /** @var \WeakMap<TableCell, TableCell> $fresh */
-            $fresh = new \WeakMap();
+            /** @var \SplObjectStorage<TableCell, TableCell> $fresh */
+            $fresh = new \SplObjectStorage();
             $this->prepared[$theme] = $fresh;
         }
         $cells = $this->prepared[$theme];

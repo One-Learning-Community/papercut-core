@@ -21,12 +21,12 @@ final class TocLayouter implements Layouter
     /** Space between the title's text and the page number. */
     private const float GAP = 6.0;
 
-    /** @var \WeakMap<Toc, View> */
-    private \WeakMap $columns;
+    /** @var \SplObjectStorage<Toc, View> */
+    private \SplObjectStorage $columns;
 
     public function __construct(private readonly BlockLayouter $block)
     {
-        $this->columns = new \WeakMap();
+        $this->columns = new \SplObjectStorage();
     }
 
     public function layout(Node $node, ComputedStyle $style, Constraints $c, ?BreakToken $token, LayoutEngine $engine): LayoutResult

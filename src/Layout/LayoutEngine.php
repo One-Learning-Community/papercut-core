@@ -26,11 +26,11 @@ final class LayoutEngine
      * engine's layout run. Nodes are immutable and their computed style is a
      * function of node and parent, so the sizes are too.
      *
-     * @var \WeakMap<Node, \WeakMap<ComputedStyle, array{min: float, max: float}>>
+     * @var \SplObjectStorage<Node, \SplObjectStorage<ComputedStyle, array{min: float, max: float}>>
      */
-    private \WeakMap $intrinsics;
-    /** @var \WeakMap<Node, \WeakMap<ComputedStyle, array{min: float, max: float}>> the same while sizes are measured as if text breaks anywhere */
-    private \WeakMap $anywhereIntrinsics;
+    private \SplObjectStorage $intrinsics;
+    /** @var \SplObjectStorage<Node, \SplObjectStorage<ComputedStyle, array{min: float, max: float}>> the same while sizes are measured as if text breaks anywhere */
+    private \SplObjectStorage $anywhereIntrinsics;
     private bool $anywhere = false;
 
     private readonly BlockLayouter $block;
@@ -39,8 +39,8 @@ final class LayoutEngine
 
     public function __construct(private readonly LayoutContext $ctx)
     {
-        $this->intrinsics = new \WeakMap();
-        $this->anywhereIntrinsics = new \WeakMap();
+        $this->intrinsics = new \SplObjectStorage();
+        $this->anywhereIntrinsics = new \SplObjectStorage();
         $this->block = new BlockLayouter();
         $this->flex = new FlexLayouter();
         $leaf = new LeafLayouter();
@@ -138,8 +138,8 @@ final class LayoutEngine
     public function register(string $class, Layouter $layouter): void
     {
         $this->layouters[$class] = $layouter;
-        $this->intrinsics = new \WeakMap();
-        $this->anywhereIntrinsics = new \WeakMap();
+        $this->intrinsics = new \SplObjectStorage();
+        $this->anywhereIntrinsics = new \SplObjectStorage();
     }
 
     /**
@@ -210,8 +210,8 @@ final class LayoutEngine
             $style = $this->enter($node, $parent, $index);
             $size = $this->layouterFor($node, $style)->intrinsic($node, $style, $this);
             if ($byParent === null) {
-                /** @var \WeakMap<ComputedStyle, array{min: float, max: float}> $byParent */
-                $byParent = new \WeakMap();
+                /** @var \SplObjectStorage<ComputedStyle, array{min: float, max: float}> $byParent */
+                $byParent = new \SplObjectStorage();
                 $cache[$node] = $byParent;
             }
             $byParent[$parent] = $size;

@@ -37,8 +37,8 @@ final class HtmlWriter implements TreeVisitor
     /** @var list<?string> the open thead/tbody of each open table */
     private array $sections = [];
 
-    /** @var \WeakMap<TableRow, list<GridCell>>|null grid placements of the rows being written */
-    private ?\WeakMap $rowPlacements = null;
+    /** @var \SplObjectStorage<TableRow, list<GridCell>>|null grid placements of the rows being written */
+    private ?\SplObjectStorage $rowPlacements = null;
     /** @var \WeakMap<TableCell, true> cells laid out as plain columns because no row holds them */
     private \WeakMap $strays;
     /** @var array<string,true> */
@@ -712,7 +712,7 @@ final class HtmlWriter implements TreeVisitor
         $parent = end($this->styles);
         \assert($parent instanceof ComputedStyle);
         $this->checkDecoration($s, $parent, $at->path());
-        $this->rowPlacements ??= new \WeakMap();
+        $this->rowPlacements ??= new \SplObjectStorage();
         $this->rowPlacements[$n] = TableGrid::of($at->parent())->placements[$at->index()] ?? [];
         $want = $at->inHeader() ? 'thead' : 'tbody';
         $open = end($this->sections);

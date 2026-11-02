@@ -19,13 +19,13 @@ final class ListLayouter implements Layouter
      * Synthesized columns per list, computed style and depth, so the same
      * MarkedItems (and their break tokens) are reused across pages.
      *
-     * @var \WeakMap<ListNode, \WeakMap<ComputedStyle, array<int, View>>>
+     * @var \SplObjectStorage<ListNode, \SplObjectStorage<ComputedStyle, array<int, View>>>
      */
-    private \WeakMap $columns;
+    private \SplObjectStorage $columns;
 
     public function __construct()
     {
-        $this->columns = new \WeakMap();
+        $this->columns = new \SplObjectStorage();
     }
 
     public function layout(Node $node, ComputedStyle $style, Constraints $c, ?BreakToken $token, LayoutEngine $engine): LayoutResult
@@ -60,8 +60,8 @@ final class ListLayouter implements Layouter
     {
         $byStyle = $this->columns[$list] ?? null;
         if ($byStyle === null) {
-            /** @var \WeakMap<ComputedStyle, array<int, View>> $byStyle */
-            $byStyle = new \WeakMap();
+            /** @var \SplObjectStorage<ComputedStyle, array<int, View>> $byStyle */
+            $byStyle = new \SplObjectStorage();
             $this->columns[$list] = $byStyle;
         }
         $byDepth = $byStyle[$style] ?? [];

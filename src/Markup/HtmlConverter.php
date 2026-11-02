@@ -97,8 +97,8 @@ final class HtmlConverter
 
     /** How many flattened nested tables enclose the current node; their parts make no notes of their own. */
     private int $flat = 0;
-    /** @var \WeakMap<TableCell, Length|Percent> the column width each cell of the table in hand asks for */
-    private \WeakMap $widths;
+    /** @var \SplObjectStorage<TableCell, Length|Percent> the column width each cell of the table in hand asks for */
+    private \SplObjectStorage $widths;
 
     /** @var array<string, true>|null the features noted so far for the table in hand (once per table, not per cell); null outside a table */
     private ?array $partNoted = null;
@@ -506,7 +506,7 @@ final class HtmlConverter
 
     private function tableOf(\Dom\Element $el, Style $style, ?string $href, ?string $outer, Length|Percent|null $width, Style $own): void
     {
-        $this->widths = new \WeakMap();
+        $this->widths = new \SplObjectStorage();
         $this->flush($outer);
         $head = null;
         $groups = [];

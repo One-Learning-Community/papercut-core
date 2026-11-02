@@ -14,17 +14,17 @@ final class PageThemes
 {
     private readonly Theme $document;
     private readonly ?ThemeOverride $documentOverride;
-    /** @var \WeakMap<Page, Theme> */
-    private \WeakMap $themes;
-    /** @var \WeakMap<Theme, StyleResolver> */
-    private \WeakMap $resolvers;
+    /** @var \SplObjectStorage<Page, Theme> */
+    private \SplObjectStorage $themes;
+    /** @var \SplObjectStorage<Theme, StyleResolver> */
+    private \SplObjectStorage $resolvers;
 
     private function __construct(Theme $base, Document $doc)
     {
         $this->documentOverride = $doc->themeOverride();
         $this->document = $this->documentOverride === null ? $base : $base->withOverride($this->documentOverride);
-        $this->themes = new \WeakMap();
-        $this->resolvers = new \WeakMap();
+        $this->themes = new \SplObjectStorage();
+        $this->resolvers = new \SplObjectStorage();
     }
 
     public static function for(Theme $base, Document $doc): self

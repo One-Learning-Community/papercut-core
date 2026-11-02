@@ -21,11 +21,11 @@ final class StyleResolver
      * Computed styles memoized per node and parent style (both by identity).
      * Nodes are immutable, so a node under the same parent always resolves the same.
      *
-     * @var \WeakMap<Node, \WeakMap<ComputedStyle, ComputedStyle>>
+     * @var \SplObjectStorage<Node, \SplObjectStorage<ComputedStyle, ComputedStyle>>
      */
-    private \WeakMap $styles;
-    /** @var \WeakMap<TableCell, \WeakMap<ComputedStyle, ComputedStyle>> */
-    private \WeakMap $cellStyles;
+    private \SplObjectStorage $styles;
+    /** @var \SplObjectStorage<TableCell, \SplObjectStorage<ComputedStyle, ComputedStyle>> */
+    private \SplObjectStorage $cellStyles;
     /**
      * Nodes that end a container whose bottom edge shows (a table cell, or a box with bottom
      * padding, a bottom border or a background), directly or through transparent wrappers
@@ -42,8 +42,8 @@ final class StyleResolver
     public function __construct(private readonly Theme $theme)
     {
         $this->endsContainer = new \WeakMap();
-        $this->styles = new \WeakMap();
-        $this->cellStyles = new \WeakMap();
+        $this->styles = new \SplObjectStorage();
+        $this->cellStyles = new \SplObjectStorage();
     }
 
     /** The theme this resolver resolves against. */
@@ -66,8 +66,8 @@ final class StyleResolver
     {
         $byParent = $this->styles[$node] ?? null;
         if ($byParent === null) {
-            /** @var \WeakMap<ComputedStyle, ComputedStyle> $byParent */
-            $byParent = new \WeakMap();
+            /** @var \SplObjectStorage<ComputedStyle, ComputedStyle> $byParent */
+            $byParent = new \SplObjectStorage();
             $this->styles[$node] = $byParent;
         }
         return $byParent[$parent] ??= $this->compute($node, $parent);
@@ -83,8 +83,8 @@ final class StyleResolver
     {
         $byParent = $this->cellStyles[$cell] ?? null;
         if ($byParent === null) {
-            /** @var \WeakMap<ComputedStyle, ComputedStyle> $byParent */
-            $byParent = new \WeakMap();
+            /** @var \SplObjectStorage<ComputedStyle, ComputedStyle> $byParent */
+            $byParent = new \SplObjectStorage();
             $this->cellStyles[$cell] = $byParent;
         }
         return $byParent[$rowStyle] ??= $this->compute(
