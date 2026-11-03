@@ -178,6 +178,22 @@ final class BenchCheckTest extends TestCase
         self::assertStringNotContainsString('target', $run['out']);
     }
 
+    public function test_timings_can_warn_while_memory_still_fails(): void
+    {
+        file_put_contents($this->baseline, json_encode(['machines' => ['test' => ['median_ms' => 100.0, 'peak_mb' => 10.0, 'article_median_ms' => 50.0]]]));
+        $slow = (string) json_encode(['median_ms' => 150.0, 'pages' => 10, 'peak_mb' => 10.0, 'article_median_ms' => 80.0]);
+        $run = $this->check($slow, ['PAPERCUT_BENCH_TIMINGS' => 'warn']);
+        self::assertSame(0, $run['exit'], $run['out']);
+        self::assertStringContainsString('check: WARN: median 150.00 ms is more than 20% slower', $run['out']);
+        self::assertStringContainsString('check: WARN: article median 80.00 ms exceeds 60.00 ms', $run['out']);
+
+        $heavy = (string) json_encode(['median_ms' => 150.0, 'pages' => 10, 'peak_mb' => 12.5]);
+        $run = $this->check($heavy, ['PAPERCUT_BENCH_TIMINGS' => 'warn']);
+        self::assertSame(1, $run['exit'], $run['out']);
+        self::assertStringContainsString('check: FAIL: peak 12.50 MB exceeds 12.00 MB', $run['out']);
+        self::assertSame(1, $this->check($slow)['exit']);
+    }
+
     public function test_malformed_input_exits_2(): void
     {
         self::assertSame(2, $this->check('not json')['exit']);

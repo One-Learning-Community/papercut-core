@@ -12,6 +12,9 @@ declare(strict_types=1);
  * is gated the same way against the entry's value of the same name; an entry
  * without one gets it written from this run.
  *
+ * With env PAPERCUT_BENCH_TIMINGS=warn (set in CI), a slow timing is a warning
+ * and only memory peaks and page counts fail.
+ *
  * Exit 1 when a figure exceeds 1.2x its baseline or a benchmark document's page
  * count changed (EXPECTED_PAGES, checked when the result reports it). Missing the spec target of 150 ms (spec §3.5) is reported as a
  * warning: it was set for a developer machine, and CI hardware varies. A
@@ -42,6 +45,19 @@ $baseline = is_file($path) ? json_decode((string) file_get_contents($path), true
 $baseline = is_array($baseline) ? $baseline : ['machines' => []];
 
 $failures = [];
+// PAPERCUT_BENCH_TIMINGS=warn reports slow timings without failing: shared CI runners differ in speed from run to
+// run, while memory peaks and page counts don't, so CI fails on those alone.
+$timingsWarn = getenv('PAPERCUT_BENCH_TIMINGS') === 'warn';
+$slow = static function (string $message) use (&$failures, $timingsWarn): void {
+    if ($timingsWarn) {
+        fwrite(STDERR, "check: WARN: $message\n");
+        if (getenv('CI') !== false && getenv('CI') !== '') {
+            printf("::warning title=Benchmark slower::%s\n", $message);
+        }
+        return;
+    }
+    $failures[] = $message;
+};
 foreach (EXPECTED_PAGES as $key => $pages) {
     if (array_key_exists($key, $result) && $result[$key] !== $pages) {
         $what = $key === 'pages' ? 'benchmark document' : str_replace('_pages', '', $key) . ' benchmark document';
@@ -75,7 +91,7 @@ if (!is_array($entry) || !is_numeric($entry['median_ms'] ?? null)) {
     $limit = (float) $entry['median_ms'] * TOLERANCE;
     printf("check: median %.2f ms, baseline %.2f ms (%s), limit %.2f ms\n", $median, $entry['median_ms'], $machine, $limit);
     if ($median > $limit) {
-        $failures[] = sprintf('median %.2f ms is more than %.0f%% slower than the baseline %.2f ms', $median, (TOLERANCE - 1) * 100, $entry['median_ms']);
+        $slow(sprintf('median %.2f ms is more than %.0f%% slower than the baseline %.2f ms', $median, (TOLERANCE - 1) * 100, $entry['median_ms']));
     }
 }
 
@@ -93,7 +109,8 @@ if (!$wroteEntry) {
         $limit = (float) $entry[$key] * TOLERANCE;
         printf("check: %s %.2f %s, baseline %.2f %s (%s), limit %.2f %s\n", $label, $value, $unit, $entry[$key], $unit, $machine, $limit, $unit);
         if ($value > $limit) {
-            $failures[] = sprintf('%s %.2f %s exceeds %.2f %s (baseline %.2f %s + %.0f%%)', $label, $value, $unit, $limit, $unit, $entry[$key], $unit, (TOLERANCE - 1) * 100);
+            $message = sprintf('%s %.2f %s exceeds %.2f %s (baseline %.2f %s + %.0f%%)', $label, $value, $unit, $limit, $unit, $entry[$key], $unit, (TOLERANCE - 1) * 100);
+            $unit === 'ms' ? $slow($message) : $failures[] = $message;
         }
     }
 }
