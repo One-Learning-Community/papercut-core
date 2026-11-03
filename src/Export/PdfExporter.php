@@ -38,8 +38,8 @@ final class PdfExporter implements Exporter
         $ctx->bookmarks = $options->bookmarks();
         $ctx->strict = $options->strict();
         $ctx->toc = TocIndex::collect($doc, $themes);
-        $placed = (new Paginator(new LayoutEngine($ctx), $ctx))->paginate($doc);
-        $pages = Painter::paint($placed);
+        // Each page is painted as soon as it is laid out, so its layout is freed before the next page's.
+        $pages = Painter::resolve((new Paginator(new LayoutEngine($ctx), $ctx))->paginate($doc, Painter::paintPage(...)));
         if ($options->strict()) {
             self::requireGlyphs($pages);
         }

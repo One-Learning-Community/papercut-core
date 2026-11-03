@@ -126,6 +126,58 @@ final class BenchCheckTest extends TestCase
         self::assertStringContainsString('11 pages', $run['out']);
     }
 
+    public function test_every_timing_and_memory_peak_is_gated(): void
+    {
+        file_put_contents($this->baseline, json_encode(['machines' => ['test' => ['median_ms' => 100.0, 'peak_mb' => 10.0, 'article_median_ms' => 50.0, 'article_peak_mb' => 20.0]]]));
+        $result = static fn (array $over): string => (string) json_encode($over + ['median_ms' => 100.0, 'pages' => 10, 'peak_mb' => 10.0, 'article_median_ms' => 50.0, 'article_peak_mb' => 20.0, 'article_pages' => 20]);
+
+        self::assertSame(0, $this->check($result([]))['exit']);
+        $run = $this->check($result(['article_peak_mb' => 24.5]));
+        self::assertSame(1, $run['exit'], $run['out']);
+        self::assertStringContainsString('check: FAIL: article peak 24.50 MB exceeds 24.00 MB (baseline 20.00 MB + 20%)', $run['out']);
+        $run = $this->check($result(['peak_mb' => 12.5]));
+        self::assertStringContainsString('check: FAIL: peak 12.50 MB exceeds 12.00 MB', $run['out']);
+        $run = $this->check($result(['article_median_ms' => 61.0]));
+        self::assertStringContainsString('check: FAIL: article median 61.00 ms exceeds 60.00 ms', $run['out']);
+    }
+
+    public function test_a_new_figure_is_added_to_the_entry(): void
+    {
+        $this->writeBaseline(100.0);
+        $run = $this->check((string) json_encode(['median_ms' => 100.0, 'pages' => 10, 'article_peak_mb' => 19.3]));
+        self::assertSame(0, $run['exit'], $run['out']);
+        self::assertStringContainsString('no article peak baseline', $run['out']);
+        $written = json_decode((string) file_get_contents($this->baseline), true);
+        self::assertIsArray($written);
+        self::assertSame(19.3, $written['machines']['test']['article_peak_mb']);
+    }
+
+    public function test_a_fresh_entry_records_every_figure(): void
+    {
+        $run = $this->check((string) json_encode(['median_ms' => 100.0, 'toc_off_median_ms' => 40.0, 'peak_mb' => 30.0]));
+        self::assertSame(0, $run['exit'], $run['out']);
+        $written = json_decode((string) file_get_contents($this->baseline), true);
+        self::assertIsArray($written);
+        self::assertEquals(40.0, $written['machines']['test']['toc_off_median_ms']);
+        self::assertEquals(30.0, $written['machines']['test']['peak_mb']);
+    }
+
+    public function test_the_article_must_keep_its_page_count(): void
+    {
+        $this->writeBaseline(100.0);
+        $run = $this->check((string) json_encode(['median_ms' => 100.0, 'pages' => 10, 'article_pages' => 21]));
+        self::assertSame(1, $run['exit']);
+        self::assertStringContainsString('article benchmark document has 21 pages, expected 20', $run['out']);
+    }
+
+    public function test_a_result_without_pages_skips_the_page_and_target_checks(): void
+    {
+        $this->writeBaseline(400.0);
+        $run = $this->check((string) json_encode(['median_ms' => 400.0]));
+        self::assertSame(0, $run['exit'], $run['out']);
+        self::assertStringNotContainsString('target', $run['out']);
+    }
+
     public function test_malformed_input_exits_2(): void
     {
         self::assertSame(2, $this->check('not json')['exit']);

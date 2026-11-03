@@ -25,17 +25,103 @@ final class Painter
      */
     public static function paint(array $pages): array
     {
+        $painted = [];
+        foreach ($pages as $page) {
+            $painted[] = self::paintPage($page);
+        }
+        return self::resolve($painted);
+    }
+
+    /**
+     * One page's display list, painted as soon as the page is laid out. Page numbers and table of contents entries
+     * need the whole document, so they stay as PendingSlot ops until resolve().
+     */
+    public static function paintPage(PlacedPage $page): PageDisplayList
+    {
+        $ops = [];
+        foreach ($page->layers as $layer) {
+            array_push($ops, ...self::flatten($layer['fragment'], $layer['x'], $layer['y']));
+        }
+        return new PageDisplayList($page->width, $page->height, $ops);
+    }
+
+    /**
+     * Fills in the pending page numbers and table of contents entries of pages from paintPage(), now that the page
+     * count and every heading's page are known.
+     *
+     * @param list<PageDisplayList> $pages
+     * @return list<PageDisplayList>
+     */
+    public static function resolve(array $pages): array
+    {
         $total = count($pages);
-        $anchors = self::anchorPages($pages);
+        $anchors = [];
+        foreach ($pages as $i => $page) {
+            self::collectOpAnchors($page->ops, $i + 1, $anchors);
+        }
         $out = [];
         foreach ($pages as $i => $page) {
-            $ops = [];
-            foreach ($page->layers as $layer) {
-                array_push($ops, ...self::flatten($layer['fragment'], $layer['x'], $layer['y'], $i + 1, $total, $anchors));
-            }
-            $out[] = new PageDisplayList($page->width, $page->height, $ops);
+            $ops = self::resolveOps($page->ops, $i + 1, $total, $anchors);
+            $out[] = $ops === null ? $page : new PageDisplayList($page->width, $page->height, $ops);
         }
         return $out;
+    }
+
+    /**
+     * The ops with each pending slot replaced by what it draws, or null when there is none to replace.
+     *
+     * @param list<Op> $ops
+     * @param array<string, int> $anchors
+     * @return ?list<Op>
+     */
+    private static function resolveOps(array $ops, int $page, int $total, array $anchors): ?array
+    {
+        $out = [];
+        $changed = false;
+        foreach ($ops as $op) {
+            if ($op instanceof PendingSlot) {
+                $changed = true;
+                $slot = $op->slot;
+                if ($slot instanceof TocSlot) {
+                    $target = $anchors[$slot->destination] ?? null;
+                    if ($target !== null) {
+                        array_push($out, ...self::resolveTocSlot($slot, $op->x, $op->y, $target));
+                    }
+                    continue;
+                }
+                $run = self::resolveSlot($slot, $op->x, $op->y, $page, $total);
+                if ($run !== null) {
+                    $out[] = $run;
+                }
+                continue;
+            }
+            if ($op instanceof Clip || $op instanceof Opacity) {
+                $inner = self::resolveOps($op->ops, $page, $total, $anchors);
+                if ($inner !== null) {
+                    $changed = true;
+                    if ($inner === []) {
+                        continue; // a group around nothing is left out, as flatten() leaves out one with no ops
+                    }
+                    $op = $op instanceof Clip ? new Clip($op->x, $op->y, $op->width, $op->height, $inner) : new Opacity($op->alpha, $inner);
+                }
+            }
+            $out[] = $op;
+        }
+        return $changed ? $out : null;
+    }
+
+    /**
+     * The anchors on one laid-out page, by name, in the order they first appear, each with the given page number.
+     *
+     * @return array<string, int>
+     */
+    public static function anchorsOn(PlacedPage $page, int $number): array
+    {
+        $found = [];
+        foreach ($page->layers as $layer) {
+            self::collectAnchors($layer['fragment'], $number, $found);
+        }
+        return $found;
     }
 
     /**
@@ -80,31 +166,18 @@ final class Painter
         }
     }
 
-    /**
-     * @param array<string, int> $anchors
-     * @return list<Op>
-     */
-    private static function flatten(Fragment $f, float $x, float $y, int $page, int $total, array $anchors): array
+    /** @return list<Op> */
+    private static function flatten(Fragment $f, float $x, float $y): array
     {
         $ops = [];
         foreach ($f->ops() as $op) {
             $ops[] = self::translate($op, $x, $y);
         }
         foreach ($f->slots() as $slot) {
-            if ($slot instanceof TocSlot) {
-                $target = $anchors[$slot->destination] ?? null;
-                if ($target !== null) {
-                    array_push($ops, ...self::resolveTocSlot($slot, $x, $y, $target));
-                }
-                continue;
-            }
-            $run = self::resolveSlot($slot, $x, $y, $page, $total);
-            if ($run !== null) {
-                $ops[] = $run;
-            }
+            $ops[] = new PendingSlot($slot, $x, $y);
         }
         foreach ($f->children() as $c) {
-            array_push($ops, ...self::flatten($c['fragment'], $x + $c['x'], $y + $c['y'], $page, $total, $anchors));
+            array_push($ops, ...self::flatten($c['fragment'], $x + $c['x'], $y + $c['y']));
         }
         if ($f->clip !== null && $ops !== []) {
             [$cx, $cy, $cw, $ch] = $f->clip;

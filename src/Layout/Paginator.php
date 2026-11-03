@@ -21,14 +21,25 @@ final class Paginator
 {
     private const int MAX_PAGES = 10_000;
 
+    /** @var (\Closure(PlacedPage, int): mixed)|null */
+    private ?\Closure $each = null;
+
     public function __construct(private readonly LayoutEngine $engine, private readonly LayoutContext $ctx)
     {
     }
 
-    /** @return list<PlacedPage> */
-    public function paginate(Document $doc): array
+    /**
+     * The document's pages, in order. With $each, every page is handed to it as soon as it is laid out, with its
+     * 1-based number, and the list holds what it returns instead: the page's layout can then be freed page by page.
+     *
+     * @template T
+     * @param (\Closure(PlacedPage, int): T)|null $each
+     * @return ($each is null ? list<PlacedPage> : list<T>)
+     */
+    public function paginate(Document $doc, ?\Closure $each = null): array
     {
         $out = [];
+        $this->each = $each;
         $templates = $doc->pages();
         foreach ($templates as $i => $page) {
             // Overflow paths start at the template: "page > body > image[1]", or "page[2] > ..." with several.
@@ -43,7 +54,7 @@ final class Paginator
         return $out;
     }
 
-    /** @param list<PlacedPage> $out */
+    /** @param list<mixed> $out */
     private function paginatePage(Page $page, string $name, array &$out): void
     {
         $page->checkMargins($name);
@@ -103,7 +114,8 @@ final class Paginator
                 }
                 $before = $header === null ? $layers : [...$layers, ['x' => $left, 'y' => $top, 'fragment' => $header]];
                 $after = $footer === null ? [] : [['x' => $left, 'y' => $h - $m->bottom->points - $footer->height, 'fragment' => $footer]];
-                $out[] = new PlacedPage($w, $h, [...$before, ['x' => $left, 'y' => $bodyY, 'fragment' => $body], ...$after, ...$overlay]);
+                $placed = new PlacedPage($w, $h, [...$before, ['x' => $left, 'y' => $bodyY, 'fragment' => $body], ...$after, ...$overlay]);
+                $out[] = $this->each === null ? $placed : ($this->each)($placed, count($out) + 1);
                 $this->engine->pageDone();
             };
 
