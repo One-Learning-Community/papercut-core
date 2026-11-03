@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Papercut\Backend\PhpPdf;
 
 use Dskripchenko\PhpPdf\Pdf\PdfFont;
-use Papercut\Backend\FontHandle;
+use Papercut\Backend\{FontHandle, JoinsInPairs};
 
 /** @internal Part of Papercut's PDF writer. Custom backends aren't supported, and it may change in any release. */
-final class PhpPdfFont implements FontHandle
+final class PhpPdfFont implements FontHandle, JoinsInPairs
 {
     public function __construct(
         private readonly PdfFont $font,
@@ -45,6 +45,12 @@ final class PhpPdfFont implements FontHandle
             $count++;
         }
         return $units / 1000 * $size + ($letterSpacing !== 0.0 ? $count * $letterSpacing : 0.0);
+    }
+
+    /** True without a ligature table: php-pdf kerns shaped glyphs in pairs, and only ligatures substitute. */
+    public function joinsInPairs(): bool
+    {
+        return $this->font->ttf()->ligatures() === null;
     }
 
     public function ascent(float $size): float

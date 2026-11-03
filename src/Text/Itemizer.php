@@ -153,6 +153,10 @@ final class Itemizer
     /** @return list<array{string, bool}> */
     private function segments(string $word): array
     {
+        // Plain ASCII without a break-after character is one segment: no CJK, nowhere to break.
+        if (preg_match('~[^\x00-\x7F]|[-/]~', $word) !== 1) {
+            return [[$word, false]];
+        }
         $chars = mb_str_split($word, 1, 'UTF-8');
         $segments = [];
         $buf = '';

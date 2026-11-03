@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Papercut\Text;
 
-use Papercut\Backend\FontHandle;
+use Papercut\Backend\{FontHandle, JoinsInPairs};
 
 /** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final class CachedFont implements FontHandle
@@ -13,6 +13,9 @@ final class CachedFont implements FontHandle
     private array $unit = [];
     /** @var array<string, float> */
     private array $spaced = [];
+    /** @var array<string, bool> */
+    private array $covered = [];
+    private ?bool $joinsInPairs = null;
 
     public function __construct(private readonly FontHandle $inner)
     {
@@ -33,5 +36,11 @@ final class CachedFont implements FontHandle
 
     public function ascent(float $size): float { return $this->inner->ascent($size); }
     public function descent(float $size): float { return $this->inner->descent($size); }
-    public function covers(string $text): bool { return $this->inner->covers($text); }
+    /** Whether a merged run can be measured from its joins; false for fonts that don't say. */
+    public function joinsInPairs(): bool
+    {
+        return $this->joinsInPairs ??= $this->inner instanceof JoinsInPairs && $this->inner->joinsInPairs();
+    }
+
+    public function covers(string $text): bool { return $this->covered[$text] ??= $this->inner->covers($text); }
 }

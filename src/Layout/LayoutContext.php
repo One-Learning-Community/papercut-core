@@ -54,6 +54,13 @@ final class LayoutContext
     public TocIndex $toc;
     /** Off for a trial layout that must not clip a too-tall node in place (Clip mode), so the paginator can try the next page instead. */
     public bool $clipInPlace = true;
+    /**
+     * On for a layout that only needs to know where blocks land, such as Word export's table of contents page numbers.
+     * Text runs are placed without re-measuring merged runs for kerning across words, and highlights, underlines and
+     * links are not drawn. Line breaks and heights are the same as a full layout's; text run x positions are approximate,
+     * so nothing may size or break from them.
+     */
+    public bool $measureOnly = false;
     /** Strict export: content the PDF would drop, such as characters no font has, throws `UnsupportedFeature`. */
     public bool $strict = false;
     /** On inside quietly(). */

@@ -22,6 +22,8 @@ final class TextLayouter implements Layouter
 {
     /** @var \SplObjectStorage<Node, array<string, array{style: ComputedStyle, theme: \Papercut\Style\Theme, lines: list<Line>, boxes: list<array{baseline: float, height: float}>}>> */
     private \SplObjectStorage $lineCache;
+    /** The engine's LayoutContext::$measureOnly, read at each layout() call. */
+    private bool $measureOnly = false;
 
     public function __construct()
     {
@@ -30,6 +32,7 @@ final class TextLayouter implements Layouter
 
     public function layout(Node $node, ComputedStyle $style, Constraints $c, ?BreakToken $token, LayoutEngine $engine): LayoutResult
     {
+        $this->measureOnly = $engine->context()->measureOnly;
         $box = [
             'width' => BoxGeometry::borderBoxWidth($style, $c->width),
             'content' => BoxGeometry::contentWidth($style, $c->width),
@@ -304,6 +307,17 @@ final class TextLayouter implements Layouter
 
         // Text runs: one per word on justified lines, otherwise merged by identical style.
         $lineWidth = $line->width;
+        if ($this->measureOnly) {
+            // Runs as the lines hold them: list markers and table of contents numbers line up on their baselines and right edges.
+            foreach (self::group($placed, $runKeys) as $group) {
+                $text = implode('', array_map(static fn (array $p): string => $p['item']->text, $group));
+                if (trim($text) !== '') {
+                    $first = $group[0]['item'];
+                    $f->addOp(new TextRun($group[0]['x'] + ($align === TextAlign::Right ? $width - $line->width : ($align === TextAlign::Center ? ($width - $line->width) / 2 : 0.0)), $baseline, $text, $first->font, $first->size, $first->style->color, $first->style->letterSpacing));
+                }
+            }
+            return;
+        }
         if (!$justified) {
             $merged = self::measureMerged($placed, $runKeys);
             $lineWidth += array_sum(array_column($merged, 'w')) - array_sum(array_column($placed, 'w'));
@@ -383,8 +397,9 @@ final class TextLayouter implements Layouter
             $delta = 0.0;
             if (count($group) > 1) {
                 $first = $group[0]['item'];
-                $text = implode('', array_map(static fn (array $p): string => $p['item']->text, $group));
-                $delta = $first->font->advance($text, $first->size, $first->style->letterSpacing) - array_sum(array_column($group, 'w'));
+                $delta = $first->font->joinsInPairs()
+                    ? self::joinDelta($group)
+                    : $first->font->advance(implode('', array_map(static fn (array $p): string => $p['item']->text, $group)), $first->size, $first->style->letterSpacing) - array_sum(array_column($group, 'w'));
             }
             $last = count($group) - 1;
             $isTab = $group[0]['item']->kind === 'tab';
@@ -401,6 +416,38 @@ final class TextLayouter implements Layouter
             $shift = $isTab ? 0.0 : $shift + $delta;
         }
         return $out;
+    }
+
+    /**
+     * How much wider a run is drawn as one string than its items measured apart, for a font that joins in pairs (see
+     * JoinsInPairs): the kerning (and any letter-spacing difference) where neighbouring items meet. Each join is measured from the characters that meet, and a space
+     * together with the characters on both sides of it, so the font's cache answers almost every join instead of
+     * shaping the whole run again.
+     *
+     * @param non-empty-list<array{item: InlineItem, x: float, w: float}> $group
+     */
+    private static function joinDelta(array $group): float
+    {
+        $first = $group[0]['item'];
+        $font = $first->font;
+        $size = $first->size;
+        $spacing = $first->style->letterSpacing;
+        $width = static fn (string $t): float => $font->advance($t, $size, $spacing);
+        $texts = array_values(array_filter(array_map(static fn (array $p): string => $p['item']->text, $group), static fn (string $t): bool => $t !== ''));
+        $count = count($texts);
+        $delta = 0.0;
+        for ($i = 1; $i < $count; $i++) {
+            $a = mb_substr($texts[$i - 1], -1, 1, 'UTF-8');
+            if ($texts[$i] === ' ' && $i + 1 < $count && $texts[$i + 1] !== ' ') {
+                $b = mb_substr($texts[$i + 1], 0, 1, 'UTF-8');
+                $delta += $width($a . ' ' . $b) - $width($a) - $width(' ') - $width($b);
+                $i++;
+                continue;
+            }
+            $b = mb_substr($texts[$i], 0, 1, 'UTF-8');
+            $delta += $width($a . $b) - $width($a) - $width($b);
+        }
+        return $delta;
     }
 
     /**
