@@ -11,7 +11,7 @@ There is no browser and no CSS cascade.
 
 **Documentation:** [one-learning-community.github.io/papercut](https://one-learning-community.github.io/papercut/guide/)
 
-> **Status: 0.8, before 1.0.** Until 1.0 a minor version may change the API; patch versions won't. Using Laravel? See
+> **Status: 0.9, before 1.0.** Until 1.0 a minor version may change the API; patch versions won't. Using Laravel? See
 > [`papercut/laravel`](../laravel) for the Blade front end of this same engine.
 
 ## Requirements
@@ -212,7 +212,8 @@ $document = Document::make(
 - Both entry points return a `Text` (a single paragraph of inline content) or a `View`, and accept `null` and `''`, which produce nothing.
 
 `MarkupOptions`: `styles` (`StyleMode::Theme` default or `Original`), `images` (a `Closure(string $src): ?string`
-returning image bytes) and `blankParagraphs` (`BlankParagraphs::Drop` default, or `Keep`).
+returning image bytes), `blankParagraphs` (`BlankParagraphs::Drop` default, or `Keep`) and `toc` (`true` default;
+`false` leaves every converted heading out of tables of contents, keeping its look and bookmark).
 
 ### What is converted
 

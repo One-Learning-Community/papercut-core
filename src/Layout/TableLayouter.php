@@ -661,7 +661,7 @@ final class TableLayouter implements Layouter
                     if ($p->colspan === 1 && !$measureFixed && $tracks[$col] instanceof Length) {
                         continue;
                     }
-                    $size = $engine->intrinsic($this->prepare($p->cell, $engine->context()->theme), $rowStyle, $p->index);
+                    $size = $engine->intrinsic($this->prepare($p->cell, $engine), $rowStyle, $p->index);
                     if ($p->colspan === 1) {
                         $columns[$col] = [
                             'min' => max($columns[$col]['min'], $size['min']),
@@ -830,7 +830,7 @@ final class TableLayouter implements Layouter
             $p = $cells[$o];
             $f = new Fragment($slots[$p->row][$p->index]['width'], $height);
             $this->inRow(self::rowAt($table, $p->row), $p->row, $style, $engine, function (ComputedStyle $rs) use ($p, $f, $closed, $engine): void {
-                BoxGeometry::decorate($f, $engine->styleOf($this->prepare($p->cell, $engine->context()->theme), $rs, $p->index), false, $closed);
+                BoxGeometry::decorate($f, $engine->styleOf($this->prepare($p->cell, $engine), $rs, $p->index), false, $closed);
             });
             return $f;
         };
@@ -1219,7 +1219,7 @@ final class TableLayouter implements Layouter
                     }
                 } else {
                     $f = new Fragment($slot['width'], $split['height']);
-                    BoxGeometry::decorate($f, $engine->styleOf($this->prepare($cell, $engine->context()->theme), $rowStyle, $j), false, !$pending);
+                    BoxGeometry::decorate($f, $engine->styleOf($this->prepare($cell, $engine), $rowStyle, $j), false, !$pending);
                 }
                 $cells[] = ['x' => $slot['x'], 'fragment' => $f];
             }
@@ -1249,7 +1249,7 @@ final class TableLayouter implements Layouter
     /** Lays a cell out at exactly $width, with the theme's cell defaults. */
     private function layoutCell(TableCell $cell, int $j, float $width, ComputedStyle $rowStyle, Constraints $c, ?BreakToken $token, LayoutEngine $engine): LayoutResult
     {
-        $prepared = $this->prepare($cell, $engine->context()->theme);
+        $prepared = $this->prepare($cell, $engine);
         // The column decides the cell's width: a width/min/max that disagrees is pinned to it. Pinning
         // clones the cell, and the clone must stay marked as a table cell or it warns as a stray one.
         $pinned = ExactWidth::pin($prepared, $width, $engine->styleOf($prepared, $rowStyle, $j));
@@ -1266,7 +1266,7 @@ final class TableLayouter implements Layouter
      */
     private function paintsStretched(TableCell $cell, int $j, ComputedStyle $rowStyle, LayoutEngine $engine): bool
     {
-        $prepared = $this->prepare($cell, $engine->context()->theme);
+        $prepared = $this->prepare($cell, $engine);
         $style = $engine->styleOf($prepared, $rowStyle, $j);
         $b = $style->borderWidth;
         if ($style->background !== null || $style->justify !== Justify::Start
@@ -1353,8 +1353,9 @@ final class TableLayouter implements Layouter
      * Theme cell padding unless the cell (or its named style) sets padding;
      * th cells are bold unless they set a weight.
      */
-    private function prepare(TableCell $cell, Theme $theme): TableCell
+    private function prepare(TableCell $cell, LayoutEngine $engine): TableCell
     {
+        $theme = $engine->context()->theme;
         if (!isset($this->prepared[$theme])) {
             /** @var \SplObjectStorage<TableCell, TableCell> $fresh */
             $fresh = new \SplObjectStorage();
@@ -1364,6 +1365,7 @@ final class TableLayouter implements Layouter
         if (!isset($cells[$cell])) {
             $prepared = self::withThemeDefaults($cell, $theme);
             $cells[$cell] = $prepared;
+            $engine->context()->styles->copyOf($prepared, $cell);
             $this->inTable[$prepared] = true; // the engine lays this one out; it is not a stray cell
         }
         return $cells[$cell];

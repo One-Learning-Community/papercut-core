@@ -142,6 +142,23 @@ final class LayoutEngine
     }
 
     /**
+     * A page is done: drops the caches that only spare work within a page, the measured sizes and
+     * broken lines of everything laid out so far. Content laid out again later (a repeated table
+     * header, the rest of a split row) is measured again, with the same result. Keeping them for a
+     * whole long document held most of its layout memory.
+     */
+    public function pageDone(): void
+    {
+        $this->intrinsics = new \SplObjectStorage();
+        $this->anywhereIntrinsics = new \SplObjectStorage();
+        foreach ($this->layouters as $layouter) {
+            if ($layouter instanceof TextLayouter) {
+                $layouter->forgetLines();
+            }
+        }
+    }
+
+    /**
      * Test seam and extension point: lays out $class nodes with $layouter.
      *
      * @param class-string<Node> $class

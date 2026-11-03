@@ -1146,19 +1146,20 @@ final class HtmlConverter
     {
         [$spans, $blank] = $this->run->take();
         if ($spans !== []) {
-            $this->blocks[] = [self::paragraph($spans, $preset), false];
+            $this->blocks[] = [$this->paragraph($spans, $preset), false];
         } elseif ($blank && $this->options->blankParagraphs === BlankParagraphs::Keep) {
-            $this->blocks[] = [self::paragraph([Span::text(self::NBSP)], $preset), true];
+            $this->blocks[] = [$this->paragraph([Span::text(self::NBSP)], $preset), true];
         }
     }
 
     /** @param list<Span> $spans */
-    private static function paragraph(array $spans, ?string $preset): Text
+    private function paragraph(array $spans, ?string $preset): Text
     {
         $text = Text::spans(...$spans);
         return match ($preset) {
             null => $text,
             'pre' => $text->apply('pre'),
+            'h1', 'h2', 'h3', 'h4' => $this->options->toc ? $text->withPreset($preset) : $text->withPreset($preset)->toc(false),
             default => $text->withPreset($preset),
         };
     }

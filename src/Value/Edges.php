@@ -24,7 +24,8 @@ final readonly class Edges
 
     public static function zero(): self
     {
-        return self::all(Length::zero());
+        static $zero = null; // immutable, so one shared instance
+        return $zero ??= self::all(Length::zero());
     }
 
     public static function of(Length $top, ?Length $right = null, ?Length $bottom = null, ?Length $left = null): self

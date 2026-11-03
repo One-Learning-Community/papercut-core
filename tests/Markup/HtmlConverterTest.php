@@ -111,6 +111,50 @@ final class HtmlConverterTest extends TestCase
         self::assertSame('p', $blank->preset());
     }
 
+    public function test_toc_false_keeps_every_converted_heading_out_of_tables_of_contents(): void
+    {
+        $html = '<h2>Warm-up</h2><p>Text</p><ul><li><h3>In a list</h3></li></ul><blockquote><h4>Quoted</h4></blockquote><h6>Small</h6><h2 style="color: red">Styled</h2>';
+        $off = Markup::html($html, new MarkupOptions(styles: StyleMode::Original, toc: false));
+        $on = Markup::html($html, new MarkupOptions(styles: StyleMode::Original));
+
+        $headings = static function (View $v): array {
+            $found = [];
+            $walk = static function (object $n) use (&$walk, &$found): void {
+                if ($n instanceof \Papercut\Markup\ThemedBlock) {
+                    $n = $n->render();
+                }
+                if ($n instanceof Text) {
+                    if (in_array($n->preset(), ['h1', 'h2', 'h3', 'h4'], true)) {
+                        $found[] = [$n->preset(), $n->style()->toc];
+                    }
+                    return;
+                }
+                $kids = $n instanceof ListNode ? $n->items() : (method_exists($n, 'children') ? $n->children() : []);
+                foreach ($kids as $k) {
+                    $walk($k);
+                }
+            };
+            $walk($v);
+            return $found;
+        };
+        self::assertInstanceOf(View::class, $off);
+        self::assertInstanceOf(View::class, $on);
+        self::assertSame([['h2', false], ['h3', false], ['h4', false], ['h4', false], ['h2', false]], $headings($off));
+        self::assertSame([['h2', null], ['h3', null], ['h4', null], ['h4', null], ['h2', null]], $headings($on));
+    }
+
+    public function test_toc_false_on_a_single_heading_and_plain_paragraphs(): void
+    {
+        $h = Markup::html('<h1>Only</h1>', new MarkupOptions(toc: false));
+        self::assertInstanceOf(View::class, $h);
+        $heading = $h->children()[0];
+        self::assertInstanceOf(Text::class, $heading);
+        self::assertFalse($heading->style()->toc);
+        $p = Markup::html('<p>Para</p>', new MarkupOptions(toc: false));
+        self::assertInstanceOf(Text::class, $p);
+        self::assertNull($p->style()->toc);
+    }
+
     public function test_leading_blank_lines_are_trimmed_in_keep_mode(): void
     {
         $t = Markup::html('<p><br></p><p>&nbsp;</p><p>x</p>', new MarkupOptions(blankParagraphs: BlankParagraphs::Keep));

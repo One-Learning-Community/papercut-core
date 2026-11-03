@@ -132,19 +132,17 @@ final readonly class ComputedStyle
         }
         $em = $fontSize->points ?? $this->fontSize;
         $lh = ($style->lineHeight ?? $this->lineHeight) * $em;
-        $len = static fn (mixed $v): mixed => $v instanceof Length ? $v->resolve($em, $lh) : $v;
-        $edges = static fn (?Edges $e): ?Edges => $e?->resolve($em, $lh);
 
         return new self(
-            width: $len($style->width) ?? Auto::instance(),
-            height: $len($style->height) ?? Auto::instance(),
-            minWidth: $len($style->minWidth),
-            maxWidth: $len($style->maxWidth),
-            minHeight: $len($style->minHeight),
-            maxHeight: $len($style->maxHeight),
-            padding: $edges($style->padding) ?? Edges::zero(),
-            margin: $edges($style->margin) ?? Edges::zero(),
-            borderWidth: $edges($style->borderWidth) ?? Edges::zero(),
+            width: ($style->width instanceof Length ? $style->width->resolve($em, $lh) : $style->width) ?? Auto::instance(),
+            height: ($style->height instanceof Length ? $style->height->resolve($em, $lh) : $style->height) ?? Auto::instance(),
+            minWidth: ($style->minWidth instanceof Length ? $style->minWidth->resolve($em, $lh) : $style->minWidth),
+            maxWidth: ($style->maxWidth instanceof Length ? $style->maxWidth->resolve($em, $lh) : $style->maxWidth),
+            minHeight: ($style->minHeight instanceof Length ? $style->minHeight->resolve($em, $lh) : $style->minHeight),
+            maxHeight: ($style->maxHeight instanceof Length ? $style->maxHeight->resolve($em, $lh) : $style->maxHeight),
+            padding: $style->padding?->resolve($em, $lh) ?? Edges::zero(),
+            margin: $style->margin?->resolve($em, $lh) ?? Edges::zero(),
+            borderWidth: $style->borderWidth?->resolve($em, $lh) ?? Edges::zero(),
             borderColor: $style->borderColor ?? Color::black(),
             borderStyle: $style->borderStyle ?? BorderStyle::Solid,
             radius: $style->radius?->resolve($em, $lh)->points ?? 0.0,
@@ -157,7 +155,7 @@ final readonly class ComputedStyle
             alignSelf: $style->alignSelf,
             grow: $style->grow ?? 0.0,
             shrink: $style->shrink ?? 1.0,
-            basis: $len($style->basis) ?? Auto::instance(),
+            basis: ($style->basis instanceof Length ? $style->basis->resolve($em, $lh) : $style->basis) ?? Auto::instance(),
             wrap: $style->wrap ?? false,
             fontFamily: $style->fontFamily !== null ? self::family($style->fontFamily, $this->monoFamily) : $this->fontFamily,
             fontSize: $em,

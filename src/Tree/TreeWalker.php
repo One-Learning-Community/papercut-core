@@ -68,34 +68,36 @@ final class TreeWalker
         ];
     }
 
-    /** @param list<array{node: Node, style: ComputedStyle}> $ancestors */
-    private function visit(Node $node, ComputedStyle $parent, string $parentPath, int $index, TreeVisitor $visitor, Region $region, ?Node $parentNode = null, bool $inHeader = false, ?ComputedStyle $rowStyle = null, array $ancestors = []): void
+    /**
+     * @param string|Visit $parentAt the parent's visit, or the region's path for a top-level node
+     * @param list<array{node: Node, style: ComputedStyle}> $ancestors
+     */
+    private function visit(Node $node, ComputedStyle $parent, string|Visit $parentAt, int $index, TreeVisitor $visitor, Region $region, ?Node $parentNode = null, bool $inHeader = false, ?ComputedStyle $rowStyle = null, array $ancestors = []): void
     {
-        $provisional = $parentPath . ' > ' . NodePath::segment($node, null, $index);
         try {
             $style = $node instanceof TableCell && $rowStyle !== null
                 ? $this->styles->resolveInTable($node, $rowStyle)
                 : $this->styles->resolve($node, $parent);
         } catch (UnknownAttribute | InvalidValue $e) {
-            throw $e->within('at ' . $provisional);
+            $parentPath = $parentAt instanceof Visit ? $parentAt->path() : $parentAt;
+            throw $e->within('at ' . $parentPath . ' > ' . NodePath::segment($node, null, $index));
         }
-        $path = $parentPath . ' > ' . NodePath::segment($node, $style, $index);
+        $at = Visit::under($parentAt, $node, $style, $index, $parentNode, $inHeader, $region, $ancestors);
         if ($node instanceof Place && ($region !== Region::Overlay || $parentNode !== null)) {
-            throw new \LogicException(sprintf('A place only works in a page overlay; add it with Page::overlay(), not inside other content (at %s).', $path));
+            throw new \LogicException(sprintf('A place only works in a page overlay; add it with Page::overlay(), not inside other content (at %s).', $at->path()));
         }
         if ($node instanceof Toc && $region !== Region::Body) {
-            throw new InvalidStructure(sprintf('A table of contents only works in a page body (at %s).', $path));
+            throw new InvalidStructure(sprintf('A table of contents only works in a page body (at %s).', $at->path()));
         }
 
-        $at = new Visit($path, $index, $parentNode, $inHeader, $region, $ancestors);
         if ($visitor->enter($node, $style, $at)) {
-            $this->children($node, $style, $path, $visitor, $region, $inHeader, [...$ancestors, ['node' => $node, 'style' => $style]]);
+            $this->children($node, $style, $at, $visitor, $region, $inHeader, [...$ancestors, ['node' => $node, 'style' => $style]]);
         }
         $visitor->leave($node, $style, $at);
     }
 
     /** @param list<array{node: Node, style: ComputedStyle}> $ancestors the node and its ancestors */
-    private function children(Node $node, ComputedStyle $style, string $path, TreeVisitor $visitor, Region $region, bool $inHeader, array $ancestors): void
+    private function children(Node $node, ComputedStyle $style, Visit $path, TreeVisitor $visitor, Region $region, bool $inHeader, array $ancestors): void
     {
         if ($node instanceof View || $node instanceof Link || $node instanceof TableCell || $node instanceof ListItem || $node instanceof Place) {
             foreach ($node->children() as $i => $child) {

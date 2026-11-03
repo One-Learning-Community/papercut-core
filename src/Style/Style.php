@@ -209,20 +209,29 @@ final readonly class Style
 
     public function merge(Style $over): self
     {
-        $set = array_filter(get_object_vars($over), static fn (mixed $v): bool => $v !== null);
-        if ($set === []) {
-            return $this;
-        }
-        $mine = get_object_vars($this);
-        if (array_filter($mine, static fn (mixed $v): bool => $v !== null) === []) {
+        if ($over === $this || $this->isEmpty()) {
             return $over;
         }
-        return new self(...array_merge($mine, $set));
+        // Plain loops: styles are merged for every node, and this is a hot path.
+        $mine = get_object_vars($this);
+        $changed = false;
+        foreach (get_object_vars($over) as $key => $value) {
+            if ($value !== null) {
+                $mine[$key] = $value;
+                $changed = true;
+            }
+        }
+        return $changed ? new self(...$mine) : $this;
     }
 
     public function isEmpty(): bool
     {
-        return array_filter(get_object_vars($this), static fn (mixed $v): bool => $v !== null) === [];
+        foreach (get_object_vars($this) as $value) {
+            if ($value !== null) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

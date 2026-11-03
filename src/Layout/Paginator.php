@@ -86,6 +86,7 @@ final class Paginator
         $overlay = $this->overlay($page, $root, $w, $h);
 
         $body = Column::make(...$page->bodyNodes());
+        $this->ctx->styles->wrapper($body);
         $token = null;
         while (true) {
             $number = count($out) + 1;
@@ -103,6 +104,7 @@ final class Paginator
                 $before = $header === null ? $layers : [...$layers, ['x' => $left, 'y' => $top, 'fragment' => $header]];
                 $after = $footer === null ? [] : [['x' => $left, 'y' => $h - $m->bottom->points - $footer->height, 'fragment' => $footer]];
                 $out[] = new PlacedPage($w, $h, [...$before, ['x' => $left, 'y' => $bodyY, 'fragment' => $body], ...$after, ...$overlay]);
+                $this->engine->pageDone();
             };
 
             // A page shorter than a later one (a tall first-page or even-page header) may be what is in the way
@@ -330,7 +332,9 @@ final class Paginator
         }
         // The slot names are the region names.
         $region = Region::from($pathName);
-        return $this->inRegion($region, fn (): ?Fragment => $this->withoutBookmarks(fn (): ?Fragment => $this->engine->layout(Column::make(...$nodes), $root, new Constraints($width, null, true), pathName: $pathName)->fragment));
+        $column = Column::make(...$nodes);
+        $this->ctx->styles->wrapper($column);
+        return $this->inRegion($region, fn (): ?Fragment => $this->withoutBookmarks(fn (): ?Fragment => $this->engine->layout($column, $root, new Constraints($width, null, true), pathName: $pathName)->fragment));
     }
 
     /**

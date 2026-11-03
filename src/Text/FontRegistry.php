@@ -14,6 +14,8 @@ final class FontRegistry
     private array $families = [];
     /** @var array<string, CachedFont> keyed by path */
     private array $loaded = [];
+    /** @var array<string, CachedFont> resolved faces by family, weight and style; cleared when a face is registered */
+    private array $resolved = [];
 
     public function __construct(private readonly Backend $backend)
     {
@@ -49,6 +51,7 @@ final class FontRegistry
         $key = strtolower($family);
         $this->families[$key] ??= ['name' => $family, 'faces' => []];
         $this->families[$key]['faces'][$weight . '|' . $style->value] = $path;
+        $this->resolved = [];
         return $this;
     }
 
@@ -77,6 +80,11 @@ final class FontRegistry
     }
 
     public function resolve(string $family, int $weight = 400, FontStyle $style = FontStyle::Normal): CachedFont
+    {
+        return $this->resolved[$family . '|' . $weight . '|' . $style->value] ??= $this->find($family, $weight, $style);
+    }
+
+    private function find(string $family, int $weight, FontStyle $style): CachedFont
     {
         $entry = $this->families[strtolower($family)] ?? null;
         if ($entry === null) {

@@ -94,6 +94,17 @@ final class BookmarksTest extends TestCase
         $this->assertSame([[1, 1, 'Report'], [1, 2, 'Summary'], [1, 3, 'Detail'], [1, 4, 'Fine print']], self::strip(self::bookmarks($doc)));
     }
 
+    public function test_markup_kept_out_of_the_toc_keeps_its_bookmarks(): void
+    {
+        $doc = Document::make(Page::a4()->body(
+            \Papercut\Toc::make(),
+            Text::h1('Unit 1'),
+            \Papercut\Markup\Markup::html('<h2>Warm-up</h2><p>Body.</p>', new \Papercut\Markup\MarkupOptions(toc: false)),
+        ));
+
+        $this->assertSame([[1, 1, 'Unit 1'], [1, 2, 'Warm-up']], self::strip(self::bookmarks($doc)));
+    }
+
     public function test_a_bookmark_points_at_its_block_on_the_right_page(): void
     {
         $doc = Document::make(Page::a4()->margin(mm(20))->body(Column::make(...[

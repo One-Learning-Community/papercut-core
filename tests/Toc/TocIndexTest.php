@@ -64,6 +64,19 @@ final class TocIndexTest extends TestCase
         self::assertSame([], self::triples(self::collect($doc), 1, 4));
     }
 
+    public function test_markup_with_toc_off_adds_no_entries(): void
+    {
+        $html = '<h2>Warm-up</h2><p>Text</p><table><tr><td><h3>In a cell</h3></td></tr></table>';
+        $doc = Document::make(Page::a4()->body(
+            Toc::make()->levels(1, 4),
+            Text::h1('Unit 1'),
+            \Papercut\Markup\Markup::html($html, new \Papercut\Markup\MarkupOptions(toc: false)),
+            Text::h1('Unit 2'),
+            \Papercut\Markup\Markup::html($html),
+        ));
+        self::assertSame(['Unit 1', 'Unit 2', 'Warm-up', 'In a cell'], array_map(static fn (array $t): string => $t[2], self::triples(self::collect($doc), 1, 4)));
+    }
+
     public function test_only_the_body_counts(): void
     {
         $doc = Document::make(Page::a4()

@@ -82,7 +82,8 @@ final readonly class Length implements \Stringable
 
     public static function zero(): self
     {
-        return new self(0.0);
+        static $zero = null; // immutable, so one shared instance
+        return $zero ??= new self(0.0);
     }
 
     /**

@@ -6,7 +6,7 @@ namespace Papercut\Tests\Layout;
 
 use Papercut\{Document, Image, ListItem, ListNode, OverflowMode, Page, PageNumber, Text};
 use Papercut\Exception\LayoutOverflow;
-use Papercut\Layout\{LayoutContext, LayoutEngine, Paginator};
+use Papercut\Layout\{LayoutContext, LayoutEngine, Paginator, TextLayouter};
 use Papercut\Paint\Painter;
 use Papercut\Paint\TextRun;
 use Papercut\Style\Theme;
@@ -35,6 +35,23 @@ final class PaginatorTest extends TestCase
             $setup($engine);
         }
         return Painter::paint((new Paginator($engine, $ctx))->paginate($doc));
+    }
+
+    public function test_layout_caches_are_dropped_as_each_page_is_done(): void
+    {
+        $engine = null;
+        $texts = array_map(static fn (int $i): Text => Text::make("Line $i of a document longer than one page"), range(1, 120));
+        $pages = $this->paginate(Document::make(Page::a4()->body(...$texts)), setup: function (LayoutEngine $e) use (&$engine): void {
+            $engine = $e;
+        });
+        self::assertGreaterThan(1, count($pages));
+        self::assertInstanceOf(LayoutEngine::class, $engine);
+        // A long document's broken lines and measured sizes would otherwise all stay in memory until the export ends.
+        $layouters = (new \ReflectionProperty(LayoutEngine::class, 'layouters'))->getValue($engine);
+        $text = $layouters[Text::class];
+        self::assertInstanceOf(TextLayouter::class, $text);
+        self::assertCount(0, (new \ReflectionProperty(TextLayouter::class, 'lineCache'))->getValue($text));
+        self::assertCount(0, (new \ReflectionProperty(LayoutEngine::class, 'intrinsics'))->getValue($engine));
     }
 
     private static function stuck(LayoutEngine $engine): void

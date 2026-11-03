@@ -145,6 +145,12 @@ final class TextLayouter implements Layouter
         return $node;
     }
 
+    /** Drops the cached lines (LayoutEngine::pageDone()). */
+    public function forgetLines(): void
+    {
+        $this->lineCache = new \SplObjectStorage();
+    }
+
     /**
      * Broken lines and their line boxes, cached per node, width and style.
      *
@@ -286,11 +292,20 @@ final class TextLayouter implements Layouter
             $x += $w;
         }
         $baseline = $top + $box['baseline'];
+        // Grouping keys, computed once per item: lines are grouped several ways below. group() pairs them with
+        // $placed by position, so $placed must keep one entry per item, in order (measureMerged and the offset do).
+        $styleKeys = $runKeys = $hrefKeys = [];
+        foreach ($line->items as $item) {
+            $key = self::styleKey($item);
+            $styleKeys[] = $key;
+            $runKeys[] = $item->kind === 'tab' ? 'tab' . spl_object_id($item) : $key;
+            $hrefKeys[] = $item->href ?? '';
+        }
 
         // Text runs: one per word on justified lines, otherwise merged by identical style.
         $lineWidth = $line->width;
         if (!$justified) {
-            $merged = self::measureMerged($placed);
+            $merged = self::measureMerged($placed, $runKeys);
             $lineWidth += array_sum(array_column($merged, 'w')) - array_sum(array_column($placed, 'w'));
             $placed = $merged;
         }
@@ -305,9 +320,9 @@ final class TextLayouter implements Layouter
         }
         $runs = $justified
             ? array_map(static fn (array $p): array => [$p], array_values(array_filter($placed, static fn (array $p): bool => $p['item']->kind === 'word')))
-            : self::group($placed, self::runKey(...));
+            : self::group($placed, $runKeys);
         // Highlights sit behind the text: one rect per contiguous same-style run, including stretched spaces.
-        foreach (self::group($placed, self::styleKey(...)) as $group) {
+        foreach (self::group($placed, $styleKeys) as $group) {
             $bg = $group[0]['item']->style->background;
             if ($bg !== null && !$bg->isTransparent()) {
                 $f->addOp(new Rect($group[0]['x'], $top, array_sum(array_column($group, 'w')), $box['height'], fill: $bg));
@@ -323,7 +338,7 @@ final class TextLayouter implements Layouter
         }
 
         // Decorations span contiguous same-style items, including stretched spaces.
-        foreach (self::group($placed, self::styleKey(...)) as $group) {
+        foreach (self::group($placed, $styleKeys) as $group) {
             $s = $group[0]['item']->style;
             $size = $group[0]['item']->size;
             $x1 = $group[0]['x'];
@@ -339,7 +354,7 @@ final class TextLayouter implements Layouter
             }
         }
 
-        foreach (self::group($placed, static fn (InlineItem $i): string => $i->href ?? '') as $group) {
+        foreach (self::group($placed, $hrefKeys) as $group) {
             $href = $group[0]['item']->href;
             if ($href === null) {
                 continue;
@@ -357,13 +372,14 @@ final class TextLayouter implements Layouter
      * below zero) and the text after it lands on the stop.
      *
      * @param list<array{item: InlineItem, x: float, w: float}> $placed
+     * @param list<string> $runKeys each item's run key, in order
      * @return list<array{item: InlineItem, x: float, w: float}>
      */
-    private static function measureMerged(array $placed): array
+    private static function measureMerged(array $placed, array $runKeys): array
     {
         $out = [];
         $shift = 0.0;
-        foreach (self::group($placed, self::runKey(...)) as $group) {
+        foreach (self::group($placed, $runKeys) as $group) {
             $delta = 0.0;
             if (count($group) > 1) {
                 $first = $group[0]['item'];
@@ -391,16 +407,16 @@ final class TextLayouter implements Layouter
      * Splits placed items into runs of consecutive items sharing a key.
      *
      * @param list<array{item: InlineItem, x: float, w: float}> $placed
-     * @param \Closure(InlineItem): string $key
+     * @param list<string> $keys each item's key, in order
      * @return list<non-empty-list<array{item: InlineItem, x: float, w: float}>>
      */
-    private static function group(array $placed, \Closure $key): array
+    private static function group(array $placed, array $keys): array
     {
         $groups = [];
         $current = [];
         $currentKey = null;
-        foreach ($placed as $p) {
-            $k = $key($p['item']);
+        foreach ($placed as $i => $p) {
+            $k = $keys[$i];
             if ($current !== [] && $k !== $currentKey) {
                 $groups[] = $current;
                 $current = [];
@@ -412,12 +428,6 @@ final class TextLayouter implements Layouter
             $groups[] = $current;
         }
         return $groups;
-    }
-
-    /** Like styleKey, but a tab is a run of its own: text before and after it is drawn apart. */
-    private static function runKey(InlineItem $i): string
-    {
-        return $i->kind === 'tab' ? 'tab' . spl_object_id($i) : self::styleKey($i);
     }
 
     private static function styleKey(InlineItem $i): string

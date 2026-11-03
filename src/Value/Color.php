@@ -30,9 +30,10 @@ final readonly class Color implements \Stringable
         return new self($r, $g, $b, round($alpha, 4));
     }
 
-    public static function black(): self { return new self(0, 0, 0, 1.0); }
-    public static function white(): self { return new self(255, 255, 255, 1.0); }
-    public static function transparent(): self { return new self(0, 0, 0, 0.0); }
+    // immutable, so each is one shared instance
+    public static function black(): self { static $c = null; return $c ??= new self(0, 0, 0, 1.0); }
+    public static function white(): self { static $c = null; return $c ??= new self(255, 255, 255, 1.0); }
+    public static function transparent(): self { static $c = null; return $c ??= new self(0, 0, 0, 0.0); }
 
     public static function hex(string $input): self
     {

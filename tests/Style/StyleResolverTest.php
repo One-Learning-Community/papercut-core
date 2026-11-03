@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Papercut\Tests\Style;
 
-use Papercut\{TableCell, Text};
+use Papercut\{Column, ListItem, TableCell, Text};
 use Papercut\Style\{Style, StyleResolver, Theme};
 use Papercut\Value\{Color, Edges};
 use PHPUnit\Framework\TestCase;
@@ -86,11 +86,75 @@ final class StyleResolverTest extends TestCase
             'named padding' => TableCell::th('a')->apply('roomy'),
             'named weight' => TableCell::th('a')->apply('light'),
         ];
-        foreach ($cells as $label => $cell) {
-            $viaTable = $r->resolve($prepare->invoke(null, $cell, $theme), $r->root());
-            $viaResolver = $r->resolveInTable($cell, $r->root());
-            self::assertEquals($viaTable->padding, $viaResolver->padding, "$label padding");
-            self::assertSame($viaTable->fontWeight, $viaResolver->fontWeight, "$label weight");
+        // Layout resolves cell copies through resolveInTable() (StyleResolver::copyOf()), so the two must agree
+        // in full, also under a row inside a list item.
+        $inList = $r->resolve(ListItem::make('item'), $r->root());
+        foreach (['at the top' => $r->root(), 'in a list' => $inList] as $where => $row) {
+            foreach ($cells as $label => $cell) {
+                $viaTable = $r->resolve($prepare->invoke(null, $cell, $theme), $row);
+                $viaResolver = $r->resolveInTable($cell, $row);
+                self::assertEquals($viaTable, $viaResolver, "$label, $where");
+            }
         }
+    }
+
+    public function test_a_table_cell_is_never_in_a_list(): void
+    {
+        $r = new StyleResolver(Theme::default());
+        $row = $r->resolve(ListItem::make('item'), $r->root());
+        self::assertTrue($row->inList);
+        self::assertFalse($r->resolveInTable(TableCell::make('a'), $row)->inList);
+        self::assertFalse($r->resolve(TableCell::make('a'), $row)->inList, 'a cell resolved on its own, as layout does a pinned cell');
+        self::assertFalse($r->resolve(TableCell::make('a')->width(pt(300)), $row)->inList);
+    }
+
+    public function test_a_registered_cell_copy_resolves_as_its_cell_does_in_a_table(): void
+    {
+        $r = new StyleResolver(Theme::default());
+        $cell = TableCell::th('a');
+        $copy = $cell->padding(pt(3));
+        $r->copyOf($copy, $cell);
+        self::assertSame($r->resolveInTable($cell, $r->root()), $r->resolve($copy, $r->root()));
+    }
+
+    public function test_a_wrapper_column_with_nothing_of_its_own_resolves_to_its_parent(): void
+    {
+        $r = new StyleResolver(Theme::default());
+        $column = Column::make(Text::make('a'));
+        $r->wrapper($column);
+        self::assertSame($r->root(), $r->resolve($column, $r->root()));
+        self::assertNotSame($r->root(), $r->resolve(Column::make(Text::make('a')), $r->root()), 'an unregistered column gets its own style');
+    }
+
+    public function test_a_wrapper_column_with_a_style_of_its_own_resolves_normally(): void
+    {
+        $r = new StyleResolver(Theme::default());
+        $column = Column::make(Text::make('a'))->padding(pt(4));
+        $r->wrapper($column);
+        $style = $r->resolve($column, $r->root());
+        self::assertNotSame($r->root(), $style);
+        self::assertEquals(Edges::all(pt(4)), $style->padding);
+    }
+
+    public function test_nodes_with_the_same_style_share_one_computed_style(): void
+    {
+        $r = new StyleResolver(Theme::default());
+        $a = $r->resolve(Text::make('one')->right()->bold(), $r->root());
+        $b = $r->resolve(Text::make('two')->bold()->right(), $r->root());
+        self::assertSame($a, $b);
+        self::assertNotSame($a, $r->resolve(Text::make('three')->right(), $r->root()));
+    }
+
+    public function test_a_node_under_a_second_parent_resolves_and_is_remembered_under_each(): void
+    {
+        $r = new StyleResolver(Theme::default());
+        $text = Text::make('a');
+        $big = $r->resolve(Column::make()->size(pt(20)), $r->root());
+        $first = $r->resolve($text, $r->root());
+        $second = $r->resolve($text, $big);
+        self::assertSame(20.0, $second->fontSize);
+        self::assertNotSame($first, $second);
+        self::assertSame($first, $r->resolve($text, $r->root()));
+        self::assertSame($second, $r->resolve($text, $big));
     }
 }

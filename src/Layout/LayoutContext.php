@@ -100,8 +100,11 @@ final class LayoutContext
     public function itemizer(): Itemizer
     {
         // Strict mode checks text on the painted pages (PdfExporter), so a header laid out only to measure it never throws.
-        return $this->itemizers[$this->theme] ??= new Itemizer($this->fonts, function (string $msg): void {
-            $this->warn($msg);
+        // A weak reference, so the context and its itemizers form no cycle: the export's caches are freed when it returns.
+        $self = \WeakReference::create($this);
+        return $this->itemizers[$this->theme] ??= new Itemizer($this->fonts, static function (string $msg) use ($self): void {
+            // The context outlives its itemizers; if that ever changes, fail loudly rather than drop the warning.
+            ($self->get() ?? throw new \LogicException('A warning arrived after its layout context was freed.'))->warn($msg);
         }, $this->fallbackFamilies, $this->theme);
     }
 
@@ -327,9 +330,11 @@ final class LayoutContext
     /** Fonts for SVG text drawn in an element of this style; warnings name the element's path. */
     public function svgFonts(ComputedStyle $style): SvgFonts
     {
-        return $this->svgFonts[strtolower($style->fontFamily)] ??= new SvgFonts($this->fonts, $style->fontFamily, $this->fallbackFamilies, function (string $msg): void {
-            $this->missingGlyphs($msg);
-            $this->warn($msg, withPath: false);
+        $self = \WeakReference::create($this); // no cycle, as in itemizer()
+        return $this->svgFonts[strtolower($style->fontFamily)] ??= new SvgFonts($this->fonts, $style->fontFamily, $this->fallbackFamilies, static function (string $msg) use ($self): void {
+            $ctx = $self->get() ?? throw new \LogicException('A warning arrived after its layout context was freed.');
+            $ctx->missingGlyphs($msg);
+            $ctx->warn($msg, withPath: false);
         });
     }
 

@@ -18,7 +18,8 @@ trait HasStyle
 
     public function style(): Style
     {
-        return $this->style ?? new Style();
+        static $none = null; // Style is immutable, so nodes without one share an empty one
+        return $this->style ?? ($none ??= new Style());
     }
 
     public function styleName(): ?string

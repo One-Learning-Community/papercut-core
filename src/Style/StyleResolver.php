@@ -19,15 +19,24 @@ use function Papercut\pt;
 final class StyleResolver
 {
     private ?ComputedStyle $root = null;
+    /** Computed styles per node and parent. Nodes are immutable, so a node under the same parent always resolves the same. */
+    private StyleMemo $styles;
+    /** The same for cells resolved under a table row, with the theme's cell defaults. */
+    private StyleMemo $cellStyles;
     /**
-     * Computed styles memoized per node and parent style (both by identity).
-     * Nodes are immutable, so a node under the same parent always resolves the same.
+     * One instance per distinct computed style, by its serialized form. A long table resolves
+     * thousands of nodes to a handful of styles; each is kept once.
      *
-     * @var \SplObjectStorage<Node, \SplObjectStorage<ComputedStyle, ComputedStyle>>
+     * @var array<string, ComputedStyle>
      */
-    private \SplObjectStorage $styles;
-    /** @var \SplObjectStorage<TableCell, \SplObjectStorage<ComputedStyle, ComputedStyle>> */
-    private \SplObjectStorage $cellStyles;
+    private array $interned = [];
+    /** @var \SplObjectStorage<TableCell, TableCell> layout's prepared copies of table cells, each to the cell it copies */
+    private \SplObjectStorage $copies;
+    /** @var \SplObjectStorage<View, true> the columns layout wraps a page region's nodes in */
+    private \SplObjectStorage $wrappers;
+    /** @var array<int, Style> a cell's base style, by whether it is a header cell */
+    private array $cellBase = [];
+    private ?Style $none = null;
     /**
      * Nodes that end a container whose bottom edge shows (a table cell, or a box with bottom
      * padding, a bottom border or a background), directly or through transparent wrappers
@@ -44,8 +53,34 @@ final class StyleResolver
     public function __construct(private readonly Theme $theme)
     {
         $this->endsContainer = new \WeakMap();
-        $this->styles = new \SplObjectStorage();
-        $this->cellStyles = new \SplObjectStorage();
+        $this->styles = new StyleMemo();
+        $this->cellStyles = new StyleMemo();
+        $this->copies = new \SplObjectStorage();
+        $this->wrappers = new \SplObjectStorage();
+    }
+
+    /**
+     * Registers the column layout wraps a page region's nodes in (the tree walk visits them under the
+     * root style directly). When its computed style equals its parent's, it resolves to the parent itself,
+     * so the nodes in it share the styles the walk already resolved instead of computing them again.
+     *
+     * @internal Paginator only.
+     */
+    public function wrapper(View $column): void
+    {
+        $this->wrappers[$column] = true;
+    }
+
+    /**
+     * Registers layout's copy of a cell with the theme's cell defaults applied (TableLayouter::prepare()).
+     * The copy then resolves as the cell itself does under its row, the same style either way, so it
+     * and everything in it share the styles the tree walk already resolved instead of computing them again.
+     *
+     * @internal TableLayouter only.
+     */
+    public function copyOf(TableCell $copy, TableCell $cell): void
+    {
+        $this->copies[$copy] = $cell;
     }
 
     /** The theme this resolver resolves against. */
@@ -66,13 +101,10 @@ final class StyleResolver
      */
     public function resolve(Node $node, ComputedStyle $parent): ComputedStyle
     {
-        $byParent = $this->styles[$node] ?? null;
-        if ($byParent === null) {
-            /** @var \SplObjectStorage<ComputedStyle, ComputedStyle> $byParent */
-            $byParent = new \SplObjectStorage();
-            $this->styles[$node] = $byParent;
+        if ($node instanceof TableCell && isset($this->copies[$node])) {
+            return $this->resolveInTable($this->copies[$node], $parent);
         }
-        return $byParent[$parent] ??= $this->compute($node, $parent);
+        return $this->styles->get($node, $parent) ?? $this->styles->put($node, $parent, $this->compute($node, $parent));
     }
 
     /**
@@ -83,22 +115,25 @@ final class StyleResolver
      */
     public function resolveInTable(TableCell $cell, ComputedStyle $rowStyle): ComputedStyle
     {
-        $byParent = $this->cellStyles[$cell] ?? null;
-        if ($byParent === null) {
-            /** @var \SplObjectStorage<ComputedStyle, ComputedStyle> $byParent */
-            $byParent = new \SplObjectStorage();
-            $this->cellStyles[$cell] = $byParent;
+        $cached = $this->cellStyles->get($cell, $rowStyle);
+        if ($cached !== null) {
+            return $cached;
         }
-        return $byParent[$rowStyle] ??= $this->compute(
-            $cell,
-            $rowStyle,
-            new Style(padding: $this->theme->cellPadding, fontWeight: $cell->header() ? 700 : null),
-            false,
-        );
+        $header = $cell->header();
+        // Two shared base styles, one for header cells and one for body cells.
+        $base = $this->cellBase[(int) $header] ??= new Style(padding: $this->theme->cellPadding, fontWeight: $header ? 700 : null);
+        return $this->cellStyles->put($cell, $rowStyle, $this->compute($cell, $rowStyle, $base, false));
     }
 
-    private function compute(Node $node, ComputedStyle $parent, Style $style = new Style(), ?bool $inList = null): ComputedStyle
+    /** The one instance of this computed style (see $interned). */
+    private function intern(ComputedStyle $style): ComputedStyle
     {
+        return $this->interned[serialize($style)] ??= $style;
+    }
+
+    private function compute(Node $node, ComputedStyle $parent, ?Style $style = null, ?bool $inList = null): ComputedStyle
+    {
+        $style ??= $this->none ??= new Style();
         if ($node instanceof Text && $node->preset() !== null) {
             $preset = $node->preset();
             $style = $style->merge($preset === 'p' ? $this->theme->paragraph() : $this->theme->heading((int) substr($preset, 1)));
@@ -118,13 +153,19 @@ final class StyleResolver
         $style = $style->merge($node->style());
         if ($node instanceof ListEntry) {
             $inList = true;
+        } elseif ($node instanceof TableCell) {
+            // A table cell starts outside any list, however it is resolved (in a row, or as a copy layout pins to its column).
+            $inList = false;
         }
         $computed = $parent->child($style, $inList);
+        if ($node instanceof View && isset($this->wrappers[$node]) && $computed == $parent) {
+            return $parent;
+        }
         $this->noteLastChild($node, $computed);
         if ($node instanceof ListNode && !$parent->inList && $style->margin === null && !isset($this->endsContainer[$node])) {
-            return $this->withListSpacing($node, $computed);
+            return $this->intern($this->withListSpacing($node, $computed));
         }
-        return $computed;
+        return $this->intern($computed);
     }
 
     /** Records the last child of a container whose bottom edge shows (see endsContainer), so a list ending it adds no spacing. */
