@@ -514,7 +514,7 @@ final class HtmlWriter implements TreeVisitor
         $pre = StyleName::leads($t->styleName(), 'pre') || StyleName::leads($t->styleName(), 'code-block.code');
         $tag = match (true) {
             $pre => 'pre',
-            in_array($t->preset(), ['h1', 'h2', 'h3', 'h4'], true) => $t->preset(),
+            $t->headingLevel() !== null => 'h' . $t->headingLevel(),
             default => 'p',
         };
         $decls = [...Css::box($s), ...$this->textCss($s, $parent, $at->path()), ...($this->parentIsFlex($at) ? Css::flexItem($s) : []), ...Css::pagination($s, $parent)];

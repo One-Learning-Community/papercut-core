@@ -105,6 +105,17 @@ final class BookmarksTest extends TestCase
         $this->assertSame([[1, 1, 'Unit 1'], [1, 2, 'Warm-up']], self::strip(self::bookmarks($doc)));
     }
 
+    public function test_section_and_card_heading_titles_are_bookmarked(): void
+    {
+        $doc = Document::make(Page::a4()->body(
+            \Papercut\Decorator\Section::make('Body')->title('Units')->number(2)->heading(1),
+            \Papercut\Decorator\Card::make('Body')->title('Unit 1')->heading(2),
+            \Papercut\Decorator\Section::make('Body')->title('Plain'),
+        ));
+
+        $this->assertSame([[1, 1, '2 Units'], [1, 2, 'Unit 1']], self::strip(self::bookmarks($doc)));
+    }
+
     public function test_a_bookmark_points_at_its_block_on_the_right_page(): void
     {
         $doc = Document::make(Page::a4()->margin(mm(20))->body(Column::make(...[

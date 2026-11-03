@@ -19,9 +19,9 @@ final class HeadingText
         return implode('', array_map(static fn (Span $s): string => $s->lineBreak ? ' ' : $s->text, $t->spanList()));
     }
 
-    /** 1 to 4 for an h1 to h4 preset, otherwise null. */
+    /** 1 to 4 for a heading (an h1 to h4 preset, or asHeading()), otherwise null. */
     public static function level(Text $t): ?int
     {
-        return in_array($t->preset(), ['h1', 'h2', 'h3', 'h4'], true) ? (int) substr((string) $t->preset(), 1) : null;
+        return $t->headingLevel();
     }
 }

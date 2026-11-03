@@ -17,6 +17,7 @@ final class Text implements Styled, Annotated
     /** @var list<Span> */
     private array $spans = [];
     private ?string $preset = null;
+    private ?int $headingLevel = null;
     private bool $htmlCode = false;
     private ?string $htmlCodeLanguage = null;
 
@@ -75,6 +76,29 @@ final class Text implements Styled, Annotated
     public function preset(): ?string
     {
         return $this->preset;
+    }
+
+    /**
+     * Makes this text a heading at $level (1 to 4) without the h1-h4 look: it gets a bookmark and a
+     * table of contents entry, an `h` tag in HTML and a Heading style in Word, and keeps its own style.
+     */
+    public function asHeading(int $level): self
+    {
+        if ($level < 1 || $level > 4) {
+            throw \Papercut\Exception\InvalidValue::for('heading level', (string) $level)->because('levels are 1 to 4');
+        }
+        $clone = clone $this;
+        $clone->headingLevel = $level;
+        return $clone;
+    }
+
+    /** 1 to 4 for a heading, from asHeading() or an h1-h4 preset (asHeading() wins); null otherwise. */
+    public function headingLevel(): ?int
+    {
+        if ($this->headingLevel !== null) {
+            return $this->headingLevel;
+        }
+        return in_array($this->preset, ['h1', 'h2', 'h3', 'h4'], true) ? (int) substr($this->preset, 1) : null;
     }
 
     /**
