@@ -103,7 +103,11 @@ final class LayoutEngine
     public function layout(Node|Component $node, ComputedStyle $parent, Constraints $c, ?BreakToken $token = null, ?int $index = null, ?string $pathName = null): LayoutResult
     {
         $node = $this->expand($node);
-        $this->ctx->pushPath($pathName ?? NodePath::segment($node, null, $index));
+        if ($pathName !== null) {
+            $this->ctx->pushPath($pathName);
+        } else {
+            $this->ctx->pushNodePath($node, null, $index);
+        }
         $pushed = false;
         try {
             $style = $this->enter($node, $parent, $index, $pathName);
@@ -233,7 +237,7 @@ final class LayoutEngine
         if ($byParent !== null && isset($byParent[$parent])) {
             return $byParent[$parent];
         }
-        $this->ctx->pushPath(NodePath::segment($node, null, $index));
+        $this->ctx->pushNodePath($node, null, $index);
         try {
             $style = $this->enter($node, $parent, $index);
             // Pushed as in layout(), so a layouter can judge its placement while measuring.
@@ -264,7 +268,7 @@ final class LayoutEngine
     public function contentIntrinsic(Node|Component $node, ComputedStyle $parent, ?int $index = null): array
     {
         $node = $this->expand($node);
-        $this->ctx->pushPath(NodePath::segment($node, null, $index));
+        $this->ctx->pushNodePath($node, null, $index);
         try {
             $style = $this->enter($node, $parent, $index);
             if ($style->width instanceof Auto) {
@@ -286,7 +290,7 @@ final class LayoutEngine
     /** Computed style of a child node, with style errors reported at its path. */
     public function styleOf(Node $node, ComputedStyle $parent, ?int $index = null): ComputedStyle
     {
-        $this->ctx->pushPath(NodePath::segment($node, null, $index));
+        $this->ctx->pushNodePath($node, null, $index);
         try {
             return $this->enter($node, $parent, $index);
         } finally {
@@ -305,8 +309,16 @@ final class LayoutEngine
         } catch (UnknownAttribute | InvalidValue $e) {
             throw $e->within('at ' . $this->ctx->path());
         }
+        if ($node instanceof View) {
+            // Invalid column gaps throw here, on entering the view, as they did when its path segment was named eagerly.
+            $node->columnSpec();
+        }
         $this->ctx->popPath();
-        $this->ctx->pushPath($pathName ?? NodePath::segment($node, $style, $index));
+        if ($pathName !== null) {
+            $this->ctx->pushPath($pathName);
+        } else {
+            $this->ctx->pushNodePath($node, $style, $index);
+        }
         return $style;
     }
 

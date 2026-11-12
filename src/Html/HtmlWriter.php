@@ -30,6 +30,8 @@ final class HtmlWriter implements TreeVisitor
     private readonly int $pageCount;
     /** The theme of the page being written. */
     private \Papercut\Style\Theme $theme;
+    /** The current page theme's resolver, for span styles. */
+    private \Papercut\Style\StyleResolver $resolver;
     private readonly \Papercut\Style\PageThemes $themes;
     private ?Page $page = null;
     /** Output held back while a hidden region is walked; null outside one. */
@@ -87,6 +89,7 @@ final class HtmlWriter implements TreeVisitor
         $this->strays = new \WeakMap();
         $this->pageCount = count($doc->pages());
         $this->theme = $this->themes->document();
+        $this->resolver = $this->themes->documentStyles();
     }
 
     public static function esc(string $s): string
@@ -136,6 +139,7 @@ final class HtmlWriter implements TreeVisitor
     {
         $this->page = $page;
         $this->theme = $this->themes->theme($page);
+        $this->resolver = $this->themes->styles($page);
         $path = $this->pageCount > 1 ? sprintf('page[%d]', $index) : 'page';
         $page->checkMargins($path);
         $this->fidelity->approximated('page box', $path);
@@ -552,7 +556,7 @@ final class HtmlWriter implements TreeVisitor
             return false;
         }
         $own = $this->theme->spanStyle($span);
-        $style = $text->child($own);
+        $style = $this->resolver->span($text, $own);
         $diff = $this->textCss($style, $text, $path);
         if ($own->background !== null && !$own->background->isTransparent()) {
             $diff['background-color'] = Css::color($own->background);

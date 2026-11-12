@@ -207,9 +207,20 @@ final readonly class Style
         );
     }
 
+    /** The empty style, one shared instance (styles are immutable). */
+    public static function none(): self
+    {
+        static $none = null;
+        return $none ??= new self();
+    }
+
     public function merge(Style $over): self
     {
-        if ($over === $this || $this->isEmpty()) {
+        $none = self::none();
+        if ($over === $none) {
+            return $this;
+        }
+        if ($over === $this || $this === $none || $this->isEmpty()) {
             return $over;
         }
         // Plain loops: styles are merged for every node, and this is a hot path.

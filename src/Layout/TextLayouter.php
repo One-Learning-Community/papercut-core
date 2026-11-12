@@ -24,10 +24,18 @@ final class TextLayouter implements Layouter
     private \SplObjectStorage $lineCache;
     /** The engine's LayoutContext::$measureOnly, read at each layout() call. */
     private bool $measureOnly = false;
+    /**
+     * The part of an item's grouping key its computed style gives (see styleKey()), per style. A
+     * document has a handful of styles and many thousands of items.
+     *
+     * @var \SplObjectStorage<ComputedStyle, string>
+     */
+    private \SplObjectStorage $styleKeys;
 
     public function __construct()
     {
         $this->lineCache = new \SplObjectStorage();
+        $this->styleKeys = new \SplObjectStorage();
     }
 
     public function layout(Node $node, ComputedStyle $style, Constraints $c, ?BreakToken $token, LayoutEngine $engine): LayoutResult
@@ -299,7 +307,7 @@ final class TextLayouter implements Layouter
         // $placed by position, so $placed must keep one entry per item, in order (measureMerged and the offset do).
         $styleKeys = $runKeys = $hrefKeys = [];
         foreach ($line->items as $item) {
-            $key = self::styleKey($item);
+            $key = $this->styleKey($item);
             $styleKeys[] = $key;
             $runKeys[] = $item->kind === 'tab' ? 'tab' . spl_object_id($item) : $key;
             $hrefKeys[] = $item->href ?? '';
@@ -477,18 +485,16 @@ final class TextLayouter implements Layouter
         return $groups;
     }
 
-    private static function styleKey(InlineItem $i): string
+    private function styleKey(InlineItem $i): string
     {
         $s = $i->style;
-        return implode("\0", [
-            $i->font->id(),
-            (string) $i->size,
+        $part = $this->styleKeys[$s] ??= implode("\0", [
             (string) $s->color,
             (string) $s->letterSpacing,
             $s->underline ? 'u' : '',
             $s->strike ? 's' : '',
             (string) $s->background,
-            $i->href ?? '',
         ]);
+        return $i->font->id() . "\0" . $i->size . "\0" . $part . "\0" . ($i->href ?? '');
     }
 }

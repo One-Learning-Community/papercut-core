@@ -22,17 +22,17 @@ final readonly class Span
 
     public static function text(string $text, ?Style $style = null): self
     {
-        return new self($text, $style ?? new Style());
+        return new self($text, $style ?? Style::none());
     }
 
     /** Literal text in the theme's `code` style: the same span as `<code>` in markup and `<x-doc::code>` in Blade. */
     public static function code(string $text): self
     {
-        return new self($text, new Style(), null, false, 'code');
+        return new self($text, Style::none(), null, false, 'code');
     }
 
     public static function break(): self
     {
-        return new self('', new Style(), null, true);
+        return new self('', Style::none(), null, true);
     }
 }

@@ -191,4 +191,13 @@ final class ColumnFlowTest extends TestCase
             self::assertStringContainsString('expected 3 gaps', $e->getMessage());
         }
     }
+
+    #[Test]
+    public function invalid_gaps_throw_on_entering_the_view_even_when_it_is_only_measured(): void
+    {
+        $h = new \Papercut\Tests\Support\LayoutHarness();
+        $this->expectException(InvalidValue::class);
+        $this->expectExceptionMessage('expected 1 gap');
+        $h->engine->styleOf(ColumnFlow::make('a')->columnGap(pt(1), pt(2)), \Papercut\Style\ComputedStyle::root(\Papercut\Style\Theme::default()));
+    }
 }

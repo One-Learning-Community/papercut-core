@@ -33,7 +33,8 @@ final class View implements Styled, Annotated
     public static function make(Node|Component|string ...$children): self
     {
         $view = new self();
-        $view->style = new Style(direction: Direction::Column);
+        static $column = null; // Style is immutable, so every view starts from one shared column style
+        $view->style = $column ??= new Style(direction: Direction::Column);
         $view->children = self::normalize($children);
         return $view;
     }

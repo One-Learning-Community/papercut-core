@@ -119,7 +119,11 @@ final readonly class ComputedStyle
         return strtolower(trim($name)) === 'monospace' ? $monoFamily : $name;
     }
 
-    /** @param bool|null $inList overrides the inherited list flag (a list item sets it, a table cell clears it) */
+    /**
+     * Reads nothing but this style and $style: StyleResolver remembers the result by those alone.
+     *
+     * @param bool|null $inList overrides the inherited list flag (a list item sets it, a table cell clears it)
+     */
     public function child(Style $style, ?bool $inList = null): self
     {
         // A relative font size is a share of the parent's; every other em/lh then uses this element's own size.

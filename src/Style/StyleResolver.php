@@ -30,13 +30,21 @@ final class StyleResolver
      * @var array<string, ComputedStyle>
      */
     private array $interned = [];
+    /**
+     * Each parent's computed children, by the child's list flag and serialized style. A child's computed
+     * style depends on nothing else (ComputedStyle::child()), and most nodes share a handful of styles, so
+     * each is computed once. Only parents this resolver keeps anyway have an entry: the root and the interned
+     * styles. Layout builds throwaway parents to measure with, and remembering those would keep them alive.
+     *
+     * @var \SplObjectStorage<ComputedStyle, array<string, ComputedStyle>>
+     */
+    private \SplObjectStorage $children;
     /** @var \SplObjectStorage<TableCell, TableCell> layout's prepared copies of table cells, each to the cell it copies */
     private \SplObjectStorage $copies;
     /** @var \SplObjectStorage<View, true> the columns layout wraps a page region's nodes in */
     private \SplObjectStorage $wrappers;
     /** @var array<int, Style> a cell's base style, by whether it is a header cell */
     private array $cellBase = [];
-    private ?Style $none = null;
     /**
      * Nodes that end a container whose bottom edge shows (a table cell, or a box with bottom
      * padding, a bottom border or a background), directly or through transparent wrappers
@@ -57,6 +65,7 @@ final class StyleResolver
         $this->cellStyles = new StyleMemo();
         $this->copies = new \SplObjectStorage();
         $this->wrappers = new \SplObjectStorage();
+        $this->children = new \SplObjectStorage();
     }
 
     /**
@@ -92,7 +101,11 @@ final class StyleResolver
     /** The theme's root style, computed once so memoized child styles are shared across pages. */
     public function root(): ComputedStyle
     {
-        return $this->root ??= ComputedStyle::root($this->theme);
+        if ($this->root === null) {
+            $this->root = ComputedStyle::root($this->theme);
+            $this->children[$this->root] = [];
+        }
+        return $this->root;
     }
 
     /**
@@ -128,12 +141,17 @@ final class StyleResolver
     /** The one instance of this computed style (see $interned). */
     private function intern(ComputedStyle $style): ComputedStyle
     {
-        return $this->interned[serialize($style)] ??= $style;
+        $key = serialize($style);
+        if (!isset($this->interned[$key])) {
+            $this->interned[$key] = $style;
+            $this->children[$style] = [];
+        }
+        return $this->interned[$key];
     }
 
     private function compute(Node $node, ComputedStyle $parent, ?Style $style = null, ?bool $inList = null): ComputedStyle
     {
-        $style ??= $this->none ??= new Style();
+        $style ??= Style::none();
         if ($node instanceof Text && $node->preset() !== null) {
             $preset = $node->preset();
             $style = $style->merge($preset === 'p' ? $this->theme->paragraph() : $this->theme->heading((int) substr($preset, 1)));
@@ -157,7 +175,7 @@ final class StyleResolver
             // A table cell starts outside any list, however it is resolved (in a row, or as a copy layout pins to its column).
             $inList = false;
         }
-        $computed = $parent->child($style, $inList);
+        $computed = $this->child($parent, $style, $inList);
         if ($node instanceof View && isset($this->wrappers[$node]) && $computed == $parent) {
             return $parent;
         }
@@ -165,7 +183,33 @@ final class StyleResolver
         if ($node instanceof ListNode && !$parent->inList && $style->margin === null && !isset($this->endsContainer[$node])) {
             return $this->intern($this->withListSpacing($node, $computed));
         }
-        return $this->intern($computed);
+        return $computed;
+    }
+
+    /** A span's computed style in a paragraph with computed style $text; $own is the span's style with its theme style applied (Theme::spanStyle()). */
+    public function span(ComputedStyle $text, Style $own): ComputedStyle
+    {
+        return $this->child($text, $own, null, false);
+    }
+
+    /**
+     * $parent->child($style, $inList), computed once per parent, list flag and style (see $children), and interned.
+     * A parent the resolver did not intern is not remembered: its child is computed, and interned only if $intern.
+     */
+    private function child(ComputedStyle $parent, Style $style, ?bool $inList, bool $intern = true): ComputedStyle
+    {
+        if (!isset($this->children[$parent])) {
+            $computed = $parent->child($style, $inList);
+            return $intern ? $this->intern($computed) : $computed;
+        }
+        $key = ($inList === null ? 'n' : ($inList ? 't' : 'f')) . serialize($style);
+        $memo = $this->children[$parent];
+        if (isset($memo[$key])) {
+            return $memo[$key];
+        }
+        $memo[$key] = $computed = $this->intern($parent->child($style, $inList));
+        $this->children[$parent] = $memo;
+        return $computed;
     }
 
     /** Records the last child of a container whose bottom edge shows (see endsContainer), so a list ending it adds no spacing. */

@@ -34,6 +34,39 @@ final class StyleResolverTest extends TestCase
         self::assertNotSame($r->resolve($node, $r->root()), $r->resolve($node, $other));
     }
 
+    public function test_equal_styles_under_one_parent_resolve_to_one_instance(): void
+    {
+        $r = new StyleResolver(Theme::default());
+        $a = $r->resolve(Text::make('a')->color('blue-500'), $r->root());
+        $b = $r->resolve(Text::make('b')->color('blue-500'), $r->root());
+        self::assertSame($a, $b);
+        self::assertNotSame($a, $r->resolve(Text::make('c')->color('red-500'), $r->root()));
+    }
+
+    public function test_span_matches_child_and_shares_equal_styles(): void
+    {
+        $r = new StyleResolver(Theme::default());
+        $text = $r->resolve(Text::make('x'), $r->root());
+        $own = Style::make(fontWeight: 700, color: Color::parse('red-500'));
+        $span = $r->span($text, $own);
+        self::assertEquals($text->child($own), $span);
+        self::assertSame($span, $r->span($text, Style::make(fontWeight: 700, color: Color::parse('red-500'))));
+        self::assertNotSame($span, $r->span($r->root()->child(Style::make(fontSize: pt(20))), $own), 'a different parent computes its own');
+    }
+
+    public function test_a_throwaway_parent_is_not_kept_alive(): void
+    {
+        // Layout builds parent styles just to measure with; remembering their children would pin them for the whole export.
+        $r = new StyleResolver(Theme::default());
+        $parent = $r->root()->child(Style::make(width: pt(100)));
+        $span = $r->span($parent, Style::make(fontWeight: 700));
+        self::assertSame(700, $span->fontWeight);
+        $ref = \WeakReference::create($parent);
+        unset($parent, $span);
+        gc_collect_cycles();
+        self::assertNull($ref->get());
+    }
+
     public function test_bare_cell_through_resolve_gets_no_table_defaults(): void
     {
         $r = new StyleResolver(Theme::default());

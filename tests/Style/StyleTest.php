@@ -170,4 +170,13 @@ final class StyleTest extends TestCase
         self::assertSame(1, (new Style(fontWeight: 1))->fontWeight);
         self::assertSame(1000, (new Style(fontWeight: 1000))->fontWeight);
     }
+
+    public function test_none_is_one_shared_empty_style_that_merges_away(): void
+    {
+        self::assertSame(Style::none(), Style::none());
+        self::assertTrue(Style::none()->isEmpty());
+        $bold = Style::make(fontWeight: 700);
+        self::assertSame($bold, $bold->merge(Style::none()));
+        self::assertSame($bold, Style::none()->merge($bold));
+    }
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Papercut\Text;
 
 use Papercut\Span;
-use Papercut\Style\{ComputedStyle, Theme, WhiteSpace};
+use Papercut\Style\{ComputedStyle, StyleResolver, Theme, WhiteSpace};
 
 /** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final class Itemizer
@@ -21,6 +21,8 @@ final class Itemizer
         private readonly ?\Closure $onWarning = null,
         private readonly array $fallbackFamilies = [],
         private readonly ?Theme $theme = null,
+        /** The theme's resolver, which computes each distinct span style once; without one, every span computes its own. */
+        private readonly ?StyleResolver $styles = null,
     ) {
     }
 
@@ -37,7 +39,8 @@ final class Itemizer
         $atStart = true;
 
         foreach ($spans as $span) {
-            $style = $paragraph->child(($this->theme ?? Theme::default())->spanStyle($span));
+            $own = ($this->theme ?? Theme::default())->spanStyle($span);
+            $style = $this->styles?->span($paragraph, $own) ?? $paragraph->child($own);
             $font = $this->primary($style);
             if ($span->lineBreak) {
                 $pending = null;
