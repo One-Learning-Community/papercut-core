@@ -77,7 +77,7 @@ final class Markup
         if (!StyleName::leads($name, 'pre')) {
             return $text->spanList();
         }
-        return array_map(static fn (Span $s): Span => $s->lineBreak || $s->styleName !== null ? $s : new Span($s->text, $s->style, $s->href, false, $name), $text->spanList());
+        return array_map(static fn (Span $s): Span => $s->lineBreak || $s->styleName !== null ? $s : new Span($s->text, $s->style, $s->href, false, $name, null, $s->math), $text->spanList());
     }
 
     /**

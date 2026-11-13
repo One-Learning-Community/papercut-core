@@ -213,6 +213,8 @@ final class DefaultStyles
             padding: self::sides(6, 8, 6, 8),
             margin: self::sides(0, 0, 6, 0),
         );
+        // A displayed equation: space after it like a paragraph.
+        $s['equation'] = Style::make(margin: self::sides(0, 0, 6, 0));
         $s['code'] = Style::make(fontFamily: 'monospace', fontSize: Length::em(0.9), background: self::c('slate-100'));
 
         // Code blocks: geometry only; the colours come from the code theme (see CodeBlock).

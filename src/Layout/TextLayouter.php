@@ -101,7 +101,7 @@ final class TextLayouter implements Layouter
 
         $end = $start + $n;
         return LayoutResult::partial(
-            $this->fragment($lines, $boxes, $start, $end, $style, $box, false),
+            $this->fragment($lines, $boxes, $start, $end, $style, $box, false, $engine),
             new BreakToken(index: $end),
         );
     }
@@ -120,7 +120,9 @@ final class TextLayouter implements Layouter
         $anywhere = $engine->breaksAnywhere();
         $glyph = 0.0;
         foreach ($items as $item) {
-            if ($anywhere && $item->kind === 'word') {
+            if ($anywhere && $item->math !== null) {
+                $glyph = max($glyph, $item->width);
+            } elseif ($anywhere && $item->kind === 'word') {
                 foreach (mb_str_split($item->text, 1, 'UTF-8') as $ch) {
                     $glyph = max($glyph, $item->font->advance($ch, $item->size, $item->style->letterSpacing));
                 }
@@ -189,7 +191,10 @@ final class TextLayouter implements Layouter
         /** @var list<array{float, float, float}> $metrics half-leading, ascent, descent */
         $metrics = [];
         foreach ($line->items as $item) {
-            $metrics[] = self::metrics($item->font->ascent($item->size), $item->font->descent($item->size), $item->style->lineHeight * $item->size);
+            // An equation takes the room its formula needs, with no half-leading: it sits on the baseline and grows the line.
+            $metrics[] = $item->math !== null
+                ? [0.0, $item->math->ascent, $item->math->descent]
+                : self::metrics($item->font->ascent($item->size), $item->font->descent($item->size), $item->style->lineHeight * $item->size);
         }
         if ($metrics === []) {
             $font = $engine->context()->fonts->resolve(
@@ -256,7 +261,7 @@ final class TextLayouter implements Layouter
      * @param array<int, array{baseline: float, height: float}> $boxes
      * @param array{width: float, content: float, first: bool, size: ?array{fixed: ?float, floor: ?float, c: Constraints}} $box
      */
-    private function fragment(array $lines, array $boxes, int $start, int $end, ComputedStyle $style, array $box, bool $last, ?LayoutEngine $engine = null): Fragment
+    private function fragment(array $lines, array $boxes, int $start, int $end, ComputedStyle $style, array $box, bool $last, LayoutEngine $engine): Fragment
     {
         $height = 0.0;
         for ($i = $start; $i < $end; $i++) {
@@ -272,17 +277,17 @@ final class TextLayouter implements Layouter
         $ox = $style->borderWidth->left->points + $style->padding->left->points;
         $top = $box['first'] ? BoxGeometry::topEdge($style) : 0.0;
         for ($i = $start; $i < $end; $i++) {
-            $this->paintLine($f, $lines[$i], $ox, $top, $boxes[$i], $style->textAlign, $box['content']);
+            $this->paintLine($f, $lines[$i], $ox, $top, $boxes[$i], $style->textAlign, $box['content'], $engine);
             $top += $boxes[$i]['height'];
         }
-        if ($allowed !== null && $engine !== null) {
+        if ($allowed !== null) {
             BoxGeometry::contain($f, $needed, $allowed, $engine);
         }
         return $f;
     }
 
     /** @param array{baseline: float, height: float} $box */
-    private function paintLine(Fragment $f, Line $line, float $ox, float $top, array $box, TextAlign $align, float $width): void
+    private function paintLine(Fragment $f, Line $line, float $ox, float $top, array $box, TextAlign $align, float $width, LayoutEngine $engine): void
     {
         // Pre-wrap lines are never stretched: their spaces are layout (indentation, columns), not word gaps.
         $justified = $align === TextAlign::Justify && !$line->isLast && !$line->endsWithBreak
@@ -308,8 +313,8 @@ final class TextLayouter implements Layouter
         $styleKeys = $runKeys = $hrefKeys = [];
         foreach ($line->items as $item) {
             $key = $this->styleKey($item);
-            if ($item->box) {
-                // An inline box is its own run and its own highlight: neighbours never merge into it.
+            if ($item->box || $item->math !== null) {
+                // An inline box or equation is its own run and its own highlight: neighbours never merge into it.
                 $key .= "\0box" . spl_object_id($item);
             }
             $styleKeys[] = $key;
@@ -320,6 +325,7 @@ final class TextLayouter implements Layouter
         // Text runs: one per word on justified lines, otherwise merged by identical style.
         $lineWidth = $line->width;
         if ($this->measureOnly) {
+            self::paintMath($f, $placed, $align === TextAlign::Right ? $width - $line->width : ($align === TextAlign::Center ? ($width - $line->width) / 2 : 0.0), $baseline, $engine);
             // Runs as the lines hold them: list markers and table of contents numbers line up on their baselines and right edges.
             foreach (self::group($placed, $runKeys) as $group) {
                 $text = implode('', array_map(static fn (array $p): string => $p['item']->text, $group));
@@ -367,6 +373,8 @@ final class TextLayouter implements Layouter
             $f->addOp(new TextRun($group[0]['x'] + self::boxInset($first), $baseline, $text, $first->font, $first->size, $first->style->color, $first->style->letterSpacing));
         }
 
+        self::paintMath($f, $placed, 0.0, $baseline, $engine);
+
         // Decorations span contiguous same-style items, including stretched spaces.
         foreach (self::group($placed, $styleKeys) as $group) {
             $s = $group[0]['item']->style;
@@ -390,6 +398,21 @@ final class TextLayouter implements Layouter
                 continue;
             }
             $f->addOp(new LinkOp($group[0]['x'], $top, array_sum(array_column($group, 'w')), $box['height'], $href));
+        }
+    }
+
+    /**
+     * The equations among the placed items, each on the baseline at its own x (moved right by $dx).
+     *
+     * @param list<array{item: InlineItem, x: float, w: float}> $placed
+     */
+    private static function paintMath(Fragment $f, array $placed, float $dx, float $baseline, LayoutEngine $engine): void
+    {
+        foreach ($placed as $p) {
+            if ($p['item']->math !== null) {
+                $math = $engine->context()->fonts->mathFont();
+                MathPainter::paint($f, $p['item']->math, $p['x'] + $dx, $baseline, $p['item']->style->color, $math['handle'], $math['font'], $engine, $p['item']->style);
+            }
         }
     }
 

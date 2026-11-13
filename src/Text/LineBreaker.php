@@ -159,6 +159,19 @@ final class LineBreaker
             $breakAfter,
         );
         foreach ($chunk as $item) {
+            if ($item->math !== null) {
+                // An equation is never split: it takes a line of its own when it comes after anything else (but opening brackets), and overflows when it is too wide.
+                // Opening brackets before it stay with it: "(" is not left alone at the end of the line above.
+                $opening = $cur !== [] && array_reduce($cur, static fn (bool $all, InlineItem $i): bool => $all && $i->math === null && preg_match('/^[\p{Ps}\p{Pi}]+$/u', $i->text) === 1, true);
+                if ($cur !== [] && !$opening) {
+                    $lines[] = [$cur, $w];
+                    $cur = [];
+                    $w = 0.0;
+                }
+                $cur[] = $item;
+                $w += $item->width;
+                continue;
+            }
             // An inline box split like a word keeps its padding and border on every piece.
             $edges = $item->box ? $item->boxEdges() : 0.0;
             $buf = '';

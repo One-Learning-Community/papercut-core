@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace Papercut\Text;
 
+use Papercut\Math\Math;
+
 /** Format-neutral font configuration: extra faces on top of the bundled Inter and Cousine, and glyph fallback families. */
 final readonly class FontSet
 {
+    /** The family the math face is registered under, for PDF text runs. */
+    public const string MATH_FAMILY = 'Papercut Math';
+
     /** @var array<string, string> the name Word should use for a family, by lowercased family */
     private array $wordNames;
 
@@ -14,11 +19,13 @@ final readonly class FontSet
      * @param list<FontFace> $faces
      * @param list<string> $fallbacks families tried, in order, for glyphs the primary font lacks
      * @param array<string, string> $wordNames the name Word should use for a family, keyed by family (any case)
+     * @param ?string $mathFont path of a TrueType math font; null means the bundled STIX Two Math
      */
     public function __construct(
         public array $faces = [],
         public array $fallbacks = [],
         array $wordNames = [],
+        private ?string $mathFont = null,
     ) {
         $this->wordNames = array_change_key_case($wordNames, CASE_LOWER);
     }
@@ -58,12 +65,37 @@ final readonly class FontSet
 
     public function with(FontFace ...$faces): self
     {
-        return new self([...$this->faces, ...array_values($faces)], $this->fallbacks, $this->wordNames);
+        return new self([...$this->faces, ...array_values($faces)], $this->fallbacks, $this->wordNames, $this->mathFont);
     }
 
     public function withFallbacks(string ...$families): self
     {
-        return new self($this->faces, [...$this->fallbacks, ...array_values($families)], $this->wordNames);
+        return new self($this->faces, [...$this->fallbacks, ...array_values($families)], $this->wordNames, $this->mathFont);
+    }
+
+    /** The font equations are set in (PDF and HTML; Word always uses Cambria Math). It must be a TrueType math font. */
+    public function withMathFont(string $path): self
+    {
+        // The bundled font by another spelling of its path is still the bundled font.
+        $bundled = realpath(Math::stixTwoMathPath());
+        $custom = $bundled !== false && realpath($path) === $bundled ? null : $path;
+
+        return new self($this->faces, $this->fallbacks, $this->wordNames, $custom);
+    }
+
+    public function mathFontPath(): string
+    {
+        return $this->mathFont ?? Math::stixTwoMathPath();
+    }
+
+    /**
+     * True when a font other than the bundled one was chosen.
+     *
+     * @internal Part of Papercut's engine, not its public API. It may change in any release.
+     */
+    public function hasCustomMathFont(): bool
+    {
+        return $this->mathFont !== null;
     }
 
     /** The name Word should use for a family (case-insensitive match; the last call for a family wins). */
@@ -72,7 +104,7 @@ final readonly class FontSet
         $names = $this->wordNames;
         $names[strtolower($family)] = $wordName;
 
-        return new self($this->faces, $this->fallbacks, $names);
+        return new self($this->faces, $this->fallbacks, $names, $this->mathFont);
     }
 
     /** The Word name set for the family, else Courier New for the bundled Cousine, else the family itself. */

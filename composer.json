@@ -24,12 +24,25 @@
         "invoice",
         "report"
     ],
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../math",
+            "options": {
+                "symlink": true,
+                "versions": {
+                    "papercut/math": "0.10.x-dev"
+                }
+            }
+        }
+    ],
     "require": {
         "php": "^8.4",
         "ext-dom": "*",
         "ext-mbstring": "*",
         "ext-zlib": "*",
-        "dskripchenko/php-pdf": "^1.26"
+        "dskripchenko/php-pdf": "^1.26",
+        "papercut/math": "^0.10"
     },
     "require-dev": {
         "bacon/bacon-qr-code": "^3.1",
@@ -66,5 +79,7 @@
         "branch-alias": {
             "dev-main": "0.10.x-dev"
         }
-    }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

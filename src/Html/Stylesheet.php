@@ -14,7 +14,7 @@ use Papercut\Export\HtmlOptions;
  */
 final class Stylesheet
 {
-    public static function css(Document $doc, HtmlOptions $o, string $fontFaces): string
+    public static function css(Document $doc, HtmlOptions $o, string $fontFaces, bool $math = false): string
     {
         $page = $doc->pages()[0] ?? null;
         $w = $page === null ? 595.28 : $page->width();
@@ -40,6 +40,7 @@ final class Stylesheet
             '.papercut .pc-background{position:absolute;inset:0;z-index:-1}',
             '.papercut .pc-break{break-before:page}',
             '.papercut .pc-column-break{break-before:column}',
+            ...($math ? ['.papercut math{font-family:"Papercut Math",math}', '.papercut math[display=block]{width:fit-content;max-width:100%}'] : []),
             ...($pageRule === null ? [] : [$pageRule]),
             '@media print{.papercut{background:none;padding:0}.papercut .pc-page{max-width:none;min-height:0;margin:0;padding:0;box-shadow:none;break-after:page}.papercut tr{break-inside:avoid}}',
         ]);

@@ -6,13 +6,14 @@ namespace Papercut\Html;
 
 use Papercut\Backend\Backend;
 use Papercut\Export\LoadedImage;
-use Papercut\{ColumnBreak, Document, Image, Link, ListItem, ListNode, Node, Page, PageBreak, PageNumber, PdfPage, Place, QrCode, Spacer, Svg, Table, TableCell, TableRow, Text, Toc, View};
+use Papercut\{ColumnBreak, Document, Equation, Image, Link, ListItem, ListNode, Node, Page, PageBreak, PageNumber, PdfPage, Place, QrCode, Spacer, Svg, Table, TableCell, TableRow, Text, Toc, View};
 use Papercut\Barcode\Bacon\BaconQrSvg;
 use Papercut\Barcode\ModuleRects;
 use Papercut\Exception\InvalidValue;
 use Papercut\Export\{Fidelity, HtmlOptions};
 use Papercut\Layout\{GridCell, TableGrid, WidthResolver};
-use Papercut\Style\{ComputedStyle, Justify, ListMarker, StyleName};
+use Papercut\Style\{ComputedStyle, Justify, ListMarker, StyleName, TextAlign};
+use Papercut\Math\Render\MathmlWriter;
 use Papercut\Text\FontStyle;
 use Papercut\Value\{Auto, Fr, Length, Percent};
 use Papercut\Toc\TocIndex;
@@ -27,6 +28,7 @@ use Papercut\Tree\{ColumnFlows, Region, TreeVisitor, Visit};
 final class HtmlWriter implements TreeVisitor
 {
     private string $out = '';
+    private bool $hasEquation = false;
     private readonly int $pageCount;
     /** The theme of the page being written. */
     private \Papercut\Style\Theme $theme;
@@ -274,6 +276,7 @@ final class HtmlWriter implements TreeVisitor
             $node instanceof PageNumber => '',
             $node instanceof Image => $this->image($node, $style, $at),
             $node instanceof QrCode => $this->qrCode($node, $style, $at),
+            $node instanceof Equation => $this->equation($node, $style, $parent, $at),
             $node instanceof Svg => $this->svg($node, $style, $at),
             $node instanceof PdfPage => $this->pdfPage($at),
             $node instanceof Place => $this->place($node),
@@ -567,6 +570,11 @@ final class HtmlWriter implements TreeVisitor
             $diff['background-color'] = Css::color($own->background);
         }
         $body = self::esc($span->text);
+        if ($span->math !== null) {
+            // An inline equation: MathML inherits the paragraph's size and colour; a span's own are on a wrapper.
+            $this->hasEquation = true;
+            $body = (new MathmlWriter())->write($span->math, false);
+        }
         $code = StyleName::leads($span->styleName, 'code');
         if ($code) {
             $diff = [...$this->fontCss($style), ...$diff];
@@ -650,6 +658,35 @@ final class HtmlWriter implements TreeVisitor
         $key = $kind === 'file' ? 'file:' . $value : 'bytes:' . sha1($value);
 
         return $this->images[$key] ??= LoadedImage::load($n, $this->backend);
+    }
+
+    /** A block equation: a styled div holding MathML, which inherits the div's size and colour. */
+    private function equation(Equation $n, ComputedStyle $s, ComputedStyle $parent, Visit $at): string
+    {
+        $this->hasEquation = true;
+        $decls = Css::box($s);
+        if ($this->parentIsFlex($at)) {
+            $decls += Css::flexItem($s);
+        }
+        $decls = [...$decls, ...$this->textCss($s, $parent, $at->path())];
+        // The math box shrinks to its content (see Stylesheet), so margins place it: a browser would centre it otherwise.
+        $place = match ($s->textAlign) {
+            TextAlign::Center => 'margin-inline:auto',
+            TextAlign::Right => 'margin-left:auto',
+            default => null,
+        };
+        $math = (new MathmlWriter())->write($n->math(), true);
+        if ($place !== null) {
+            $math = '<math style="' . $place . '" ' . substr($math, strlen('<math '));
+        }
+        $this->out .= '<div' . self::styleAttr($decls) . '>' . $math . '</div>';
+
+        return '';
+    }
+
+    public function hasEquation(): bool
+    {
+        return $this->hasEquation;
     }
 
     /** An inline SVG in module units, so it scales with the box and stays crisp. */

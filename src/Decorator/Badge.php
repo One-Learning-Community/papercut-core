@@ -73,7 +73,7 @@ final class Badge implements Decorator
         }
         $text = '';
         foreach ($content->spanList() as $span) {
-            if ($span->lineBreak || $span->href !== null || $span->styleName !== null || $span->base !== null || $span->style != Style::none()) {
+            if ($span->lineBreak || $span->math !== null || $span->href !== null || $span->styleName !== null || $span->base !== null || $span->style != Style::none()) {
                 return null;
             }
             $text .= $span->text;

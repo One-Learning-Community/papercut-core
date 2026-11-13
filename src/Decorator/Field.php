@@ -114,6 +114,9 @@ final class Field implements Decorator
             if ($node instanceof Text) {
                 $joined = '';
                 foreach ($node->spanList() as $span) {
+                    if ($span->math !== null) {
+                        return false;
+                    }
                     $joined .= $span->lineBreak ? ' ' : $span->text;
                 }
                 if (trim($joined, " \t\n\r\0\x0B\u{00A0}") !== '') {

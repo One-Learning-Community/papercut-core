@@ -6,6 +6,8 @@ namespace Papercut\Text;
 
 use Papercut\Backend\Backend;
 use Papercut\Exception\{FontNotFound, InvalidValue};
+use Papercut\Math\Font\TrueTypeFont;
+use Papercut\Math\Math;
 
 /** @internal Part of Papercut's engine, not its public API. It may change in any release. */
 final class FontRegistry
@@ -16,6 +18,11 @@ final class FontRegistry
     private array $loaded = [];
     /** @var array<string, CachedFont> resolved faces by family, weight and style; cleared when a face is registered */
     private array $resolved = [];
+
+    private ?string $mathPath = null;
+    /** @var ?array{handle: CachedFont, font: TrueTypeFont} */
+    private ?array $math = null;
+    private ?TrueTypeFont $checkedMath = null;
 
     public function __construct(private readonly Backend $backend)
     {
@@ -36,7 +43,35 @@ final class FontRegistry
         foreach ($set->effectiveFaces() as $face) {
             $registry->register($face->family, $face->path, $face->weight, $face->style);
         }
+        $registry->mathPath = $set->mathFontPath();
+        if ($set->hasCustomMathFont()) {
+            // Reject a bad math font when the document is built, not at the first equation.
+            if (!is_file($registry->mathPath) || !is_readable($registry->mathPath)) {
+                throw new FontNotFound('Font file not found: ' . $registry->mathPath);
+            }
+            $registry->checkedMath = TrueTypeFont::fromFile($registry->mathPath);
+        }
         return $registry;
+    }
+
+    /**
+     * The math font, opened once. Its face is registered with the backend (and so embedded) only from here on,
+     * so documents without equations are unchanged.
+     *
+     * @return array{handle: CachedFont, font: TrueTypeFont}
+     */
+    public function mathFont(): array
+    {
+        if ($this->math !== null) {
+            return $this->math;
+        }
+        $path = $this->mathPath ?? Math::stixTwoMathPath();
+        $this->register(FontSet::MATH_FAMILY, $path);
+
+        return $this->math = [
+            'handle' => $this->resolve(FontSet::MATH_FAMILY),
+            'font' => $this->checkedMath ?? TrueTypeFont::fromFile($path),
+        ];
     }
 
     public function register(string $family, string $path, int $weight = 400, FontStyle $style = FontStyle::Normal): self

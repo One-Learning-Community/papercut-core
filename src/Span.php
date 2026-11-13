@@ -6,6 +6,8 @@ namespace Papercut;
 
 use Papercut\Concerns\NameRules;
 use Papercut\Decorator\Badge;
+use Papercut\Math\Math;
+use Papercut\Math\Node\Node as MathNode;
 use Papercut\Style\Style;
 
 final readonly class Span
@@ -19,6 +21,8 @@ final readonly class Span
         public ?string $styleName = null,
         /** The style the span's named style sits on: what was set outside it (so the named style wins over it, and $style wins over both). */
         public ?Style $base = null,
+        /** An inline equation, set in text style among the words; $text is empty then. Build it with {@see self::math()}. */
+        public ?MathNode $math = null,
     ) {
     }
 
@@ -50,6 +54,16 @@ final readonly class Span
             }
         }
         return new self($text, Style::none(), null, false, $names);
+    }
+
+    /**
+     * An equation inside running text, laid out in text style (compact: scripts and fractions at the size of a line)
+     * with the math font. It sits on the line's baseline, takes the text's size and colour, grows the line it is on,
+     * and never breaks across lines. Parts are strings and nodes built with {@see Math}, tokenized as in Math::row().
+     */
+    public static function math(string|MathNode ...$parts): self
+    {
+        return new self('', Style::none(), math: Math::row(...$parts));
     }
 
     public static function break(): self

@@ -41,7 +41,10 @@ final class HtmlExporter implements Exporter
         } else {
             $fontCss = FontFaces::css($families, $options->fonts(), $options->fontMode(), $options->fontUrl());
         }
-        $css = Stylesheet::css($doc, $options, $fontCss);
+        if ($writer->hasEquation()) {
+            $fontCss .= FontFaces::mathCss($options->fonts(), $options->fontMode(), $options->fontUrl());
+        }
+        $css = Stylesheet::css($doc, $options, $fontCss, $writer->hasEquation());
         $lang = $meta->lang !== null ? ' lang="' . HtmlWriter::esc($meta->lang) . '"' : '';
         $rootDiv = '<div class="papercut"' . $lang . ' style="' . HtmlWriter::esc(Css::attr(Css::text($root, null, $options->fonts()->fallbacks, $options->fonts()))) . '">' . $writer->html() . '</div>';
         $style = '<style>' . $css . '</style>';

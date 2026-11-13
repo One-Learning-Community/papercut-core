@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Papercut\Text;
 
+use Papercut\Math\Layout\Box;
+use Papercut\Math\Math;
+use Papercut\Math\Node\Node as MathNode;
 use Papercut\Span;
 use Papercut\Style\{ComputedStyle, StyleResolver, Theme, WhiteSpace};
 
@@ -15,6 +18,9 @@ final class Itemizer
     /** @var array<string, true> */
     private array $warned = [];
 
+    /** @var \SplObjectStorage<MathNode, array<string, Box>> each formula's boxes by the size, font and style they were laid out at */
+    private \SplObjectStorage $mathBoxes;
+
     /** @param list<string> $fallbackFamilies */
     public function __construct(
         private readonly FontRegistry $fonts,
@@ -24,6 +30,7 @@ final class Itemizer
         /** The theme's resolver, which computes each distinct span style once; without one, every span computes its own. */
         private readonly ?StyleResolver $styles = null,
     ) {
+        $this->mathBoxes = new \SplObjectStorage();
     }
 
     /**
@@ -46,6 +53,17 @@ final class Itemizer
                 $pending = null;
                 $items[] = new InlineItem('break', '', $font, $style->fontSize, 0.0, $style, $span->href);
                 $atStart = true;
+                continue;
+            }
+            if ($span->math !== null) {
+                // An equation is one unbreakable word as wide as its formula; its text is empty, TextLayouter draws it.
+                if ($pending !== null) {
+                    $items[] = $pending;
+                    $pending = null;
+                }
+                $box = $this->mathBox($span->math, $style, false);
+                $items[] = new InlineItem('word', '', $font, $style->fontSize, $box->width, $style, $span->href, false, false, $box);
+                $atStart = false;
                 continue;
             }
             $text = self::drawable($span->text);
@@ -108,6 +126,42 @@ final class Itemizer
             }
         }
         return $items;
+    }
+
+    /**
+     * The text split into runs by the font that draws each, as it is in a paragraph of this style: the style's own font
+     * where it covers a character, else a fallback family, else that font again with a warning naming the missing glyphs.
+     *
+     * @return list<array{string, CachedFont}>
+     */
+    public function runsFor(string $text, ComputedStyle $style): array
+    {
+        return $this->fontRuns($text, $style, $this->primary($style));
+    }
+
+    /**
+     * A formula laid out with the math font at the style's size, display or text style. A character the math font lacks
+     * is drawn in the face a paragraph would use (see MathPainter), so it takes that face's width. The script-size
+     * alternates are off, because the PDF can only draw glyphs that have a code point.
+     */
+    public function mathBox(MathNode $math, ComputedStyle $style, bool $display): Box
+    {
+        $key = $style->fontSize . '|' . $style->fontFamily . '|' . $style->fontWeight . '|' . ($style->italic ? 'i' : 'n') . '|' . ($display ? 'd' : 't');
+        $cached = $this->mathBoxes[$math] ?? [];
+        if (isset($cached[$key])) {
+            return $cached[$key];
+        }
+        $fallbackAdvance = function (string $char, float $size) use ($style): ?float {
+            foreach ($this->runsFor($char, $style) as [$text, $face]) {
+                return $face->covers($text) ? $face->advance($text, $size) : null;
+            }
+            return null;
+        };
+        $box = Math::layout($math, $style->fontSize, $display, $this->fonts->mathFont()['font'], false, $fallbackAdvance);
+        $cached[$key] = $box;
+        $this->mathBoxes[$math] = $cached;
+
+        return $box;
     }
 
     private function space(ComputedStyle $style, CachedFont $font, ?string $href): InlineItem
