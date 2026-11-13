@@ -155,12 +155,14 @@ final class LineBreaker
         $w = 0.0;
         $piece = static fn (InlineItem $item, string $text, bool $breakAfter): InlineItem => $item->withText(
             $text,
-            $item->font->advance($text, $item->size, $item->style->letterSpacing),
+            $item->font->advance($text, $item->size, $item->style->letterSpacing) + ($item->box ? $item->boxEdges() : 0.0),
             $breakAfter,
         );
         foreach ($chunk as $item) {
+            // An inline box split like a word keeps its padding and border on every piece.
+            $edges = $item->box ? $item->boxEdges() : 0.0;
             $buf = '';
-            $bufW = 0.0;
+            $bufW = $edges;
             foreach (mb_str_split($item->text, 1, 'UTF-8') as $ch) {
                 $chW = $item->font->advance($ch, $item->size, $item->style->letterSpacing);
                 if ($w + $bufW + $chW > $max + self::EPS && ($buf !== '' || $cur !== [])) {
@@ -173,7 +175,7 @@ final class LineBreaker
                     $cur = [];
                     $w = 0.0;
                     $buf = $ch;
-                    $bufW = $chW;
+                    $bufW = $edges + $chW;
                 } else {
                     $buf .= $ch;
                     $bufW += $chW;

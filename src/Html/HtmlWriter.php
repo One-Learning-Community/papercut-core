@@ -558,7 +558,12 @@ final class HtmlWriter implements TreeVisitor
         $own = $this->theme->spanStyle($span);
         $style = $this->resolver->span($text, $own);
         $diff = $this->textCss($style, $text, $path);
-        if ($own->background !== null && !$own->background->isTransparent()) {
+        $pill = $style->isInlineBox();
+        if ($pill) {
+            // An inline badge: a pill that never breaks, the box properties first, then the text ones.
+            $box = array_intersect_key(Css::box($style), array_flip(['padding', 'border-width', 'border-style', 'border-color', 'border-radius', 'background']));
+            $diff = [...$box, ...$diff, 'white-space' => 'nowrap'];
+        } elseif ($own->background !== null && !$own->background->isTransparent()) {
             $diff['background-color'] = Css::color($own->background);
         }
         $body = self::esc($span->text);
@@ -569,7 +574,7 @@ final class HtmlWriter implements TreeVisitor
         $wrapped = $diff !== [] || $code;
         if ($wrapped) {
             $el = $code ? 'code' : 'span';
-            $body = '<' . $el . self::styleAttr($diff) . '>' . $body . '</' . $el . '>';
+            $body = '<' . $el . ($pill ? ' class="pc-badge"' : '') . self::styleAttr($diff) . '>' . $body . '</' . $el . '>';
         }
         if ($span->href !== null) {
             $href = self::href($span->href);

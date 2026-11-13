@@ -34,6 +34,7 @@ final class InlineMarkup
         $base = null;
         $inner = new Style();
         $href = null;
+        $badgeOpts = ['neutral', null];
         $spans = [];
         $len = strlen($markup);
         $pos = 0;
@@ -68,7 +69,17 @@ final class InlineMarkup
                 if (trim($rawAttrs) !== '') {
                     throw self::notAllowed($markup, $display);
                 }
-                self::flush($text, $spans, $base === null ? $style : $inner, $base, $href, self::named($stack));
+                if ($name === 'badge') {
+                    try {
+                        $badge = Span::badge(self::decode($text), $badgeOpts[0], $badgeOpts[1]);
+                    } catch (\InvalidArgumentException $e) {
+                        throw InvalidValue::for('inline markup', $markup)->because($e->getMessage());
+                    }
+                    $text = '';
+                    $spans[] = new Span($badge->text, Style::none(), $href, false, $badge->styleName, $base ?? ($style == new Style() ? null : $style));
+                } else {
+                    self::flush($text, $spans, $base === null ? $style : $inner, $base, $href, self::named($stack));
+                }
                 array_pop($stack);
                 $style = $top['style'];
                 $inner = $top['inner'];
@@ -78,6 +89,9 @@ final class InlineMarkup
             }
 
             $attrs = self::attributes($rawAttrs);
+            if ($stack !== [] && $stack[count($stack) - 1]['tag'] === 'badge') {
+                throw InvalidValue::for('inline markup', $markup)->because('a <badge> holds plain text, so ' . $display . ' is not allowed inside it');
+            }
             if ($name === 'br') {
                 if ($attrs !== []) {
                     throw self::notAllowed($markup, $display);
@@ -98,12 +112,16 @@ final class InlineMarkup
                 's' => self::noAttrs($attrs, $markup, $display, new Style(strike: true)),
                 'a' => self::noAttrs(array_diff_key($attrs, ['href' => 1]), $markup, $display, new Style()),
                 'code' => self::noAttrs($attrs, $markup, $display, new Style()),
+                'badge' => self::badgeAttrs($attrs, $markup),
                 'span' => self::spanStyle($attrs, $markup),
                 default => throw self::notAllowed($markup, $display),
             };
 
             self::flush($text, $spans, $base === null ? $style : $inner, $base, $href, self::named($stack));
             $stack[] = ['tag' => $name, 'style' => $style, 'href' => $href, 'inner' => $inner, 'base' => $base];
+            if ($name === 'badge') {
+                $badgeOpts = [$attrs['type'] ?? 'neutral', $attrs['variant'] ?? null]; // badges don't nest, so one slot will do
+            }
             if ($name === 'code' && $base === null) {
                 $base = $style;
                 $inner = new Style();
@@ -185,6 +203,21 @@ final class InlineMarkup
             }
         }
         return Style::fromAttributes($attrs);
+    }
+
+    /**
+     * A badge's own attributes are checked here (it takes no style); a bad tone or variant fails when the span is built.
+     *
+     * @param array<string, string> $attrs
+     */
+    private static function badgeAttrs(array $attrs, string $markup): Style
+    {
+        foreach (array_keys($attrs) as $key) {
+            if ($key !== 'type' && $key !== 'variant') {
+                throw self::notAllowed($markup, '<badge ' . $key . '>');
+            }
+        }
+        return new Style();
     }
 
     private static function decode(string $text): string

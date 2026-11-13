@@ -22,16 +22,24 @@ final readonly class InlineItem
         public ComputedStyle $style,
         public ?string $href = null,
         public bool $breakAfter = false,
+        /** An inline box (a badge label): $width includes the style's padding and border either side of the text. */
+        public bool $box = false,
     ) {
+    }
+
+    /** The padding and border either side of an inline box's text, together. */
+    public function boxEdges(): float
+    {
+        return $this->style->padding->horizontal() + $this->style->borderWidth->horizontal();
     }
 
     public function withWidth(float $width): self
     {
-        return new self($this->kind, $this->text, $this->font, $this->size, $width, $this->style, $this->href, $this->breakAfter);
+        return new self($this->kind, $this->text, $this->font, $this->size, $width, $this->style, $this->href, $this->breakAfter, $this->box);
     }
 
     public function withText(string $text, float $width, bool $breakAfter): self
     {
-        return new self($this->kind, $text, $this->font, $this->size, $width, $this->style, $this->href, $breakAfter);
+        return new self($this->kind, $text, $this->font, $this->size, $width, $this->style, $this->href, $breakAfter, $this->box);
     }
 }

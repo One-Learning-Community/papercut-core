@@ -308,6 +308,10 @@ final class TextLayouter implements Layouter
         $styleKeys = $runKeys = $hrefKeys = [];
         foreach ($line->items as $item) {
             $key = $this->styleKey($item);
+            if ($item->box) {
+                // An inline box is its own run and its own highlight: neighbours never merge into it.
+                $key .= "\0box" . spl_object_id($item);
+            }
             $styleKeys[] = $key;
             $runKeys[] = $item->kind === 'tab' ? 'tab' . spl_object_id($item) : $key;
             $hrefKeys[] = $item->href ?? '';
@@ -321,7 +325,7 @@ final class TextLayouter implements Layouter
                 $text = implode('', array_map(static fn (array $p): string => $p['item']->text, $group));
                 if (trim($text) !== '') {
                     $first = $group[0]['item'];
-                    $f->addOp(new TextRun($group[0]['x'] + ($align === TextAlign::Right ? $width - $line->width : ($align === TextAlign::Center ? ($width - $line->width) / 2 : 0.0)), $baseline, $text, $first->font, $first->size, $first->style->color, $first->style->letterSpacing));
+                    $f->addOp(new TextRun($group[0]['x'] + self::boxInset($first) + ($align === TextAlign::Right ? $width - $line->width : ($align === TextAlign::Center ? ($width - $line->width) / 2 : 0.0)), $baseline, $text, $first->font, $first->size, $first->style->color, $first->style->letterSpacing));
                 }
             }
             return;
@@ -345,6 +349,10 @@ final class TextLayouter implements Layouter
             : self::group($placed, $runKeys);
         // Highlights sit behind the text: one rect per contiguous same-style run, including stretched spaces.
         foreach (self::group($placed, $styleKeys) as $group) {
+            if ($group[0]['item']->box) {
+                self::paintBox($f, $group[0]['item'], $group[0]['x'], $group[0]['w'], $baseline);
+                continue;
+            }
             $bg = $group[0]['item']->style->background;
             if ($bg !== null && !$bg->isTransparent()) {
                 $f->addOp(new Rect($group[0]['x'], $top, array_sum(array_column($group, 'w')), $box['height'], fill: $bg));
@@ -356,7 +364,7 @@ final class TextLayouter implements Layouter
                 continue;
             }
             $first = $group[0]['item'];
-            $f->addOp(new TextRun($group[0]['x'], $baseline, $text, $first->font, $first->size, $first->style->color, $first->style->letterSpacing));
+            $f->addOp(new TextRun($group[0]['x'] + self::boxInset($first), $baseline, $text, $first->font, $first->size, $first->style->color, $first->style->letterSpacing));
         }
 
         // Decorations span contiguous same-style items, including stretched spaces.
@@ -382,6 +390,33 @@ final class TextLayouter implements Layouter
                 continue;
             }
             $f->addOp(new LinkOp($group[0]['x'], $top, array_sum(array_column($group, 'w')), $box['height'], $href));
+        }
+    }
+
+    /** How far an inline box's text sits in from the box's left edge: its border and left padding; 0 for any other item. */
+    private static function boxInset(InlineItem $item): float
+    {
+        return $item->box ? $item->style->borderWidth->left->points + $item->style->padding->left->points : 0.0;
+    }
+
+    /**
+     * An inline box (a badge) as a pill behind its text: its background, then its border inset by half its width. It
+     * spans the item's width and the font's ascent to descent plus the style's vertical padding and border, so it
+     * never changes the line box.
+     */
+    private static function paintBox(Fragment $f, InlineItem $item, float $x, float $width, float $baseline): void
+    {
+        $s = $item->style;
+        $top = $s->padding->top->points + $s->borderWidth->top->points;
+        $bottom = $s->padding->bottom->points + $s->borderWidth->bottom->points;
+        $y = $baseline - $item->font->ascent($item->size) - $top;
+        $height = $item->font->ascent($item->size) + $item->font->descent($item->size) + $top + $bottom;
+        if ($s->background !== null && !$s->background->isTransparent()) {
+            $f->addOp(new Rect($x, $y, $width, $height, fill: $s->background, radius: $s->radius));
+        }
+        $bw = $s->borderWidth->left->points;
+        if ($bw > 0.0) {
+            $f->addOp(new Rect($x + $bw / 2, $y + $bw / 2, max(0.0, $width - $bw), max(0.0, $height - $bw), stroke: $s->borderColor, strokeWidth: $bw, radius: max(0.0, $s->radius - $bw / 2)));
         }
     }
 

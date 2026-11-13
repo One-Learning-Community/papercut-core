@@ -18,6 +18,7 @@ final class View implements Styled, Annotated
     /** @var list<Node|Component> */
     private array $children = [];
     private bool $explicitDirection = false;
+    private bool $badge = false;
     private string $htmlTag = 'div';
     private ?ColumnSpec $columns = null;
     private bool $columnCountExplicit = false;
@@ -68,6 +69,24 @@ final class View implements Styled, Annotated
         $clone = clone $this;
         $clone->children = self::normalize($children);
         return $clone;
+    }
+
+    /**
+     * Marks this view as a block badge, for outputs that draw badges some other way (Word writes a shaded run).
+     *
+     * @internal
+     */
+    public function badgeHint(): self
+    {
+        $clone = clone $this;
+        $clone->badge = true;
+        return $clone;
+    }
+
+    /** @internal */
+    public function isBadge(): bool
+    {
+        return $this->badge;
     }
 
     /**

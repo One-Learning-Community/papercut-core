@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Papercut\Decorator;
 
-use InvalidArgumentException;
-use Papercut\{Component, Node, Text, View};
-use Papercut\Concerns\{HasStyle, HasVariants};
+use Papercut\{Component, Node, Span, Text, View};
+use Papercut\Concerns\{HasStyle, HasVariants, NameRules};
+use Papercut\Style\Style;
 
 /**
  * A small rounded label in a tone; block-level, sized to its text.
@@ -15,6 +15,9 @@ final class Badge implements Decorator
 {
     use HasStyle;
     use HasVariants;
+
+    /** @internal */
+    public const array TONES = ['neutral', 'note', 'tip', 'warning', 'danger'];
 
     private Node|Component $content;
     private string $tone = 'neutral';
@@ -33,16 +36,7 @@ final class Badge implements Decorator
     /** Tones are free strings; `badge.<tone>` must exist in the theme. */
     public function tone(string $tone): self
     {
-        $tone = trim($tone);
-        if ($tone === '') {
-            throw new InvalidArgumentException('Badge tone must not be empty.');
-        }
-        if (preg_match('/\s/', $tone) === 1) {
-            throw new InvalidArgumentException("Badge tone must be a single word, got '$tone'.");
-        }
-        if (str_contains($tone, '?')) {
-            throw new InvalidArgumentException("Badge tone must not contain '?', got '$tone'.");
-        }
+        $tone = NameRules::tone($tone);
         $clone = clone $this;
         $clone->tone = $tone;
         return $clone;
@@ -56,7 +50,7 @@ final class Badge implements Decorator
     /** @return list<string> */
     protected function toneNames(): array
     {
-        return ['neutral', 'note', 'tip', 'warning', 'danger'];
+        return self::TONES;
     }
 
     /** @return list<string> */
@@ -65,10 +59,33 @@ final class Badge implements Decorator
         return ['badge'];
     }
 
+    /**
+     * This badge as an inline span (what `<x-doc::badge>` becomes inside a text tag), or null when its content is not
+     * one plain run of text or it carries a style of its own that a span cannot hold.
+     *
+     * @internal
+     */
+    public function inlineSpan(): ?Span
+    {
+        $content = $this->content;
+        if (!$content instanceof Text || $this->styleName() !== null || $this->style() != Style::none()) {
+            return null;
+        }
+        $text = '';
+        foreach ($content->spanList() as $span) {
+            if ($span->lineBreak || $span->href !== null || $span->styleName !== null || $span->base !== null || $span->style != Style::none()) {
+                return null;
+            }
+            $text .= $span->text;
+        }
+        return Span::badge($text, $this->tone, $this->variants === [] ? null : implode(' ', $this->variants));
+    }
+
     public function render(): View
     {
         return View::make($this->content)
             ->apply(trim($this->part('badge', $this->tone) . ' ' . ($this->styleName() ?? '')))
-            ->apply($this->style());
+            ->apply($this->style())
+            ->badgeHint();
     }
 }
