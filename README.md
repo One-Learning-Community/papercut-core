@@ -16,8 +16,9 @@ There is no browser and no CSS cascade.
 
 ## Requirements
 
-PHP 8.4+, `ext-mbstring`, `ext-zlib`, `ext-dom`. The only Composer dependency is
-[`dskripchenko/php-pdf`](https://github.com/dskripchenko/php-pdf) (MIT), used behind a backend adapter.
+PHP 8.4+, `ext-mbstring`, `ext-zlib`, `ext-dom`. Composer dependencies are
+[`dskripchenko/php-pdf`](https://github.com/dskripchenko/php-pdf) (MIT), used behind a backend adapter, and
+`papercut/math` for equations. STIX Two Math is bundled as the math font.
 
 ## Quick start
 
@@ -60,6 +61,9 @@ Output: `$document->toPdf()` returns an `Output`: `->save($path)`, `->bytes()` (
 | `Table::make()` | Page-aware table. |
 | `PageNumber::make('Page {page} of {total}')` | Page number and page count. |
 | `PageBreak::make()` | Forced break. |
+| `ColumnFlow::make(...)`, `ColumnBreak::make()` | Text set in columns, like Word's; a `ColumnBreak` sends what follows to the next column. |
+| `Equation::of(...)` | A block [equation](https://one-learning-community.github.io/papercut/guide/equations), built with `Papercut\Math\Math` nodes. Use `Span::math()` for one inside a line. |
+| `Card`, `Callout`, `Blockquote`, `Section`, `Field`, `ChoiceList`, `KeyValueList`, `Badge`, `Stat`, `Totals`, `Signature`, `CodeBlock` | [Decorators](https://one-learning-community.github.io/papercut/guide/decorators) (in `Papercut\Decorator`): ready-made pieces that take their look from the theme. |
 
 Components are immutable: every method returns a modified copy.
 
@@ -127,8 +131,8 @@ Pass `PdfOptions` to `toPdf()`.
 ## Text and inline markup
 
 `Text::make()` draws plain text. `Text::markup()` parses a small inline vocabulary (never HTML):
-bold, italic, underline, strike, `<span>` with style attributes, `<a href>` and `<br>`. Unknown tags are errors.
-For full control build spans yourself.
+bold, italic, underline, strike, `<mark>` (a `yellow-200` background), `<code>` (monospace, in the `code` style), `<badge type variant>` (a small pill in the line), `<span>` with style attributes, `<a href>` and `<br>`. Unknown tags are errors.
+For full control build spans yourself, including `Span::code($text)`, `Span::badge($text, $tone, $variant)` and `Span::math(...)` (an inline equation), none of which read markup.
 
 ```php
 use Papercut\{Column, Document, Page, Span, Text};
