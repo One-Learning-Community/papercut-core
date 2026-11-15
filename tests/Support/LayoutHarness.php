@@ -27,7 +27,10 @@ final class LayoutHarness
 
     public function layout(Node|Component $node, float $width, ?float $height = null, ?BreakToken $token = null, bool $fresh = true): LayoutResult
     {
-        return $this->engine->layout($node, ComputedStyle::root($this->theme), new Constraints($width, $height, $fresh), $token);
+        $result = $this->engine->layout($node, ComputedStyle::root($this->theme), new Constraints($width, $height, $fresh), $token);
+        $this->engine->context()->flushGlyphNotes();
+
+        return $result;
     }
 
     /**

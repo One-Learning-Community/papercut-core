@@ -135,9 +135,19 @@ final readonly class SvgDocument
         foreach (iterator_to_array($root->getElementsByTagName('script')) as $script) {
             $script->parentNode?->removeChild($script);
         }
+        // Processing instructions (xml-stylesheet) and xml:base would let a renderer reach for other files.
+        $document = $root->ownerDocument;
+        assert($document instanceof \DOMDocument);
+        /** @var list<\DOMNode> $instructions */
+        $instructions = iterator_to_array((new \DOMXPath($document))->query('.//processing-instruction()', $root) ?: [], false);
+        foreach ($instructions as $pi) {
+            $pi->parentNode?->removeChild($pi);
+        }
         foreach ([$root, ...iterator_to_array($root->getElementsByTagName('*'))] as $el) {
             foreach (iterator_to_array($el->attributes ?? []) as $attribute) {
-                if (str_starts_with(strtolower($attribute->name), 'on')) {
+                if ($attribute->namespaceURI === 'http://www.w3.org/XML/1998/namespace' && $attribute->localName === 'base') {
+                    $el->removeAttributeNode($attribute);
+                } elseif (str_starts_with(strtolower($attribute->name), 'on')) {
                     $el->removeAttributeNode($attribute);
                 }
             }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Papercut\Layout;
 
-use Papercut\{ColumnBreak, Component, Equation, Image, Link, ListNode, Node, OverflowMode, PageBreak, PageNumber, PdfPage, Place, QrCode, Spacer, Svg, Table, TableCell, Text, Toc, View};
-use Papercut\Exception\{InvalidValue, UnknownAttribute};
+use Papercut\{ColumnBreak, Component, Equation, Image, Link, ListItem, ListNode, Node, OverflowMode, Page, PageBreak, PageNumber, PdfPage, Place, QrCode, Spacer, Svg, Table, TableCell, TableRow, Text, Toc, View};
+use Papercut\Exception\{InvalidStructure, InvalidValue, UnknownAttribute};
 use Papercut\Paint\{Anchor, Bookmark};
 use Papercut\Style\{ComputedStyle, Direction};
 use Papercut\Toc\{HeadingText, TocLine};
@@ -343,10 +343,25 @@ final class LayoutEngine
             }
             return $style->direction === Direction::Row ? $this->flex : $this->block;
         }
-        return $this->layouters[$node::class] ?? throw new \LogicException(sprintf(
-            'No layouter registered for %s at "%s".',
-            $node::class,
-            $this->ctx->path(),
+        return $this->layouters[$node::class] ?? throw self::misplaced($node, $this->ctx->path());
+    }
+
+    /** The error for a node that sits where it cannot be laid out, such as a table row in a column. */
+    public static function misplaced(Node $node, string $path): InvalidStructure
+    {
+        $reflection = new \ReflectionClass($node);
+
+        return new InvalidStructure(sprintf(
+            '%s cannot go here, at "%s": %s',
+            $reflection->isAnonymous() ? 'A custom node' : $reflection->getShortName(),
+            $path,
+            match (true) {
+                $node instanceof ListItem => 'a list item belongs inside ListNode::ordered() or ListNode::unordered()',
+                $node instanceof TableRow, $node instanceof TableCell => 'table rows and cells belong inside a Table',
+                $node instanceof Page => 'a page belongs directly inside Document::make()',
+                !$reflection->isAnonymous() && str_starts_with($node::class, 'Papercut\\') => 'it cannot be laid out inside other content',
+                default => 'no layouter is registered for ' . (strstr($node::class, "\0", true) ?: $node::class),
+            },
         ));
     }
 }

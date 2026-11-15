@@ -102,6 +102,22 @@ final class FixedHeightOverflowTest extends TestCase
         self::assertSame([], $this->warnings);
     }
 
+    public function test_a_negative_top_margin_does_not_hide_real_overflow_in_a_fixed_box(): void
+    {
+        // The child is 125pt tall and starts 20pt above the box: its bottom is at 105pt, past the box's 100pt.
+        $box = Column::make(\Papercut\View::make()->height(pt(125))->margin(pt(-20), pt(0), pt(0), pt(0)))->height(pt(100));
+        $this->expectException(LayoutOverflow::class);
+        $this->paginate($box, OverflowMode::Throw);
+    }
+
+    public function test_a_negative_top_margin_in_an_auto_box_is_not_overflow(): void
+    {
+        $box = Column::make(Text::make('A'), Text::make('B')->margin(pt(-6), pt(0), pt(0), pt(0)));
+        $pages = $this->paginate($box, OverflowMode::Throw);
+        self::assertSame([], array_values(array_filter($pages[0]->ops, static fn ($o) => $o instanceof Clip)));
+        self::assertSame([], $this->warnings);
+    }
+
     public function test_content_that_fits_its_height_is_left_alone(): void
     {
         $pages = $this->paginate(Column::make(Text::make('One line'))->height(pt(30))->border(pt(1)), OverflowMode::Throw);

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Papercut\Style;
 
 use Papercut\Exception\{InvalidValue, UnknownAttribute};
-use Papercut\Support\{EnumValue, Suggest};
+use Papercut\Support\{Check, EnumValue, Suggest};
 use Papercut\Value\{Auto, Color, Edges, Length, Percent};
 
 /**
@@ -62,6 +62,9 @@ final readonly class Style
         'bookmark-level' => ['bookmarkLevel', 'int>=1'],
         'toc' => ['toc', 'bool'],
     ];
+
+    /** Attributes whose sizes cannot be negative. */
+    private const array NOT_NEGATIVE = ['width', 'height', 'minWidth', 'maxWidth', 'minHeight', 'maxHeight', 'padding', 'borderWidth', 'radius', 'gap', 'basis'];
 
     public function __construct(
         public Length|Percent|Auto|null $width = null,
@@ -246,7 +249,7 @@ final readonly class Style
     }
 
     /**
-     * @param array<string, string|int|float|bool|object> $attrs kebab-case Blade attribute names
+     * @param array<string, string|int|float|bool|object|array<mixed>|null> $attrs kebab-case Blade attribute names; null means not set
      */
     public static function fromAttributes(array $attrs): self
     {
@@ -257,8 +260,22 @@ final readonly class Style
                 throw UnknownAttribute::for($key, Suggest::closest($key, array_keys(self::ATTRIBUTES)));
             }
             [$property, $parser] = self::ATTRIBUTES[$key];
+            if ($value === null) {
+                continue; // a bound null means "not set"
+            }
+            if (is_array($value)) {
+                throw InvalidValue::for('value', 'array')->withContext($key)->because('expected a single value, not an array');
+            }
             try {
                 $props[$property] = self::parse($parser, $value);
+                if (in_array($property, self::NOT_NEGATIVE, true)) {
+                    $checked = $props[$property];
+                    if ($checked instanceof Edges) {
+                        Check::edges($checked, $key);
+                    } elseif ($checked instanceof Length || $checked instanceof Percent || $checked instanceof Auto) {
+                        Check::size($checked, $key);
+                    }
+                }
             } catch (InvalidValue $e) {
                 throw $e->withContext($key);
             }

@@ -40,6 +40,16 @@ final class ColumnFlowLayouter implements Layouter
             ));
         }
 
+        $fewer = $spec->fitted($c->width);
+        if ($fewer->count < $spec->count) {
+            // Pasted CSS can ask for more columns than the width holds: use as many as fit, never throw.
+            $ctx->approximated(ColumnSpec::reducedFeature($fewer->count));
+            if ($fewer->count === 1) {
+                return $engine->blockLayouter()->layout($node, $style, $c, $token, $engine);
+            }
+            $spec = $fewer;
+        }
+
         if (!$spec->fits($c->width)) {
             $message = sprintf('The column gaps (%.2fpt) leave no room for columns in %.2fpt', array_sum($spec->gaps), $c->width);
             if ($ctx->quiet) {
@@ -66,7 +76,8 @@ final class ColumnFlowLayouter implements Layouter
         }
         $gaps = array_sum($spec->gaps);
 
-        return ['min' => $spec->count * $one['min'] + $gaps, 'max' => $spec->count * $one['max'] + $gaps];
+        // a markup flow gives up columns when the width is short, so it can always shrink to one
+        return ['min' => $spec->fromMarkup && $spec->shares === null ? $one['min'] : $spec->count * $one['min'] + $gaps, 'max' => $spec->count * $one['max'] + $gaps];
     }
 
     private const BALANCE_TOLERANCE = 0.5;

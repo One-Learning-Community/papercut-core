@@ -68,6 +68,8 @@ final class LayoutContext
     private bool $heldBack = false;
     /** On inside trial(): warnings, fidelity notes and failure paths are discarded. */
     public private(set) bool $muted = false;
+    /** @var array<string, array{string, string, array<string, true>}> missing characters by node path and feature, until flushGlyphNotes() */
+    private array $glyphNotes = [];
     public private(set) StyleResolver $styles;
     /** The theme of each page; when set, usePage() switches to the page's theme. */
     public ?PageThemes $themes = null;
@@ -109,9 +111,9 @@ final class LayoutContext
         // Strict mode checks text on the painted pages (PdfExporter), so a header laid out only to measure it never throws.
         // A weak reference, so the context and its itemizers form no cycle: the export's caches are freed when it returns.
         $self = \WeakReference::create($this);
-        return $this->itemizers[$this->theme] ??= new Itemizer($this->fonts, static function (string $msg) use ($self): void {
+        return $this->itemizers[$this->theme] ??= new Itemizer($this->fonts, static function (string $msg, string $run = '') use ($self): void {
             // The context outlives its itemizers; if that ever changes, fail loudly rather than drop the warning.
-            ($self->get() ?? throw new \LogicException('A warning arrived after its layout context was freed.'))->warn($msg);
+            ($self->get() ?? throw new \LogicException('A warning arrived after its layout context was freed.'))->droppedGlyphs($msg, $run);
         }, $this->fallbackFamilies, $this->theme, $this->styles);
     }
 
@@ -182,12 +184,59 @@ final class LayoutContext
     /** Reports a fidelity approximation at the current path, once per path and feature. */
     public function approximated(string $feature): void
     {
-        $report = new FidelityReport(FidelityLevel::Approximated, $this->format, $feature, $this->path());
-        $key = "\0approximated\0" . $report->path . "\0" . $feature;
-        if ($this->muted || $this->onWarning === null || isset($this->warned[$key])) {
+        $this->note(FidelityLevel::Approximated, $feature);
+    }
+
+    /**
+     * Characters no font has are left out of the PDF's text. The characters are gathered per node and feature while it
+     * is laid out and reported by flushGlyphNotes() as one `dropped` note naming them. D9: only formats that draw with
+     * the fonts Papercut embeds (the PDF) report this; Word and browsers fall back to their own fonts. Strict mode
+     * throws from the painted pages (PdfExporter) instead.
+     */
+    public function droppedGlyphs(string $feature, string $chars = '', ?string $path = null): void
+    {
+        if ($this->format !== 'pdf' || $this->muted || $this->onWarning === null) {
+            return;
+        }
+        $chars = str_replace("\u{FFFD}", '', $chars); // drawn from the bundled math font, never missing
+        if ($chars === '') {
+            return;
+        }
+        $path ??= $this->path();
+        $key = $path . "\0" . $feature;
+        $this->glyphNotes[$key] ??= [$path, $feature, []];
+        foreach (mb_str_split($chars, 1, 'UTF-8') as $ch) {
+            $this->glyphNotes[$key][2][$ch] = true;
+        }
+    }
+
+    /** Reports the gathered missing characters, one note per node and feature; call once after layout. */
+    public function flushGlyphNotes(): void
+    {
+        $notes = $this->glyphNotes;
+        $this->glyphNotes = [];
+        foreach ($notes as [$path, $feature, $chars]) {
+            $this->emit(new FidelityReport(FidelityLevel::Dropped, $this->format, sprintf('%s ("%s")', $feature, implode('', array_map('strval', array_keys($chars)))), $path));
+        }
+    }
+
+    private function note(FidelityLevel $level, string $feature): void
+    {
+        if ($this->muted || $this->onWarning === null) {
+            return;
+        }
+        $path = $this->path();
+        $key = "\0" . $level->name . "\0" . $path . "\0" . $feature;
+        if (isset($this->warned[$key])) {
             return;
         }
         $this->warned[$key] = true;
+        $this->emit(new FidelityReport($level, $this->format, $feature, $path));
+    }
+
+    private function emit(FidelityReport $report): void
+    {
+        \assert($this->onWarning !== null);
         $r = new \ReflectionFunction($this->onWarning);
         $r->getNumberOfParameters() === 1 && !$r->isVariadic()
             ? ($this->onWarning)($report->message())
@@ -349,10 +398,11 @@ final class LayoutContext
     public function svgFonts(ComputedStyle $style): SvgFonts
     {
         $self = \WeakReference::create($this); // no cycle, as in itemizer()
-        return $this->svgFonts[strtolower($style->fontFamily)] ??= new SvgFonts($this->fonts, $style->fontFamily, $this->fallbackFamilies, static function (string $msg) use ($self): void {
+        $path = $this->path(); // the glyphs are resolved when the page is painted, long after layout left this node
+        return $this->svgFonts[strtolower($style->fontFamily) . "\0" . $path] ??= new SvgFonts($this->fonts, $style->fontFamily, $this->fallbackFamilies, static function (string $msg, string $text = '') use ($self, $path): void {
             $ctx = $self->get() ?? throw new \LogicException('A warning arrived after its layout context was freed.');
             $ctx->missingGlyphs($msg);
-            $ctx->warn($msg, withPath: false);
+            $ctx->droppedGlyphs('missing glyphs in SVG text', $text, $path);
         });
     }
 

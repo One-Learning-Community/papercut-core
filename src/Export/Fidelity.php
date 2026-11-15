@@ -16,6 +16,9 @@ final class Fidelity
     /** @var list<FidelityReport> */
     private array $reports = [];
 
+    /** @var array<string, true> */
+    private array $seen = [];
+
     /** True when the callback takes one parameter and so cannot be handed the report. */
     private readonly bool $messageOnly;
 
@@ -55,8 +58,14 @@ final class Fidelity
         return $this->reports;
     }
 
+    /** One note per problem: the same level, feature and path is reported once, however many runs or items raise it. */
     private function record(FidelityReport $report): void
     {
+        $key = $report->level->name . "\0" . $report->feature . "\0" . $report->path;
+        if (isset($this->seen[$key])) {
+            return;
+        }
+        $this->seen[$key] = true;
         $this->reports[] = $report;
         $onWarning = $this->options->onWarning();
         if ($onWarning !== null) {

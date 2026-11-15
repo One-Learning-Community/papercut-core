@@ -162,7 +162,7 @@ final class EquationLayouterTest extends TestCase
         $h = new LayoutHarness();
         $r = $h->layout(Equation::of(Math::text('密')), 300);
         $this->assertSame(Status::Complete, $r->status);
-        $this->assertNotSame([], array_filter($h->warnings, static fn (string $w): bool => str_contains($w, '密')));
+        $this->assertNotSame([], array_filter($h->warnings, static fn (string $w): bool => str_contains($w, 'missing glyphs')));
     }
 
     public function test_intrinsic_is_natural_width(): void

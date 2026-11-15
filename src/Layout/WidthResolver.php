@@ -58,17 +58,28 @@ final class WidthResolver
 
     /**
      * One list per flex line. $style is the row's own computed style; $available is the
-     * width offered to its border box. x is relative to the content box.
+     * width offered to its border box. x is relative to the content box. A $path names the row in reports: with
+     * one, a row whose items cannot fit is reported as the PDF reports it; without, it is only measured.
      *
      * @return list<list<FlexSlot>>
      */
-    public function flexLines(View $row, ComputedStyle $style, float $available): array
+    public function flexLines(View $row, ComputedStyle $style, float $available, ?string $path = null): array
     {
-        $lines = [];
-        foreach ($this->engine->flexLayouter()->lines($row, $style, $available, $this->engine) as $line) {
-            $lines[] = array_map(static fn (array $item): FlexSlot => new FlexSlot($item['index'], $item['x'], $item['main']), $line);
+        $ctx = $this->engine->context();
+        if ($path !== null) {
+            $ctx->pushPath($path);
         }
-        return $lines;
+        try {
+            $lines = [];
+            foreach ($this->engine->flexLayouter()->lines($row, $style, $available, $this->engine, $path !== null) as $line) {
+                $lines[] = array_map(static fn (array $item): FlexSlot => new FlexSlot($item['index'], $item['x'], $item['main']), $line);
+            }
+            return $lines;
+        } finally {
+            if ($path !== null) {
+                $ctx->popPath();
+            }
+        }
     }
 
     /**

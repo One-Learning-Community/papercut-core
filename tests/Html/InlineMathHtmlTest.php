@@ -36,6 +36,16 @@ final class InlineMathHtmlTest extends TestCase
         self::assertMatchesRegularExpression('~<td[^>]*>.*v <math [^>]*display="inline"~s', $html);
     }
 
+    public function test_math_wrapper_has_only_colour_size_and_background(): void
+    {
+        $style = \Papercut\Style\Style::make(underline: true, strike: true, italic: true, fontWeight: 700, letterSpacing: \Papercut\px(2), color: \Papercut\Value\Color::hex('#cc0000'), background: \Papercut\Value\Color::hex('#eeeeee'));
+        $html = $this->html(Text::spans(new Span('', $style, math: Math::frac('a', 'b'))));
+        self::assertStringContainsString('color:', $html);
+        self::assertDoesNotMatchRegularExpression('~<span style="[^"]*(font-style|font-weight|text-decoration|letter-spacing)[^"]*"><math~', $html);
+        self::assertMatchesRegularExpression('~<span style="[^"]*color:[^"]*"><math~', $html);
+        self::assertMatchesRegularExpression('~<span style="[^"]*background-color:#eeeeee[^"]*"><math~', $html);
+    }
+
     public function test_no_math_no_font_rule(): void
     {
         self::assertStringNotContainsString('Papercut Math', $this->html(Text::make('plain')));

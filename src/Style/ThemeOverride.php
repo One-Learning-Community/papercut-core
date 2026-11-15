@@ -34,11 +34,23 @@ final readonly class ThemeOverride
                 throw InvalidValue::for('theme font size', (string) $fontSize)->because('it must be positive');
             }
         }
-        if ($lineHeight !== null && !($lineHeight > 0.0)) {
-            throw InvalidValue::for('theme line height', (string) $lineHeight)->because('it must be positive');
+        if ($lineHeight !== null && !(is_finite($lineHeight) && $lineHeight > 0.0)) {
+            throw InvalidValue::for('theme line height', InvalidValue::number($lineHeight))->because('it must be a finite number above 0');
         }
-        foreach (array_keys($styles) as $name) {
-            Theme::assertStyleName((string) $name);
+        if ($fontWeight !== null && ($fontWeight < 1 || $fontWeight > 1000)) {
+            throw InvalidValue::for('theme font weight', (string) $fontWeight)->because('it must be a whole number from 1 to 1000');
+        }
+        if ($minLines !== null && $minLines < 0) {
+            throw InvalidValue::for('theme min lines', (string) $minLines)->because('it must be 0 or more');
+        }
+        foreach ($styles as $name => $style) {
+            if (!is_string($name) || $name === '') { // @phpstan-ignore function.alreadyNarrowedType
+                throw InvalidValue::for('theme styles name', (string) $name)->because('styles must be keyed by a non-empty style name');
+            }
+            if (!$style instanceof Style) { // @phpstan-ignore instanceof.alwaysTrue
+                throw InvalidValue::for('theme styles value', get_debug_type($style))->withContext('"' . $name . '"')->because('each entry in styles must be a Style');
+            }
+            Theme::assertStyleName($name);
         }
     }
 

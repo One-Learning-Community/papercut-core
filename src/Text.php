@@ -6,6 +6,7 @@ namespace Papercut;
 
 use Papercut\Concerns\{HasNotes, HasStyle};
 use Papercut\Style\Style;
+use Papercut\Support\Utf8;
 
 final class Text implements Styled, Annotated
 {
@@ -33,8 +34,33 @@ final class Text implements Styled, Annotated
     public static function spans(Span ...$spans): self
     {
         $t = new self();
-        $t->spans = array_values($spans);
+        $bad = false;
+        $t->spans = self::scrubbed(array_values($spans), $bad);
+        if ($bad) {
+            $t->notes[] = Utf8::note();
+        }
         return $t;
+    }
+
+    /**
+     * The spans with invalid UTF-8 in their text replaced by U+FFFD; $bad is set when any was.
+     *
+     * @param list<Span> $spans
+     * @return list<Span>
+     * @param-out bool $bad
+     */
+    private static function scrubbed(array $spans, bool &$bad): array
+    {
+        $bad = false;
+        foreach ($spans as $i => $span) {
+            $changed = false;
+            $clean = Utf8::scrub($span->text, $changed);
+            if ($changed) {
+                $bad = true;
+                $spans[$i] = new Span($clean, $span->style, $span->href, $span->lineBreak, $span->styleName, $span->base, $span->math);
+            }
+        }
+        return $spans;
     }
 
     /** Inline code: literal text in the theme's `code` style, shorthand for `Text::spans(Span::code($text))`. */
@@ -157,7 +183,12 @@ final class Text implements Styled, Annotated
                 array_push($clone->notes, ...$m->notes);
                 continue;
             }
-            $clone->spans[] = is_string($m) ? Span::text($m) : $m;
+            $bad = false;
+            [$span] = self::scrubbed([is_string($m) ? Span::text($m) : $m], $bad);
+            $clone->spans[] = $span;
+            if ($bad) {
+                $clone->notes[] = Utf8::note();
+            }
         }
         return $clone;
     }

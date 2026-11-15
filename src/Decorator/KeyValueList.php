@@ -7,6 +7,7 @@ namespace Papercut\Decorator;
 use InvalidArgumentException;
 use Papercut\{Component, Node, Table, TableCell, View};
 use Papercut\Concerns\{HasStyle, HasVariants};
+use Papercut\Support\Check;
 use Papercut\Value\{Auto, Fr, Length, Percent};
 
 /**
@@ -64,6 +65,7 @@ final class KeyValueList implements Decorator
     public function labelWidth(Length|Percent $width): self
     {
         $clone = clone $this;
+        Check::size($width, 'KeyValueList::labelWidth()');
         $clone->labelWidth = $width instanceof Length ? $width->absolute('label width') : $width;
         return $clone;
     }

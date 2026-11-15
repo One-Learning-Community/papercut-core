@@ -220,7 +220,8 @@ final class BlockLayouter implements Layouter
             return LayoutResult::doesNotFit();
         }
 
-        $contentHeight = $cursor;
+        // Negative margins can pull the content up past its own top: a box is never shorter than nothing.
+        $contentHeight = max(0.0, $cursor);
         // A box that breaks fills the slice it was given (fill); one that ends is stretched (definiteHeight).
         $last = $breakAt === null && !$c->open;
         $target = $fixed ?? ($breakAt === null ? $stretch : $c->fill);
@@ -232,11 +233,15 @@ final class BlockLayouter implements Layouter
             }
         }
 
+        $cutByMax = false;
         if ($fixed === null && $first && $last) {
+            $uncapped = $contentHeight;
             $contentHeight = BoxGeometry::capContent($style, $c, $contentHeight);
+            $cutByMax = $contentHeight < $uncapped - self::EPSILON;
         }
-        // The height the box allows its content: its fixed height, or its max-height. A cut to the page comes later.
-        $allowed = $fixed !== null || ($first && $last) ? $contentHeight : null;
+        // The height the box allows its content: its fixed height, or its max-height. A box that sizes itself to its
+        // content cannot overflow itself, and a cut to the page comes later.
+        $allowed = $fixed !== null || $cutByMax ? $contentHeight : null;
         if ($capped) {
             $fit = BoxGeometry::fitContent($style, $c, $contentHeight);
             if ($fit === null) {

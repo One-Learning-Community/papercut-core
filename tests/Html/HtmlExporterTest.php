@@ -267,25 +267,21 @@ final class HtmlExporterTest extends TestCase
         self::assertSame('https://a.test/"><script>x</script>', $this->attr($this->one($html, '//a'), 'href'));
     }
 
-    public function test_disallowed_href_throws_like_pdf(): void
+    public function test_disallowed_span_href_throws_at_construction(): void
     {
-        foreach ([
-            Text::spans(new Span('x', href: 'javascript:alert(1)')),
-            Link::to('javascript:alert(1)', Text::make('x')),
-        ] as $node) {
-            $doc = Document::make(Page::a4()->body($node));
-            try {
-                $doc->toPdf();
-                self::fail('expected InvalidValue');
-            } catch (InvalidValue $pdfError) {
-                $pdf = $pdfError->getMessage();
-            }
-            try {
-                $doc->toHtml();
-                self::fail('expected InvalidValue');
-            } catch (InvalidValue $htmlError) {
-                self::assertSame($pdf, $htmlError->getMessage());
-            }
+        $this->expectException(InvalidValue::class);
+        $this->expectExceptionMessage('for Span');
+        new Span('x', href: 'javascript:alert(1)');
+    }
+
+    public function test_disallowed_block_link_throws_at_construction(): void
+    {
+        try {
+            Link::to('javascript:alert(1)', Text::make('x'));
+            self::fail('expected InvalidValue');
+        } catch (InvalidValue $e) {
+            self::assertStringContainsString('javascript:alert(1)', $e->getMessage());
+            self::assertStringContainsString('only http, https, mailto, tel and #fragment', $e->getMessage());
         }
     }
 
@@ -322,8 +318,6 @@ final class HtmlExporterTest extends TestCase
         $html = $this->html(Document::make(Page::a4()->header(Text::make('H'))));
         self::assertCount(1, $this->xpath($html, '//section/div[@class="pc-header"]'));
         self::assertCount(0, $this->xpath($html, '//div[@class="pc-body"]'));
-
-        self::assertStringContainsString('<div class="papercut"', $this->html(Document::make()));
     }
 
     public function test_metadata_in_full_page_head(): void

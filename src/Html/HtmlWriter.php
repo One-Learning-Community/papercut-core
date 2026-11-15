@@ -11,11 +11,11 @@ use Papercut\Barcode\Bacon\BaconQrSvg;
 use Papercut\Barcode\ModuleRects;
 use Papercut\Exception\InvalidValue;
 use Papercut\Export\{Fidelity, HtmlOptions};
-use Papercut\Layout\{GridCell, TableGrid, WidthResolver};
+use Papercut\Layout\{GridCell, LayoutEngine, TableGrid, WidthResolver};
 use Papercut\Style\{ComputedStyle, Justify, ListMarker, StyleName, TextAlign};
 use Papercut\Math\Render\MathmlWriter;
 use Papercut\Text\FontStyle;
-use Papercut\Value\{Auto, Fr, Length, Percent};
+use Papercut\Value\{Auto, ColumnSpec, Fr, Length, Percent};
 use Papercut\Toc\TocIndex;
 use Papercut\Layout\ColumnFlowLayouter;
 use Papercut\Tree\{ColumnFlows, Region, TreeVisitor, Visit};
@@ -286,7 +286,7 @@ final class HtmlWriter implements TreeVisitor
             $node instanceof ListNode => $this->list($node, $style, $parent, $at),
             $node instanceof ListItem => $this->listItem($node, $style, $parent, $at),
             $node instanceof Toc => $this->tocNav($node, $style, $parent, $at),
-            default => throw new \LogicException('HTML export of ' . $node->debugName() . ' is not supported'),
+            default => throw LayoutEngine::misplaced($node, $at->path()),
         };
         if ($inFlow) {
             $this->spaceInFlow($style, $start);
@@ -370,9 +370,16 @@ final class HtmlWriter implements TreeVisitor
             $this->fidelity->approximated('unequal column gaps', $at->path());
         }
 
+        $fitted = $spec->fitted($this->regionWidth);
+        if ($fitted->count < $spec->count) {
+            $this->fidelity->approximated(ColumnSpec::reducedFeature($fitted->count), $at->path());
+            if ($fitted->count === 1) {
+                return null;
+            }
+        }
         $this->openedFlow = true;
 
-        return Css::columns($spec);
+        return Css::columns($fitted);
     }
 
     /**
@@ -574,6 +581,7 @@ final class HtmlWriter implements TreeVisitor
             // An inline equation: MathML inherits the paragraph's size and colour; a span's own are on a wrapper.
             $this->hasEquation = true;
             $body = (new MathmlWriter())->write($span->math, false);
+            $diff = array_intersect_key($diff, array_flip(['color', 'font-size', 'background-color']));
         }
         $code = StyleName::leads($span->styleName, 'code');
         if ($code) {
@@ -814,6 +822,13 @@ final class HtmlWriter implements TreeVisitor
             $shrink = $fixed > $room ? $room / $fixed : 1.0;
         }
         $hasAuto = in_array(true, array_map(static fn (object $t): bool => $t instanceof Auto, $tracks), true);
+        // the same report as the PDF layout makes when percent and fixed columns leave the others no room
+        if ($n->fitsColumns() && $est > 0.0) {
+            $share = $percent / 100.0 + $fixed / $est;
+            if ($share > 1.0 + 1e-9 || ($hasAuto && $share >= 1.0 - 1e-9)) {
+                $this->fidelity->approximated('markup column widths (wider than the page; fitted)', $at->path());
+            }
+        }
         if ($hasAuto) {
             $this->fidelity->approximated('auto column widths', $at->path());
         }
@@ -855,7 +870,7 @@ final class HtmlWriter implements TreeVisitor
     private function tableRow(TableRow $n, ComputedStyle $s, Visit $at): string
     {
         if (!$at->parent() instanceof Table) {
-            throw new \LogicException(sprintf('No layouter registered for %s at "%s".', TableRow::class, $at->path()));
+            throw LayoutEngine::misplaced($n, $at->path());
         }
         $parent = end($this->styles);
         \assert($parent instanceof ComputedStyle);

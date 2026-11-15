@@ -84,7 +84,7 @@ final class TreeWalker
         }
         $at = Visit::under($parentAt, $node, $style, $index, $parentNode, $inHeader, $region, $ancestors);
         if ($node instanceof Place && ($region !== Region::Overlay || $parentNode !== null)) {
-            throw new \LogicException(sprintf('A place only works in a page overlay; add it with Page::overlay(), not inside other content (at %s).', $at->path()));
+            throw new InvalidStructure(sprintf('A place only works in a page overlay; add it with Page::overlay(), not inside other content (at %s).', $at->path()));
         }
         if ($node instanceof Toc && $region !== Region::Body) {
             throw new InvalidStructure(sprintf('A table of contents only works in a page body (at %s).', $at->path()));

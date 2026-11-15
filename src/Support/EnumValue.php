@@ -22,15 +22,16 @@ final class EnumValue
      * @template T of \BackedEnum
      * @param class-string<T> $enum
      * @return T
-     * @throws InvalidValue with a "did you mean" suggestion for an unknown value
+     * @param string|null $what the setter, such as "QrCode::shape()", named in the error
+     * @throws InvalidValue naming $what and the allowed values, with a "did you mean" suggestion for an unknown value
      */
-    public static function from(string $enum, \BackedEnum|string $value): \BackedEnum
+    public static function from(string $enum, \BackedEnum|string $value, ?string $what = null): \BackedEnum
     {
         if ($value instanceof $enum) {
             return $value;
         }
         if ($value instanceof \BackedEnum) {
-            throw InvalidValue::for('value', $value::class);
+            throw self::reject($enum, $value::class, null, $what);
         }
         $normalized = strtolower(trim($value));
         $cases = $enum::cases();
@@ -69,6 +70,17 @@ final class EnumValue
             }
         }
         $closest = Suggest::closest($normalized, array_keys($shown));
-        throw InvalidValue::for('value', $value, $closest === null ? null : $shown[$closest]);
+        throw self::reject($enum, $value, $closest === null ? null : $shown[$closest], $what);
+    }
+
+    /** @param class-string<\BackedEnum> $enum */
+    private static function reject(string $enum, string $value, ?string $suggestion, ?string $what): InvalidValue
+    {
+        $e = InvalidValue::for('value', $value, $suggestion);
+        if ($what !== null) {
+            $e = $e->withContext($what);
+        }
+
+        return $e->because('expected one of ' . implode(', ', array_map(static fn (\BackedEnum $c): string => (string) $c->value, $enum::cases())));
     }
 }

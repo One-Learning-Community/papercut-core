@@ -377,6 +377,9 @@ final class TextLayouter implements Layouter
 
         // Decorations span contiguous same-style items, including stretched spaces.
         foreach (self::group($placed, $styleKeys) as $group) {
+            if ($group[0]['item']->math !== null) {
+                continue; // a formula draws its own strokes; a line across it would strike its fraction bars
+            }
             $s = $group[0]['item']->style;
             $size = $group[0]['item']->size;
             $x1 = $group[0]['x'];

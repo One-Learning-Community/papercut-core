@@ -55,8 +55,11 @@ final class FlexLayouter implements Layouter
             $available = $c->height - ($first ? BoxGeometry::topEdge($style) : 0.0) - BoxGeometry::bottomEdge($style);
         }
 
-        $items = $this->items($node, $style, $contentWidth, $engine, $token === null);
+        $items = $this->items($node, $style, $contentWidth, $engine);
         $lines = self::resolveLines($items, $style, $contentWidth);
+        if ($first) {
+            self::noteOverflow($lines, $style, $contentWidth, $engine);
+        }
         $count = count($lines);
 
         /** @var list<array{x: float, y: float, fragment: Fragment}> $placed */
@@ -181,10 +184,34 @@ final class FlexLayouter implements Layouter
      *
      * @return list<list<array{node: Node, style: ComputedStyle, index: int, x: float, main: float}>>
      */
-    public function lines(Node $node, ComputedStyle $style, float $available, LayoutEngine $engine): array
+    public function lines(Node $node, ComputedStyle $style, float $available, LayoutEngine $engine, bool $report = false): array
     {
         $contentWidth = BoxGeometry::contentWidth($style, $available);
-        return self::resolveLines($this->items($node, $style, $contentWidth, $engine), $style, $contentWidth);
+        $lines = self::resolveLines($this->items($node, $style, $contentWidth, $engine), $style, $contentWidth);
+        if ($report) {
+            self::noteOverflow($lines, $style, $contentWidth, $engine);
+        }
+        return $lines;
+    }
+
+    /**
+     * Items that cannot shrink (an explicit minimum, a picture that may not shrink) can leave a line wider than
+     * the row; the overflow is real, so say so once for the row, at its path.
+     *
+     * @param list<list<array{node: Node, style: ComputedStyle, index: int, x: float, main: float}>> $lines
+     */
+    private static function noteOverflow(array $lines, ComputedStyle $style, float $width, LayoutEngine $engine): void
+    {
+        foreach ($lines as $line) {
+            $used = $style->gap * (count($line) - 1);
+            foreach ($line as $item) {
+                $used += $item['main'] + $item['style']->margin->horizontal();
+            }
+            if ($used > $width + 1e-6) {
+                $engine->context()->approximated('row content wider than the row (it runs past the edge)');
+                return;
+            }
+        }
     }
 
     /**
@@ -192,7 +219,7 @@ final class FlexLayouter implements Layouter
      *
      * @return list<array{node: Node, style: ComputedStyle, index: int, base: float, hyp: float, min: float, max: float, margin: float}>
      */
-    private function items(Node $node, ComputedStyle $style, float $width, LayoutEngine $engine, bool $warn = false): array
+    private function items(Node $node, ComputedStyle $style, float $width, LayoutEngine $engine): array
     {
         $items = [];
         foreach (self::children($node) as $i => $child) {
@@ -206,9 +233,7 @@ final class FlexLayouter implements Layouter
                 throw ColumnFlows::strayBreak($path);
             }
             if ($child instanceof PageBreak) {
-                if ($warn) {
-                    $engine->context()->warnOnce('PageBreak inside a row is ignored');
-                }
+                // Reported once per export by NoteReporter, at the break's own path.
                 continue;
             }
             $cs = $engine->styleOf($child, $style, $i);
@@ -222,7 +247,8 @@ final class FlexLayouter implements Layouter
                 $specified === null => $intrinsic['min'],
                 default => min($specified, $engine->contentIntrinsic($child, $style, $i)['min']),
             };
-            $min = BoxGeometry::resolve($cs->minWidth, $width) ?? $auto;
+            $explicitMin = BoxGeometry::resolve($cs->minWidth, $width);
+            $min = $explicitMin ?? $auto;
             $max = BoxGeometry::resolve($cs->maxWidth, $width) ?? \INF;
             $items[] = [
                 'node' => $child,
@@ -233,7 +259,79 @@ final class FlexLayouter implements Layouter
                 'min' => $min,
                 'max' => $max,
                 'margin' => $cs->margin->horizontal(),
+                'auto' => $explicitMin === null,
             ];
+        }
+        return self::fitMinimums($items, $style, $width);
+    }
+
+    /**
+     * Content minimums that together exceed the line are shared out (items that fit an equal share keep theirs, the rest narrow in proportion), so each child then meets the
+     * space it really has (a table narrows with its note, text breaks inside words, a picture scales) instead of
+     * running off the page. A wrapping row only needs each item to fit a line of its own.
+     *
+     * @param list<array{node: Node, style: ComputedStyle, index: int, base: float, hyp: float, min: float, max: float, margin: float, auto?: bool}> $items
+     * @return list<array{node: Node, style: ComputedStyle, index: int, base: float, hyp: float, min: float, max: float, margin: float}>
+     */
+    private static function fitMinimums(array $items, ComputedStyle $style, float $width): array
+    {
+        $n = count($items);
+        if ($n === 0) {
+            return $items;
+        }
+        $fixed = 0.0;
+        $autoSum = 0.0;
+        foreach ($items as $item) {
+            $fixed += $item['margin'];
+            if ($item['auto'] ?? false) {
+                $autoSum += $item['min'];
+            } else {
+                $fixed += $item['min'];
+            }
+        }
+        if ($style->wrap) {
+            foreach ($items as $k => $item) {
+                $room = max(0.0, $width - $item['margin']);
+                if (($item['auto'] ?? false) && $item['min'] > $room + self::EPSILON) {
+                    $items[$k]['min'] = $room;
+                    $items[$k]['hyp'] = max($room, min($item['max'], $item['base']));
+                }
+            }
+        } else {
+            $room = $width - $style->gap * ($n - 1) - $fixed;
+            if ($autoSum > $room + self::EPSILON && $autoSum > self::EPSILON) {
+                // Water-fill: an item whose minimum fits an equal share of what is left keeps it whole; only the
+                // rest narrow, in proportion to their minimums.
+                $left = max(0.0, $room);
+                $open = [];
+                foreach ($items as $k => $item) {
+                    if ($item['auto'] ?? false) {
+                        $open[$k] = $item['min'];
+                    }
+                }
+                do {
+                    $share = $left / count($open);
+                    $settled = false;
+                    foreach ($open as $k => $min) {
+                        if ($min <= $share + self::EPSILON) {
+                            $left -= $min;
+                            unset($open[$k]);
+                            $settled = true;
+                        }
+                    }
+                } while ($settled && $open !== []);
+                $sum = array_sum($open);
+                foreach ($open as $k => $min) {
+                    $item = $items[$k];
+                    $narrowed = $min * max(0.0, $left) / $sum;
+                    $item['min'] = $narrowed;
+                    $item['hyp'] = max($narrowed, min($item['max'], $item['base']));
+                    $items[$k] = $item;
+                }
+            }
+        }
+        foreach ($items as $k => $item) {
+            unset($items[$k]['auto']);
         }
         return $items;
     }

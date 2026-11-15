@@ -50,16 +50,18 @@ final readonly class GdImageConverter
             throw new \RuntimeException(sprintf('This GD build cannot read %s images.', $name));
         }
 
-        $image = @imagecreatefromstring($bytes);
+        $image = ImageFormat::quietly(static fn () => imagecreatefromstring($bytes));
         if ($image === false) {
             throw new \RuntimeException(sprintf('Invalid %s image data.', $name));
         }
         // An alpha channel makes php-pdf split it out pixel by pixel, about ten times slower, so keep it only when the source may have one.
         imagealphablending($image, false);
         imagesavealpha($image, self::mayHaveAlpha($bytes, $mime));
-        ob_start();
-        $ok = imagepng($image);
-        $png = (string) ob_get_clean();
+        [$ok, $png] = ImageFormat::quietly(static function () use ($image): array {
+            ob_start();
+            $ok = imagepng($image);
+            return [$ok, (string) ob_get_clean()];
+        });
         if (!$ok || $png === '') {
             throw new \RuntimeException(sprintf('Could not convert the %s image to PNG.', $name));
         }

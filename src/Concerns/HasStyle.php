@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Papercut\Concerns;
 
+use Papercut\Exception\InvalidValue;
 use Papercut\Style\{Align, BorderStyle, Style, TextAlign};
-use Papercut\Support\EnumValue;
+use Papercut\Support\{Check, EnumValue};
 use Papercut\Value\{Auto, Color, Edges, Length, Percent};
 
 /**
@@ -26,6 +27,20 @@ trait HasStyle
         return $this->styleName;
     }
 
+    /** The setter's name for a message, such as "View::opacity()". */
+    private static function setterName(string $method): string
+    {
+        $class = static::class;
+        $at = strrpos($class, '\\');
+        return ($at === false ? $class : substr($class, $at + 1)) . '::' . $method . '()';
+    }
+
+    /** Whether width and height must be above zero: true for content that is drawn at a size, such as an image. */
+    protected function sizesNeedArea(): bool
+    {
+        return false;
+    }
+
     protected function withStyle(Style $patch): static
     {
         $clone = clone $this;
@@ -35,37 +50,43 @@ trait HasStyle
 
     public function width(Length|Percent|Auto $v): static
     {
+        Check::size($v, self::setterName('width'), $this->sizesNeedArea());
         return $this->withStyle(new Style(width: $v));
     }
 
     public function height(Length|Percent|Auto $v): static
     {
+        Check::size($v, self::setterName('height'), $this->sizesNeedArea());
         return $this->withStyle(new Style(height: $v));
     }
 
     public function minWidth(Length|Percent $v): static
     {
+        Check::size($v, self::setterName('minWidth'));
         return $this->withStyle(new Style(minWidth: $v));
     }
 
     public function maxWidth(Length|Percent $v): static
     {
+        Check::size($v, self::setterName('maxWidth'));
         return $this->withStyle(new Style(maxWidth: $v));
     }
 
     public function minHeight(Length|Percent $v): static
     {
+        Check::size($v, self::setterName('minHeight'));
         return $this->withStyle(new Style(minHeight: $v));
     }
 
     public function maxHeight(Length|Percent $v): static
     {
+        Check::size($v, self::setterName('maxHeight'));
         return $this->withStyle(new Style(maxHeight: $v));
     }
 
     public function padding(Length|Edges ...$v): static
     {
-        return $this->withStyle(new Style(padding: self::edgesFrom($v)));
+        return $this->withStyle(new Style(padding: Check::edges(self::edgesFrom($v), self::setterName('padding'))));
     }
 
     public function margin(Length|Edges ...$v): static
@@ -98,13 +119,15 @@ trait HasStyle
     /** @throws \Papercut\Exception\InvalidValue for a $style string that is not a border style */
     public function border(Length $width, Color|string|null $color = null, BorderStyle|string|null $style = null): static
     {
-        $style = $style === null ? null : EnumValue::from(BorderStyle::class, $style);
+        $style = $style === null ? null : EnumValue::from(BorderStyle::class, $style, self::setterName('border'));
+        Check::size($width, self::setterName('border'));
         return $this->withStyle(new Style(borderWidth: Edges::all($width), borderColor: $color === null ? null : self::toColor($color), borderStyle: $style));
     }
 
     public function borderWidth(Edges|Length $v): static
     {
-        return $this->withStyle(new Style(borderWidth: $v instanceof Edges ? $v : Edges::all($v)));
+        $edges = $v instanceof Edges ? $v : Edges::all($v);
+        return $this->withStyle(new Style(borderWidth: Check::edges($edges, self::setterName('borderWidth'))));
     }
 
     public function borderColor(Color|string $c): static
@@ -114,6 +137,7 @@ trait HasStyle
 
     public function radius(Length $v): static
     {
+        Check::size($v, self::setterName('radius'));
         return $this->withStyle(new Style(radius: $v));
     }
 
@@ -124,28 +148,32 @@ trait HasStyle
 
     public function opacity(float $v): static
     {
+        Check::range($v, 0.0, 1.0, self::setterName('opacity'));
         return $this->withStyle(new Style(opacity: $v));
     }
 
     public function grow(float $v = 1): static
     {
+        Check::nonNegative($v, self::setterName('grow'));
         return $this->withStyle(new Style(grow: $v));
     }
 
     public function shrink(float $v): static
     {
+        Check::nonNegative($v, self::setterName('shrink'));
         return $this->withStyle(new Style(shrink: $v));
     }
 
     public function basis(Length|Percent|Auto $v): static
     {
+        Check::size($v, self::setterName('basis'));
         return $this->withStyle(new Style(basis: $v));
     }
 
     /** @throws \Papercut\Exception\InvalidValue for a string that is not an alignment */
     public function alignSelf(Align|string $v): static
     {
-        $v = EnumValue::from(Align::class, $v);
+        $v = EnumValue::from(Align::class, $v, self::setterName('alignSelf'));
         return $this->withStyle(new Style(alignSelf: $v));
     }
 
@@ -156,6 +184,7 @@ trait HasStyle
 
     public function size(Length $v): static
     {
+        Check::size($v, self::setterName('size'), true);
         return $this->withStyle(new Style(fontSize: $v));
     }
 
@@ -181,6 +210,7 @@ trait HasStyle
 
     public function lineHeight(float $v): static
     {
+        Check::positive($v, self::setterName('lineHeight'));
         return $this->withStyle(new Style(lineHeight: $v));
     }
 
@@ -192,7 +222,7 @@ trait HasStyle
     /** @throws \Papercut\Exception\InvalidValue for a string that is not a text alignment */
     public function textAlign(TextAlign|string $v): static
     {
-        $v = EnumValue::from(TextAlign::class, $v);
+        $v = EnumValue::from(TextAlign::class, $v, self::setterName('textAlign'));
         return $this->withStyle(new Style(textAlign: $v));
     }
 
@@ -268,6 +298,7 @@ trait HasStyle
 
     public function minLines(int $n): static
     {
+        Check::intRange($n, 0, PHP_INT_MAX, self::setterName('minLines'));
         return $this->withStyle(new Style(minLines: $n));
     }
 
@@ -289,7 +320,19 @@ trait HasStyle
      */
     public function attributes(array $attrs): static
     {
-        return $this->withStyle(Style::fromAttributes($attrs));
+        $style = Style::fromAttributes($attrs);
+        if ($this->sizesNeedArea()) {
+            foreach (['width', 'height'] as $name) {
+                if ($style->$name !== null) {
+                    try {
+                        Check::size($style->$name, $name, true);
+                    } catch (InvalidValue $e) {
+                        throw $e->withContext($name);
+                    }
+                }
+            }
+        }
+        return $this->withStyle($style);
     }
 
     private static function toColor(Color|string $c): Color

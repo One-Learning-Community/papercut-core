@@ -157,7 +157,7 @@ final class OverlayTest extends TestCase
 
     public function test_a_place_outside_an_overlay_is_refused(): void
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(\Papercut\Exception\InvalidStructure::class);
         $this->expectExceptionMessage('A place only works in a page overlay');
 
         Document::make(self::page()->body(Place::at('0', '0', 'x')))->toPdf();
@@ -165,7 +165,7 @@ final class OverlayTest extends TestCase
 
     public function test_html_refuses_a_place_outside_an_overlay_too(): void
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(\Papercut\Exception\InvalidStructure::class);
         $this->expectExceptionMessage('A place only works in a page overlay; add it with Page::overlay(), not inside other content (at page > overlay > place[0] > place[0])');
 
         Document::make(self::page()->overlay(Place::at('0', '0', Place::at('0', '0', 'x'))))->toHtml();

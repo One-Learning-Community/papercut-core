@@ -18,7 +18,7 @@ final class SvgFonts
 
     /**
      * @param list<string> $fallbacks
-     * @param (\Closure(string): void)|null $onWarning
+     * @param (\Closure(string, string): void)|null $onWarning
      */
     public function __construct(
         private readonly FontRegistry $fonts,
@@ -47,7 +47,7 @@ final class SvgFonts
         }
         if ($this->onWarning !== null && !isset($this->warned[$text])) {
             $this->warned[$text] = true;
-            ($this->onWarning)(sprintf('Missing glyphs for "%s" in SVG text', $text));
+            ($this->onWarning)(sprintf('Missing glyphs for "%s" in SVG text', $text), $text);
         }
 
         return $primary;

@@ -15,16 +15,21 @@ use Papercut\Table;
  */
 final readonly class TableGrid
 {
+    /** The last column a colspan can reach, as in browsers; a wider span is cut there with a note. */
+    public const int MAX_COLUMNS = 1000;
+
     /**
      * @param list<list<GridCell>> $placements one list per row, header rows first
      * @param list<int> $clampedRowspans all-row indexes of rows holding a rowspan cut at the end of its section
      * @param list<int> $clampedColspans all-row indexes of rows holding a colspan stopped by a rowspan from above
+     * @param list<int> $clampedWide all-row indexes of rows holding a colspan cut at the last column a span can reach
      */
     private function __construct(
         public int $columns,
         public array $placements,
         public array $clampedRowspans,
         public array $clampedColspans,
+        public array $clampedWide = [],
     ) {
     }
 
@@ -57,7 +62,9 @@ final readonly class TableGrid
         $placements = [];
         $clampedRowspans = [];
         $clampedColspans = [];
+        $clampedWide = [];
         $columns = 0;
+        $limit = self::MAX_COLUMNS;
         $offset = 0;
         foreach ($sections as $rows) {
             $count = count($rows);
@@ -71,6 +78,12 @@ final readonly class TableGrid
                         $col++;
                     }
                     $colspan = $cell->span();
+                    if ($col + $colspan > $limit) {
+                        $colspan = max(1, $limit - $col);
+                        if ($colspan < $cell->span()) {
+                            $clampedWide[$at] = $at;
+                        }
+                    }
                     for ($dc = 1; $dc < $colspan; $dc++) {
                         if (isset($covered[$r][$col + $dc])) {
                             $colspan = $dc;
@@ -95,6 +108,6 @@ final readonly class TableGrid
             }
             $offset += $count;
         }
-        return new self($columns, $placements, array_values($clampedRowspans), array_values($clampedColspans));
+        return new self($columns, $placements, array_values($clampedRowspans), array_values($clampedColspans), array_values($clampedWide));
     }
 }

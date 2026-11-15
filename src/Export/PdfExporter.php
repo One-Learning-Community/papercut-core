@@ -40,13 +40,17 @@ final class PdfExporter implements Exporter
         $ctx->toc = TocIndex::collect($doc, $themes);
         // Each page is painted as soon as it is laid out, so its layout is freed before the next page's.
         $pages = Painter::resolve((new Paginator(new LayoutEngine($ctx), $ctx))->paginate($doc, Painter::paintPage(...)));
+        $ctx->flushGlyphNotes();
         if ($options->strict()) {
             self::requireGlyphs($pages);
         }
 
         $meta = $doc->meta()->withEncryption($options->encryption());
 
-        return new Output($backend->render($meta, $pages), 'application/pdf', 'pdf');
+        $bytes = $backend->render($meta, $pages);
+        $ctx->flushGlyphNotes(); // SVG text resolves its fonts while the pages are written
+
+        return new Output($bytes, 'application/pdf', 'pdf');
     }
 
     /**

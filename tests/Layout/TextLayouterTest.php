@@ -246,6 +246,19 @@ final class TextLayouterTest extends TestCase
         self::assertSame(14.0, $links[0]->height);
     }
 
+    public function test_no_decoration_under_an_inline_formula(): void
+    {
+        foreach (['underline', 'strike'] as $kind) {
+            $st = Style::make(...[$kind => true]);
+            $t = Text::spans(new Span('ab ', $st), new Span('', $st, math: \Papercut\Math\Math::frac('1', '2')), new Span(' cd', $st));
+            $ops = (new LayoutHarness())->layout($t, 400)->fragment?->ops() ?? [];
+            $lines = array_values(array_filter($ops, fn ($o) => $o instanceof LineOp));
+            self::assertCount(2, $lines, $kind);
+            self::assertLessThan($lines[1]->x1, $lines[0]->x2, $kind);
+            self::assertGreaterThan($lines[0]->x2, $lines[1]->x1, $kind);
+        }
+    }
+
     public function test_strike_and_minimum_decoration_width(): void
     {
         $t = Text::make('ab')->strike()->size(pt(5));
@@ -382,14 +395,14 @@ final class TextLayouterTest extends TestCase
         $h = new LayoutHarness();
         try {
             $h->layout(View::make(\Papercut\TableRow::make())->attributes(['direction' => 'row']), 100);
-            self::fail('Expected LogicException');
-        } catch (\LogicException $e) {
+            self::fail('Expected InvalidStructure');
+        } catch (\Papercut\Exception\InvalidStructure $e) {
             self::assertStringContainsString('"row > tr[0]"', $e->getMessage());
         }
         try {
             $h->layout(\Papercut\TableRow::make(), 100);
-            self::fail('Expected LogicException');
-        } catch (\LogicException $e) {
+            self::fail('Expected InvalidStructure');
+        } catch (\Papercut\Exception\InvalidStructure $e) {
             self::assertStringContainsString('"tr"', $e->getMessage());
         }
     }
@@ -398,7 +411,7 @@ final class TextLayouterTest extends TestCase
     {
         $h = new LayoutHarness();
         $h->layout(Text::make("\u{65E5}"), 100);
-        self::assertSame(["[text] Missing glyphs for \"\u{65E5}\" in font family Inter"], $h->warnings);
+        self::assertSame(["pdf: dropped missing glyphs in font family Inter (\"\u{65E5}\") at text"], $h->warnings);
     }
 
     public function test_context_path_stack(): void

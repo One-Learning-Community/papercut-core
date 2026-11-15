@@ -166,7 +166,7 @@ final class InlineMarkup
         $decoded = self::decode($text);
         $text = '';
         $last = $spans === [] ? null : $spans[count($spans) - 1];
-        if ($last !== null && !$last->lineBreak && $last->href === $href && $last->styleName === $name && $last->style == $style && $last->base == $base) {
+        if ($last !== null && !$last->lineBreak && $last->href === ($href === null ? null : trim($href, " \t\n\r\f")) && $last->styleName === $name && $last->style == $style && $last->base == $base) {
             $spans[count($spans) - 1] = new Span($last->text . $decoded, $style, $href, false, $name, $base);
             return;
         }

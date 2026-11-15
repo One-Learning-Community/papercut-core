@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Papercut;
 
 use Papercut\Concerns\HasStyle;
+use Papercut\Support\Check;
 use Papercut\Value\Length;
 
 final class Spacer implements Styled
@@ -27,12 +28,13 @@ final class Spacer implements Styled
     public function size(Length $v): static
     {
         $s = clone $this;
-        $s->fixed = $v->absolute('spacer size');
+        $s->fixed = Check::size($v->absolute('spacer size'), 'Spacer::size()');
         return $s;
     }
 
     public static function flex(float $grow = 1): self
     {
+        Check::nonNegative($grow, 'Spacer::flex()');
         return (new self())->grow($grow);
     }
 

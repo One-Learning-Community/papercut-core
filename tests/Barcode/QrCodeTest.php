@@ -204,7 +204,7 @@ final class QrCodeTest extends TestCase
 
     public function test_a_grid_has_no_text_to_encode_again(): void
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(\Papercut\Exception\InvalidStructure::class);
 
         QrCode::fromModules([[true]])->errorCorrection(ErrorCorrection::High);
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Papercut\Text;
 
+use Papercut\Exception\FontNotFound;
 use Papercut\Math\Math;
 
 /** Format-neutral font configuration: extra faces on top of the bundled Inter and Cousine, and glyph fallback families. */
@@ -11,6 +12,8 @@ final readonly class FontSet
 {
     /** The family the math face is registered under, for PDF text runs. */
     public const string MATH_FAMILY = 'Papercut Math';
+    /** The bundled STIX Two Math, kept to draw U+FFFD when no other font has it. */
+    public const string REPLACEMENT_FAMILY = 'Papercut Replacement';
 
     /** @var array<string, string> the name Word should use for a family, by lowercased family */
     private array $wordNames;
@@ -115,7 +118,11 @@ final readonly class FontSet
         return $this->wordNames[$key] ?? ($key === 'cousine' ? 'Courier New' : $family);
     }
 
-    /** What the family's regular face (400, normal; else its first face) says about its kind, or null for an unknown family. */
+    /**
+     * What the family's regular face (400, normal; else its first face) says about its kind, or null for an unknown family.
+     *
+     * @throws \Papercut\Exception\FontNotFound when that face's file is missing, as the PDF export reports it
+     */
     public function info(string $family): ?FontInfo
     {
         $key = strtolower($family);
@@ -131,6 +138,13 @@ final readonly class FontSet
             }
         }
 
-        return $chosen === null ? null : FontInfo::read($chosen->path);
+        if ($chosen === null) {
+            return null;
+        }
+        if ($chosen->path === '' || !is_file($chosen->path) || !is_readable($chosen->path)) {
+            throw new FontNotFound('Font file not found: ' . $chosen->path);
+        }
+
+        return FontInfo::read($chosen->path);
     }
 }

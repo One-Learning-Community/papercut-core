@@ -8,14 +8,18 @@ use Papercut\Concerns\NameRules;
 use Papercut\Decorator\Badge;
 use Papercut\Math\Math;
 use Papercut\Math\Node\Node as MathNode;
+use Papercut\Paint\Link as PaintLink;
 use Papercut\Style\Style;
 
 final readonly class Span
 {
+    /** The link address, trimmed; null for none. */
+    public ?string $href;
+
     public function __construct(
         public string $text,
         public Style $style = new Style(),
-        public ?string $href = null,
+        ?string $href = null,
         public bool $lineBreak = false,
         /** A theme style the span takes first; $style is the span's own overrides on top of it. */
         public ?string $styleName = null,
@@ -24,6 +28,8 @@ final readonly class Span
         /** An inline equation, set in text style among the words; $text is empty then. Build it with {@see self::math()}. */
         public ?MathNode $math = null,
     ) {
+        // The same checks as Link::to(); the address is kept as markup trims it.
+        $this->href = $href === null ? null : PaintLink::checked($href, 'Span');
     }
 
     public static function text(string $text, ?Style $style = null): self

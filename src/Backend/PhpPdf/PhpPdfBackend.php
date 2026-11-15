@@ -107,8 +107,13 @@ final class PhpPdfBackend implements Backend, PdfPageLoader
         if ($mime === null) {
             throw new \RuntimeException(ImageFormat::unsupported());
         }
-        $embed = $this->gd->handles($mime) ? $this->gd->toPng($bytes, $mime) : $bytes;
-        return new PhpPdfImage(PdfImage::fromBytes($embed), sha1($bytes));
+        if (!ImageFormat::intact($bytes)) {
+            throw new \RuntimeException(sprintf('Invalid %s image data.', ImageFormat::NAMES[$mime] ?? $mime));
+        }
+        return ImageFormat::quietly(function () use ($bytes, $mime): PhpPdfImage {
+            $embed = $this->gd->handles($mime) ? $this->gd->toPng($bytes, $mime) : $bytes;
+            return new PhpPdfImage(PdfImage::fromBytes($embed), sha1($bytes));
+        });
     }
 
     public function loadPdfPage(string $bytes, int $page, #[\SensitiveParameter] string $password = ''): PdfPageHandle

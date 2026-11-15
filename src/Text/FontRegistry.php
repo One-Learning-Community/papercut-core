@@ -74,6 +74,19 @@ final class FontRegistry
         ];
     }
 
+    /**
+     * The bundled STIX Two Math face, which has U+FFFD: the last resort for the replacement character that scrubbed
+     * invalid UTF-8 leaves, when neither the text font nor a fallback family has it. Registered (and embedded) on first use.
+     */
+    public function replacementFont(): CachedFont
+    {
+        if (!$this->has(FontSet::REPLACEMENT_FAMILY)) {
+            $this->register(FontSet::REPLACEMENT_FAMILY, Math::stixTwoMathPath());
+        }
+
+        return $this->resolve(FontSet::REPLACEMENT_FAMILY);
+    }
+
     public function register(string $family, string $path, int $weight = 400, FontStyle $style = FontStyle::Normal): self
     {
         if ($weight < 1 || $weight > 1000) {

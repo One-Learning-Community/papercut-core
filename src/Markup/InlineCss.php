@@ -30,6 +30,12 @@ final class InlineCss
     /** Properties that apply to span-level elements. */
     private const array TEXT = ['color', 'font-size', 'font-weight', 'font-style', 'text-decoration', 'background-color'];
 
+    /** Pasted sizes are held to these (points): a typo in editor CSS must not make an unusable document. */
+    private const float MIN_FONT_SIZE = 1.0;
+    private const float MAX_FONT_SIZE = 400.0;
+    private const float MIN_LENGTH = -2000.0;
+    private const float MAX_LENGTH = 2000.0;
+
     private const array COLUMN = ['column-count', 'columns', 'column-gap', 'column-rule'];
 
     private const array BOX = [
@@ -40,11 +46,11 @@ final class InlineCss
 
     /**
      * `columns` is null unless a column declaration was read; `columnDeclarations` are those declarations as
-     * written; `notes` are features kept in part (a `columns` width, a non-solid rule style).
+     * written; `columnNotes` are features of those declarations kept in part (a `columns` width, a non-solid rule style); `notes` are the other clamps and approximations.
      *
-     * @return array{style: Style, dropped: list<string>, float: bool, marker: ?ListMarker, columns: ?array{count: ?int, gap: ?Length, rule: ?array{width: Length, color: Color}}, columnDeclarations: list<string>, notes: list<array{FidelityLevel, string}>}
+     * @return array{style: Style, dropped: list<string>, float: bool, marker: ?ListMarker, columns: ?array{count: ?int, gap: ?Length, rule: ?array{width: Length, color: Color}}, columnDeclarations: list<string>, notes: list<array{FidelityLevel, string}>, columnNotes: list<array{FidelityLevel, string}>}
      */
-    public static function parse(string $declarations, bool $inline, bool $list = false, bool $rule = false): array
+    public static function parse(string $declarations, bool $inline, bool $list = false, bool $rule = false, bool $heightIsMinimum = false): array
     {
         $props = [];
         $dropped = [];
@@ -54,6 +60,9 @@ final class InlineCss
         $columns = null;
         $columnDeclarations = [];
         $notes = [];
+        $columnNotes = [];
+        $heightDeclaration = null;
+        $maxHeightDeclaration = null;
         foreach (explode(';', $declarations) as $declaration) {
             $declaration = trim($declaration);
             if ($declaration === '') {
@@ -75,7 +84,7 @@ final class InlineCss
                 try {
                     $columns ??= ['count' => null, 'gap' => null, 'rule' => null];
                     /** @var array{count: ?int, gap: ?Length, rule: ?array{width: Length, color: Color}} $columns */
-                    $columns = [...$columns, ...self::column($property, $value, $declaration, $notes)];
+                    $columns = [...$columns, ...self::column($property, $value, $declaration, $columnNotes)];
                 } catch (InvalidValue) {
                     $dropped[] = $declaration;
                 }
@@ -90,7 +99,7 @@ final class InlineCss
                 continue;
             }
             try {
-                $set = self::property($property, $value, $list);
+                $set = self::property($property, $value, $list, $declaration, $notes);
             } catch (InvalidValue) {
                 $set = null;
             }
@@ -102,11 +111,30 @@ final class InlineCss
                 $marker = $set['marker'];
             } else {
                 $props = [...$props, ...$set];
+                if ($heightIsMinimum && isset($set['height'])) {
+                    $heightDeclaration = $declaration;
+                }
+                if ($heightIsMinimum && isset($set['maxHeight'])) {
+                    $maxHeightDeclaration = $declaration;
+                }
             }
+        }
+        // Pasted heights are untrusted: content taller than a fixed height would otherwise throw, so a height
+        // is a minimum and a max-height is not enforced (nothing is clipped).
+        if ($heightDeclaration !== null) {
+            $height = $props['height'];
+            $min = $props['minHeight'] ?? null;
+            unset($props['height']);
+            $props['minHeight'] = $min instanceof Length && $height instanceof Length && $min->points > $height->points ? $min : $height;
+            $notes[] = [FidelityLevel::Approximated, 'markup CSS "' . $heightDeclaration . '" (applied as a minimum height; content is never cut off)'];
+        }
+        if ($maxHeightDeclaration !== null) {
+            unset($props['maxHeight']);
+            $notes[] = [FidelityLevel::Approximated, 'markup CSS "' . $maxHeightDeclaration . '" (not applied; content is never cut off)'];
         }
 
         /** @var array<string, mixed> $props */
-        return ['style' => new Style(...$props), 'dropped' => $dropped, 'float' => $float, 'marker' => $marker, 'columns' => $columns, 'columnDeclarations' => $columnDeclarations, 'notes' => $notes];
+        return ['style' => new Style(...$props), 'dropped' => $dropped, 'float' => $float, 'marker' => $marker, 'columns' => $columns, 'columnDeclarations' => $columnDeclarations, 'notes' => $notes, 'columnNotes' => $columnNotes];
     }
 
     /**
@@ -147,7 +175,7 @@ final class InlineCss
                 if ($gap->points < 0) {
                     throw InvalidValue::for('column gap', $value);
                 }
-                return ['gap' => $gap];
+                return ['gap' => self::limit($gap, 0.0, self::MAX_LENGTH, $declaration, $notes)];
         }
         return ['rule' => self::rule($keyword, $value, $declaration, $notes)];
     }
@@ -167,7 +195,7 @@ final class InlineCss
         }
         // compare as text first, so a value too big for an int never gets cast
         if (strlen($digits) > 3 || (int) $digits > ColumnSpec::MAX_COLUMNS) {
-            $notes[] = [FidelityLevel::Approximated, 'markup CSS "' . $declaration . '" (column count limited to ' . ColumnSpec::MAX_COLUMNS . ')'];
+            // no note here: the flow is cut to what fits when it is laid out, and that is reported once
             return ColumnSpec::MAX_COLUMNS;
         }
         return (int) $digits;
@@ -196,6 +224,7 @@ final class InlineCss
                 if ($length->points < 0) {
                     throw InvalidValue::for('column rule width', $part);
                 }
+                $length = self::limit($length, 0.0, self::MAX_LENGTH, $declaration, $notes);
                 $width = $width === null ? $length : throw InvalidValue::for('column rule', $value);
                 continue;
             }
@@ -216,18 +245,20 @@ final class InlineCss
     /**
      * The Style properties one declaration sets (or `float`/`marker`), or null when it is not understood.
      *
+     * @param list<array{FidelityLevel, string}> $notes
      * @return array<string, mixed>|null
      */
-    private static function property(string $property, string $value, bool $list): ?array
+    private static function property(string $property, string $value, bool $list, string $declaration, array &$notes): ?array
     {
         $keyword = strtolower($value);
         if (isset(self::BOX[$property])) {
-            return [self::BOX[$property] => self::lengthOrPercent(self::units($value))];
+            $box = self::lengthOrPercent(self::units($value));
+            return [self::BOX[$property] => $box instanceof Length ? self::limit($box, self::MIN_LENGTH, self::MAX_LENGTH, $declaration, $notes) : $box];
         }
         return match ($property) {
             'color' => ['color' => Color::parse($value)],
             'background-color' => ['background' => Color::parse($value)],
-            'font-size' => self::positive(self::units($value)),
+            'font-size' => self::positive(self::units($value), $declaration, $notes),
             'font-weight' => self::weight($keyword),
             'font-style' => match ($keyword) {
                 'italic' => ['italic' => true],
@@ -241,8 +272,8 @@ final class InlineCss
                 default => null,
             },
             'text-align' => ($align = TextAlign::tryFrom($keyword)) === null ? null : ['textAlign' => $align],
-            'margin' => ['margin' => Edges::parse(self::units($value))],
-            'padding' => self::padding(self::units($value)),
+            'margin' => ['margin' => self::limitEdges(Edges::parse(self::units($value)), $declaration, $notes)],
+            'padding' => self::padding(self::units($value), $declaration, $notes),
             'list-style-type' => $list && ($marker = ListMarker::tryFrom($keyword)) !== null ? ['marker' => $marker] : null,
             'float' => match ($keyword) {
                 'left', 'right' => ['float' => true],
@@ -268,11 +299,42 @@ final class InlineCss
         return $v;
     }
 
-    /** @return array{fontSize: Length}|null */
-    private static function positive(string $value): ?array
+    /**
+     * @param list<array{FidelityLevel, string}> $notes
+     * @return array{fontSize: Length}|null
+     */
+    private static function positive(string $value, string $declaration, array &$notes): ?array
     {
         $length = Length::parse($value);
-        return $length->points > 0 ? ['fontSize' => $length] : null;
+        return $length->points > 0 ? ['fontSize' => self::limit($length, self::MIN_FONT_SIZE, self::MAX_FONT_SIZE, $declaration, $notes)] : null;
+    }
+
+    /**
+     * $length held to $min..$max points; a change is noted once for the declaration.
+     *
+     * @param list<array{FidelityLevel, string}> $notes
+     */
+    private static function limit(Length $length, float $min, float $max, string $declaration, array &$notes): Length
+    {
+        $points = max($min, min($max, $length->points));
+        if ($points === $length->points) {
+            return $length;
+        }
+        $note = 'markup CSS "' . $declaration . '" (limited to ' . InvalidValue::number($points) . 'pt)';
+        if (!in_array([FidelityLevel::Approximated, $note], $notes, true)) {
+            $notes[] = [FidelityLevel::Approximated, $note];
+        }
+        return Length::points($points);
+    }
+
+    /** @param list<array{FidelityLevel, string}> $notes */
+    private static function limitEdges(Edges $edges, string $declaration, array &$notes): Edges
+    {
+        $sides = [];
+        foreach ([$edges->top, $edges->right, $edges->bottom, $edges->left] as $side) {
+            $sides[] = self::limit($side, self::MIN_LENGTH, self::MAX_LENGTH, $declaration, $notes);
+        }
+        return Edges::of(...$sides);
     }
 
     /** @return array{fontWeight: int}|null */
@@ -286,8 +348,11 @@ final class InlineCss
         return $weight === null ? null : ['fontWeight' => $weight];
     }
 
-    /** @return array{padding: Edges}|null */
-    private static function padding(string $value): ?array
+    /**
+     * @param list<array{FidelityLevel, string}> $notes
+     * @return array{padding: Edges}|null
+     */
+    private static function padding(string $value, string $declaration, array &$notes): ?array
     {
         $edges = Edges::parse($value);
         foreach ([$edges->top, $edges->right, $edges->bottom, $edges->left] as $side) {
@@ -295,6 +360,6 @@ final class InlineCss
                 return null;
             }
         }
-        return ['padding' => $edges];
+        return ['padding' => self::limitEdges($edges, $declaration, $notes)];
     }
 }

@@ -107,7 +107,7 @@ final class FidelityTest extends TestCase
             $warnings[] = $m;
         }));
         self::assertNotSame([], $warnings);
-        self::assertStringContainsString('Missing glyphs', $warnings[0]);
+        self::assertStringContainsString('missing glyphs', $warnings[0]);
     }
 
     public function test_one_parameter_native_callable_gets_one_argument(): void

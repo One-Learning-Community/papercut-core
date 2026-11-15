@@ -11,6 +11,9 @@ final readonly class ColumnSpec
 {
     public const DEFAULT_GAP = 36.0;
 
+    /** A markup flow keeps each column at least this wide (points). */
+    public const MIN_COLUMN_WIDTH = 72.0;
+
     /** Word's limit on columns in a section. */
     public const MAX_COLUMNS = 45;
 
@@ -67,6 +70,30 @@ final readonly class ColumnSpec
     public function withFromMarkup(): self
     {
         return new self($this->count, $this->shares, $this->gaps, $this->rule, true);
+    }
+
+    /**
+     * A markup flow with more equal columns than a flow $width wide holds at MIN_COLUMN_WIDTH each is cut to as many as fit
+     * (one at least); any other spec is returned as it is.
+     */
+    public function fitted(float $width): self
+    {
+        if (!$this->fromMarkup || $this->shares !== null) {
+            return $this;
+        }
+        for ($n = $this->count; $n > 1; $n--) {
+            $gaps = array_slice($this->gaps, 0, $n - 1);
+            if (($width - array_sum($gaps)) / $n >= self::MIN_COLUMN_WIDTH) {
+                return $n === $this->count ? $this : new self($n, null, $gaps, $this->rule, true);
+            }
+        }
+        return $this->count === 1 ? $this : new self(1, null, [], $this->rule, true);
+    }
+
+    /** The fidelity feature every format reports when fitted() cut the count to $n. */
+    public static function reducedFeature(int $n): string
+    {
+        return sprintf('markup column-count (reduced to %d so each column is at least %dpt wide)', $n, (int) self::MIN_COLUMN_WIDTH);
     }
 
     /** Whether the gaps leave room for columns in a flow $width wide. */

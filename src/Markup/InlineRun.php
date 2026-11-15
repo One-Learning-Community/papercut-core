@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Papercut\Markup;
 
+use Papercut\Math\Node\Node as MathNode;
 use Papercut\Span;
 use Papercut\Style\Style;
 
@@ -37,6 +38,12 @@ final class InlineRun
         }
     }
 
+    /** A formula takes only the colour, size, background and link of the text around it, not its weight, slant, spacing or decorations. */
+    public function math(MathNode $math, Style $style, ?string $href): void
+    {
+        $this->spans[] = new Span('', new Style(fontSize: $style->fontSize, color: $style->color, background: $style->background), $href, math: $math);
+    }
+
     public function break(bool $preserve = false): void
     {
         if (!$preserve) {
@@ -64,6 +71,8 @@ final class InlineRun
         foreach ($spans as $span) {
             if ($span->lineBreak) {
                 $marks = true;
+            } elseif ($span->math !== null) {
+                $visible = true;
             } elseif (trim($span->text, ' ' . self::NBSP) !== '') {
                 $visible = true;
             } else {

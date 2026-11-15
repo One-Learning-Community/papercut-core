@@ -8,8 +8,8 @@ use Papercut\Backend\PhpPdf\PhpPdfQrEncoder;
 use Papercut\Barcode\Bacon\BaconQrSvg;
 use Papercut\Barcode\{ErrorCorrection, QrDesign, QrEncoder, QrEyes, QrGradient, QrShape};
 use Papercut\Concerns\HasStyle;
-use Papercut\Exception\{InvalidValue, MissingPackage};
-use Papercut\Support\EnumValue;
+use Papercut\Exception\{InvalidStructure, InvalidValue, MissingPackage};
+use Papercut\Support\{Check, EnumValue};
 use Papercut\Value\Color;
 
 /**
@@ -26,6 +26,9 @@ final class QrCode implements Styled
 
     /** Modules of blank margin a scanner needs around the code. */
     public const int DEFAULT_QUIET_ZONE = 4;
+
+    /** The widest quiet zone accepted, in modules; the standard asks for 4. */
+    public const int MAX_QUIET_ZONE = 100;
 
     private ?QrDesign $design = null;
 
@@ -47,30 +50,35 @@ final class QrCode implements Styled
      */
     public static function make(string $value, ErrorCorrection|string $level = ErrorCorrection::Medium, ?QrEncoder $encoder = null): self
     {
-        $level = EnumValue::from(ErrorCorrection::class, $level);
+        $level = EnumValue::from(ErrorCorrection::class, $level, 'QrCode::make()');
         $encoder ??= new PhpPdfQrEncoder();
 
         return new self($encoder->encode($value, $level), $value, $level, $encoder);
     }
 
     /**
-     * A grid you encoded yourself, rows top to bottom, truthy for dark modules.
+     * A grid you encoded yourself, rows top to bottom, true (or 1) for dark modules, false (or 0) for light ones.
      *
      * @param array<mixed> $modules checked here, since it usually comes from another library
-     * @throws InvalidValue when the grid is empty or not square
+     * @throws InvalidValue when the grid is empty or not square, or a module is not a bool, 0 or 1
      */
     public static function fromModules(array $modules): self
     {
         $size = count($modules);
         if ($size === 0) {
-            throw InvalidValue::for('QR modules', '[]')->because('the grid is empty');
+            throw InvalidValue::for('QR modules', '[]')->withContext('QrCode::fromModules()')->because('the grid is empty');
         }
         if (!array_is_list($modules)) {
-            throw InvalidValue::for('QR modules', 'keyed array')->because('rows must be a list, top to bottom');
+            throw InvalidValue::for('QR modules', 'keyed array')->withContext('QrCode::fromModules()')->because('rows must be a list, top to bottom');
         }
         foreach ($modules as $i => $row) {
             if (!is_array($row) || count($row) !== $size || !array_is_list($row)) {
-                throw InvalidValue::for('QR modules', "row $i")->because("each row needs $size modules, to make a square");
+                throw InvalidValue::for('QR modules', "row $i")->withContext('QrCode::fromModules()')->because("each row needs $size modules, to make a square");
+            }
+            foreach ($row as $j => $module) {
+                if (!is_bool($module) && $module !== 0 && $module !== 1) {
+                    throw InvalidValue::for('QR module', get_debug_type($module))->withContext('QrCode::fromModules()')->within("(row $i, column $j)")->because('each module must be true or false (or 1 or 0)');
+                }
             }
         }
         /** @var non-empty-list<non-empty-list<bool>> $modules */
@@ -81,15 +89,15 @@ final class QrCode implements Styled
      * Encodes the same text again at another level. A code with dots or rounded modules stays at
      * Quartile or above. The level is a case or a string: L, M, Q or H, or low, medium, quartile or high.
      *
-     * @throws \LogicException for a code made from modules, which has no text to encode again
+     * @throws InvalidStructure for a code made from modules, which has no text to encode again
      * @throws InvalidValue for a string that is not a level
      */
     public function errorCorrection(ErrorCorrection|string $level): self
     {
         if ($this->value === null || $this->encoder === null) {
-            throw new \LogicException('A QR code made from modules has no text to encode again.');
+            throw new InvalidStructure('QrCode::errorCorrection() needs a code made with QrCode::make(); one made from modules has no text to encode again.');
         }
-        $level = EnumValue::from(ErrorCorrection::class, $level);
+        $level = EnumValue::from(ErrorCorrection::class, $level, 'QrCode::errorCorrection()');
         if ($this->design !== null && self::needsQuartile($this->design->shape) && self::rank($level) < self::rank(ErrorCorrection::Quartile)) {
             $level = ErrorCorrection::Quartile;
         }
@@ -101,11 +109,14 @@ final class QrCode implements Styled
         return $clone;
     }
 
+    protected function sizesNeedArea(): bool
+    {
+        return true;
+    }
+
     public function quietZone(int $modules): self
     {
-        if ($modules < 0) {
-            throw InvalidValue::for('quiet zone', (string) $modules)->because('it cannot be negative');
-        }
+        Check::intRange($modules, 0, self::MAX_QUIET_ZONE, 'QrCode::quietZone()');
         $clone = clone $this;
         $clone->quietZone = $modules;
 
@@ -123,7 +134,7 @@ final class QrCode implements Styled
      */
     public function shape(QrShape|string $shape): self
     {
-        $shape = EnumValue::from(QrShape::class, $shape);
+        $shape = EnumValue::from(QrShape::class, $shape, 'QrCode::shape()');
         $styled = $this->designed(static fn (QrDesign $d): QrDesign => $d->with(shape: $shape));
         if (!self::needsQuartile($shape) || $this->value === null || self::rank($this->level) >= self::rank(ErrorCorrection::Quartile)) {
             return $styled;
@@ -154,7 +165,7 @@ final class QrCode implements Styled
      */
     public function eyes(QrEyes|string $eyes): self
     {
-        $eyes = EnumValue::from(QrEyes::class, $eyes);
+        $eyes = EnumValue::from(QrEyes::class, $eyes, 'QrCode::eyes()');
         return $this->designed(static fn (QrDesign $d): QrDesign => $d->with(eyes: $eyes));
     }
 
@@ -180,7 +191,7 @@ final class QrCode implements Styled
      */
     public function gradient(Color|string $from, Color|string $to, QrGradient|string $type = QrGradient::Diagonal): self
     {
-        $type = EnumValue::from(QrGradient::class, $type);
+        $type = EnumValue::from(QrGradient::class, $type, 'QrCode::gradient()');
         $from = self::toColor($from);
         $to = self::toColor($to);
 

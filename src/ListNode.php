@@ -42,7 +42,7 @@ final class ListNode implements Styled
     /** @throws \Papercut\Exception\InvalidValue for a string that is not a list marker */
     public function marker(ListMarker|string $m): self
     {
-        $m = EnumValue::from(ListMarker::class, $m);
+        $m = EnumValue::from(ListMarker::class, $m, 'ListNode::marker()');
         $clone = clone $this;
         $clone->marker = $m;
         return $clone;

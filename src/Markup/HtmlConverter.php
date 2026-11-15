@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace Papercut\Markup;
 
-use Papercut\Backend\ImageFormat;
+use Papercut\Backend\{Backend, DefaultBackend, ImageFormat};
 use Papercut\Code\CodeHighlighting;
 use Papercut\Component;
 use Papercut\Decorator\{Blockquote, CodeBlock};
+use Papercut\Equation;
 use Papercut\Export\FidelityLevel;
 use Papercut\Image;
 use Papercut\Layout\TableGrid;
 use Papercut\Link;
+use Papercut\Math\Mathml\MathmlReader;
+use Papercut\Math\Mathml\MathmlResult;
+use Papercut\Math\Mathml\SafeXml;
+use Papercut\Math\Node\Row;
 use Papercut\ListItem;
 use Papercut\ListNode;
 use Papercut\Node;
@@ -21,6 +26,7 @@ use Papercut\Style\ListMarker;
 use Papercut\Style\Style;
 use Papercut\Style\StyleName;
 use Papercut\Styled;
+use Papercut\Support\Utf8;
 use Papercut\Table;
 use Papercut\TableCell;
 use Papercut\TableRow;
@@ -112,6 +118,8 @@ final class HtmlConverter
     /** @var array<string, string|null> the resolver's answer per trimmed src in this conversion, nulls included */
     private array $resolved = [];
 
+    private ?Backend $backend = null;
+
     private function __construct(private readonly MarkupOptions $options)
     {
         $this->run = new InlineRun();
@@ -119,12 +127,17 @@ final class HtmlConverter
 
     public static function convert(?string $html, MarkupOptions $options): View|Text
     {
-        $html = mb_scrub($html ?? '', 'UTF-8');
+        $bad = false;
+        $html = Utf8::scrub($html ?? '', $bad);
         if (trim($html) === '') {
             return View::make();
         }
+        $converter = new self($options);
+        if ($bad) {
+            $converter->notes[] = new Note(FidelityLevel::Approximated, Utf8::NOTE, '');
+        }
 
-        return new self($options)->run($html);
+        return $converter->run($html);
     }
 
     private function run(string $html): View|Text
@@ -175,13 +188,55 @@ final class HtmlConverter
                 $this->run->text($line, $style, $href, true, null);
             }
         } elseif ($node instanceof \Dom\Text) {
-            $this->run->text($node->data, $style, $href, false, $this->code > 0 && $this->pre === 0 ? 'code' : null);
+            $this->plainText($node->data, $style, $href, $preset);
         }
+    }
+
+    /** Text outside a pre: «math…«/math» runs (MathType's storage form) become formulas, the rest is text. */
+    private function plainText(string $data, Style $style, ?string $href, ?string $preset): void
+    {
+        $name = $this->code > 0 && $this->pre === 0 ? 'code' : null;
+        $runs = $this->code === 0 && str_contains($data, '«') ? SafeXml::find($data) : [];
+        $at = 0;
+        foreach ($runs as [$offset, $length]) {
+            if ($offset > $at) {
+                $this->run->text(substr($data, $at, $offset - $at), $style, $href, false, $name);
+            }
+            $this->math(MathmlReader::read(SafeXml::decode(substr($data, $offset, $length))), $style, $href, $preset);
+            $at = $offset + $length;
+        }
+        if ($at < strlen($data)) {
+            $this->run->text($at === 0 ? $data : substr($data, $at), $style, $href, false, $name);
+        }
+    }
+
+    /** An empty formula adds nothing; a display one is a block of its own, any other sits in the run. Reader notes are reported from the tree at export. */
+    private function math(MathmlResult $result, Style $style, ?string $href, ?string $preset): void
+    {
+        if (self::emptyMath($result)) {
+            return;
+        }
+        if ($result->display) {
+            $this->flush($preset);
+            $equation = Equation::of($result->node);
+            $this->blocks[] = [$href === null ? $equation : Link::to($href, $equation), false];
+            return;
+        }
+        $this->run->math($result->node, $style, $href);
+    }
+
+    private static function emptyMath(MathmlResult $result): bool
+    {
+        return $result->node instanceof Row && $result->node->children === [];
     }
 
     private function element(\Dom\Element $el, Style $style, ?string $href, ?string $preset): void
     {
         $tag = $el->localName;
+        if ($tag === 'math' || str_ends_with($tag, ':math')) {
+            $this->math(MathmlReader::read($el), $style, $href, $preset);
+            return;
+        }
         $css = $tag === 'br' || in_array($tag, self::REMOVED, true)
             ? null
             : $this->css($el, !in_array($tag, self::BLOCKS, true) && !in_array($tag, self::UNKNOWN_BLOCKS, true), $tag === 'ol' || $tag === 'ul', match ($tag) { 'table' => 'table', 'hr' => 'rule', default => null });
@@ -314,7 +369,7 @@ final class HtmlConverter
      *
      * `columns` is set only where the element may become a column flow and its CSS has a column count.
      *
-     * @return array{style: Style, dropped: list<string>, float: bool, marker: ?ListMarker, columns: ?array{count: ?int, gap: ?Length, rule: ?array{width: Length, color: Color}}, columnDeclarations: list<string>, notes: list<array{FidelityLevel, string}>}|null
+     * @return array{style: Style, dropped: list<string>, float: bool, marker: ?ListMarker, columns: ?array{count: ?int, gap: ?Length, rule: ?array{width: Length, color: Color}}, columnDeclarations: list<string>, notes: list<array{FidelityLevel, string}>, columnNotes: list<array{FidelityLevel, string}>}|null
      */
     private function css(\Dom\Element $el, bool $inline, bool $list, ?string $part = null): ?array
     {
@@ -340,7 +395,7 @@ final class HtmlConverter
             }
             $declarations = implode(';', $kept);
         }
-        $css = InlineCss::parse($declarations, $inline, $list, $part === 'rule');
+        $css = InlineCss::parse($declarations, $inline, $list, $part === 'rule', $el->localName !== 'img');
         if ($css['float']) {
             $each(FidelityLevel::Approximated, 'markup float (rendered as a block)');
         }
@@ -352,9 +407,9 @@ final class HtmlConverter
                 $each(FidelityLevel::Dropped, 'markup CSS "' . $declaration . '"');
             }
             $css['columns'] = null;
-            $css['notes'] = [];
+            $css['columnNotes'] = [];
         }
-        foreach ($css['notes'] as [$level, $feature]) {
+        foreach ([...$css['notes'], ...$css['columnNotes']] as [$level, $feature]) {
             $each($level, $feature);
         }
         return $css;
@@ -667,7 +722,7 @@ final class HtmlConverter
                 }
             }
         }
-        $tracks = $this->fitted(array_values($tracks));
+        $tracks = array_values($tracks);
         $table = $table->columns(...$tracks)->fillWidth()->fitColumns()->apply('markup.table');
         if (!$own->isEmpty()) {
             $table = $table->apply($own);
@@ -677,27 +732,6 @@ final class HtmlConverter
             $table = $table->width($width)->maxWidth(Percent::of(100));
         }
         $this->blocks[] = [$table, false];
-    }
-
-    /**
-     * The tracks with Percent columns that together exceed 100% scaled down to 100% (noted). Length columns are
-     * left as written: the table fits them to the width it is given when it is laid out.
-     *
-     * @param list<Length|Percent|Auto> $tracks
-     * @return list<Length|Percent|Auto>
-     */
-    private function fitted(array $tracks): array
-    {
-        $percent = 0.0;
-        foreach ($tracks as $track) {
-            $percent += $track instanceof Percent ? $track->value : 0.0;
-        }
-        if ($percent <= 100.0) {
-            return $tracks;
-        }
-        $this->note(FidelityLevel::Approximated, 'markup column widths (wider than the page; fitted)');
-        $scale = 100.0 / $percent;
-        return array_map(static fn (Length|Percent|Auto $t): Length|Percent|Auto => $t instanceof Percent ? Percent::of($t->value * $scale) : $t, $tracks);
     }
 
     /**
@@ -1026,6 +1060,16 @@ final class HtmlConverter
      */
     private function image(\Dom\Element $el, Style $style, ?string $href, ?string $preset, Style $own): void
     {
+        $mathml = $el->getAttribute('data-mathml') ?? '';
+        if ($mathml !== '' && in_array('Wirisformula', preg_split('/\s+/', $el->getAttribute('class') ?? '') ?: [], true)) {
+            $mathml = str_contains($mathml, '«') ? SafeXml::decode($mathml) : $mathml;
+            // Text that is not markup would be drawn as formula text; the picture is the better fallback.
+            $result = stripos($mathml, '<math') !== false ? MathmlReader::read($mathml) : null;
+            if ($result !== null && !self::emptyMath($result)) {
+                $this->math($result, $style, $href, $preset);
+                return;
+            }
+        }
         $src = $el->getAttribute('src') ?? '';
         $bytes = $this->resolve($src);
         $this->flush($preset);
@@ -1085,7 +1129,21 @@ final class HtmlConverter
             $bytes = null;
         }
 
-        return $this->resolved[$src] = is_string($bytes) && ImageFormat::sniff($bytes) !== null ? $bytes : null;
+        if (is_string($bytes) && ImageFormat::intact($bytes)) {
+            try {
+                // GD already decoded these in intact(); the rest still go through the PDF library's reader.
+                if (!ImageFormat::gdReads((string) ImageFormat::sniff($bytes))) {
+                    $this->backend ??= DefaultBackend::make(false);
+                    $this->backend->loadImageBytes($bytes);
+                }
+            } catch (\Throwable) {
+                $bytes = null; // a format the PDF library still refuses (fill bytes in a JPEG, say) is as good as missing
+            }
+        } else {
+            $bytes = null;
+        }
+
+        return $this->resolved[$src] = is_string($bytes) ? $bytes : null;
     }
 
     /** An iframe, video or audio becomes a paragraph linking to its `src`; its own content is not shown. */
@@ -1093,7 +1151,7 @@ final class HtmlConverter
     {
         $tag = $el->localName;
         $src = trim($el->getAttribute('src') ?? '', " \t\n\r\f");
-        if ($src === '' || !LinkPolicy::allowed($src)) {
+        if ($src === '' || !LinkPolicy::allowed($src) || LinkPolicy::hasControlCharacter($src)) {
             $this->note(FidelityLevel::Dropped, 'markup <' . $tag . '> (no usable src; removed)');
             return;
         }
@@ -1134,7 +1192,7 @@ final class HtmlConverter
             return $href;
         }
         $target = trim($target, " \t\n\r\f");
-        if (LinkPolicy::allowed($target)) {
+        if (LinkPolicy::allowed($target) && !LinkPolicy::hasControlCharacter($target)) {
             return $target;
         }
         $this->note(FidelityLevel::Dropped, 'markup link "' . self::shortened($target) . '" (unsupported link; link removed, content kept)');
@@ -1257,7 +1315,8 @@ final class HtmlConverter
     /** A src or href as shown in a note: at most 100 characters, so a data: URI does not fill the report. */
     private static function shortened(string $src): string
     {
-        return mb_strlen($src) > 100 ? mb_substr($src, 0, 100) . '…' : $src;
+        $src = mb_strlen($src) > 100 ? mb_substr($src, 0, 100) . '…' : $src;
+        return addcslashes($src, "\x00..\x1f");
     }
 
     /**

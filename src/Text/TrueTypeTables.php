@@ -19,7 +19,7 @@ final class TrueTypeTables
 
     public static function open(string $path): ?self
     {
-        $data = @file_get_contents($path);
+        $data = $path === '' ? false : @file_get_contents($path);
         if ($data === false || strlen($data) < 12) {
             return null;
         }

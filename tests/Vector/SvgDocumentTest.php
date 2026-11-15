@@ -245,4 +245,29 @@ final class SvgDocumentTest extends TestCase
 
         self::assertEqualsWithDelta(7.5, $svg->widthPt, 1e-9);
     }
+
+    public function test_processing_instructions_and_xml_base_are_stripped(): void
+    {
+        set_error_handler(static function (int $no, string $msg, string $file, int $line): never {
+            throw new \ErrorException($msg, 0, $no, $file, $line);
+        });
+        try {
+            $this->assertStripped();
+        } finally {
+            restore_error_handler();
+        }
+    }
+
+    private function assertStripped(): void
+    {
+        $svg = SvgDocument::parse('<svg ' . self::NS . ' xml:base="file:///etc/" width="20" height="20">'
+            . '<?xml-stylesheet href="file:///abs/x.css" type="text/css"?>'
+            . '<g xml:base="http://example.invalid/"><rect width="20" height="20"/><?foo bar?></g></svg>');
+
+        self::assertStringNotContainsString('xml-stylesheet', $svg->xml);
+        self::assertStringNotContainsString('<?', $svg->xml);
+        self::assertStringNotContainsString('base=', $svg->xml);
+        self::assertStringNotContainsString('x.css', $svg->xml);
+        self::assertStringContainsString('<rect', $svg->xml);
+    }
 }

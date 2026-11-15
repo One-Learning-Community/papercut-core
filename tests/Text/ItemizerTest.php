@@ -144,13 +144,13 @@ final class ItemizerTest extends TestCase
         self::assertSame(['word', 'break', 'word'], array_map(fn ($i) => $i->kind, $items));
     }
 
-    public function test_missing_glyph_warns_once(): void
+    public function test_missing_glyphs_are_reported_for_the_context_to_collapse(): void
     {
         $warnings = [];
         $this->itemizer(function (string $w) use (&$warnings) { $warnings[] = $w; })
             ->itemize([Span::text('ok 漢 漢')], $this->root());
-        self::assertCount(1, $warnings);
-        self::assertStringContainsString('漢', $warnings[0]);
+        // The itemizer reports every run; LayoutContext keeps one note per node and feature.
+        self::assertSame(['missing glyphs in font family Inter'], array_values(array_unique($warnings)));
     }
 
     public function test_empty_input(): void

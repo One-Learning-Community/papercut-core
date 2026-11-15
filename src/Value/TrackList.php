@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Papercut\Value;
 
 use Papercut\Exception\InvalidValue;
+use Papercut\Support\Check;
 use Papercut\Value\Internal\Tokens;
 
 final readonly class TrackList
@@ -19,12 +20,7 @@ final readonly class TrackList
         if ($tracks === []) {
             throw InvalidValue::for('column list', '');
         }
-        foreach ($tracks as $t) {
-            if ($t instanceof Length) {
-                $t->absolute('column width');
-            }
-        }
-        return new self(array_values($tracks));
+        return new self(self::checked(array_values($tracks)));
     }
 
     public static function parse(string $input): self
@@ -49,7 +45,28 @@ final readonly class TrackList
                 throw InvalidValue::for('column list', $input, implode(' ', $fixed), $e);
             }
         }
-        return new self($tracks);
+        return new self(self::checked($tracks, $input));
+    }
+
+    /**
+     * @param list<Length|Percent|Fr|Auto> $tracks
+     * @return list<Length|Percent|Fr|Auto>
+     */
+    private static function checked(array $tracks, ?string $input = null): array
+    {
+        foreach ($tracks as $t) {
+            if ($t instanceof Length) {
+                $t->absolute('column width');
+            }
+            if ($t instanceof Length || $t instanceof Percent) {
+                try {
+                    Check::size($t, 'column width');
+                } catch (InvalidValue $e) {
+                    throw $input === null ? $e : InvalidValue::for('column list', $input, null, $e)->because('a column cannot have a negative width');
+                }
+            }
+        }
+        return $tracks;
     }
 
     public function count(): int

@@ -137,12 +137,12 @@ final class MarkupColumnsTest extends TestCase
         self::assertNull($outer->columnSpec());
     }
 
-    public function test_huge_column_counts_are_clamped_with_a_note(): void
+    public function test_huge_column_counts_are_clamped_and_reported_once_when_laid_out(): void
     {
         foreach (['99999999999999999999', '2000000000', '46'] as $n) {
             $v = self::original('<div style="column-count: ' . $n . '"><p>x</p></div>');
             self::assertSame(45, self::spec($v)->count, $n);
-            self::assertSame([[FidelityLevel::Approximated, 'markup CSS "column-count: ' . $n . '" (column count limited to 45)']], self::notes($v));
+            self::assertSame([], self::notes($v), 'the one note is made when the flow is cut to what fits');
         }
         self::assertSame(45, self::spec(self::original('<div style="column-count: 45"><p>x</p></div>'))->count);
     }

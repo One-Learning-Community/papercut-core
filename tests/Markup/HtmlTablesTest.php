@@ -375,7 +375,7 @@ final class HtmlTablesTest extends TestCase
             self::assertSame([Auto::instance()], self::tracks($table), $w);
             self::assertNull($table->style()->width, $w);
         }
-        self::assertEquals([Percent::of(100)], self::tracks(self::table('<table><tr><td width="150%">a</td></tr></table>', self::original())));
+        self::assertEquals([Percent::of(150)], self::tracks(self::table('<table><tr><td width="150%">a</td></tr></table>', self::original())));
     }
 
     public function test_cell_and_table_sizes_other_than_width_are_dropped_and_noted(): void
@@ -486,14 +486,15 @@ final class HtmlTablesTest extends TestCase
         self::assertSame([], $v->notes());
     }
 
-    public function test_percent_columns_over_one_hundred_are_scaled_to_one_hundred(): void
+    public function test_percent_columns_over_one_hundred_are_kept_and_fitted_when_laid_out(): void
     {
         $v = self::view('<table><tr><td width="60%">a</td><td width="60%">b</td></tr></table>', self::original());
         $table = $v->children()[0];
         self::assertInstanceOf(Table::class, $table);
-        self::assertEquals([Percent::of(50), Percent::of(50)], self::tracks($table));
-        self::assertSame(['markup column widths (wider than the page; fitted)'], array_map(static fn (Note $n): string => $n->feature, $v->notes()));
-        self::assertEquals([Percent::of(100)], self::tracks(self::table('<table><tr><td width="150%">a</td></tr></table>', self::original())));
+        // the table fits them when it is laid out, with one note per export (see CssClampTest)
+        self::assertEquals([Percent::of(60), Percent::of(60)], self::tracks($table));
+        self::assertSame([], $v->notes());
+        self::assertEquals([Percent::of(150)], self::tracks(self::table('<table><tr><td width="150%">a</td></tr></table>', self::original())));
     }
 
     /** @return array<string, array{string, float, ?float}> html, container width, declared extent in pt that must be kept when it fits */

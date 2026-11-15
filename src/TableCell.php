@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Papercut;
 
 use Papercut\Concerns\HasStyle;
+use Papercut\Support\EnumValue;
 use Papercut\Style\TextAlign;
 
 final class TableCell implements Styled
@@ -92,6 +93,8 @@ final class TableCell implements Styled
     /** @throws \Papercut\Exception\InvalidValue for a string that is not a text alignment */
     public function align(TextAlign|string $a): self
     {
+        $a = EnumValue::from(TextAlign::class, $a, 'TableCell::align()');
+
         return $this->textAlign($a);
     }
 

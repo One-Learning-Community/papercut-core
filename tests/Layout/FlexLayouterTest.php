@@ -148,6 +148,25 @@ final class FlexLayouterTest extends TestCase
         self::assertEqualsWithDelta(30.0, $widths[1], 1e-9);
     }
 
+    public function test_a_short_sibling_keeps_its_whole_word_when_minimums_must_be_shared(): void
+    {
+        // minimums 25 and 400 in 100: the short word fits its equal share, so only the long one narrows.
+        $row = Row::make(Text::make('LEFTT'), Text::make(str_repeat('W', 80)));
+        $f = (new LayoutHarness())->layout($row, 100)->fragment;
+        $widths = array_map(fn (array $c): float => $c['fragment']->width, $f?->children() ?? []);
+        self::assertEqualsWithDelta(25.0, $widths[0], 1e-9);
+        self::assertEqualsWithDelta(75.0, $widths[1], 1e-9);
+    }
+
+    public function test_minimums_that_all_exceed_their_share_narrow_in_proportion(): void
+    {
+        $row = Row::make(Text::make(str_repeat('a', 40)), Text::make(str_repeat('b', 80)));
+        $f = (new LayoutHarness())->layout($row, 120)->fragment;
+        $widths = array_map(fn (array $c): float => $c['fragment']->width, $f?->children() ?? []);
+        self::assertEqualsWithDelta(120.0, array_sum($widths), 1e-9);
+        self::assertEqualsWithDelta(40.0, $widths[0], 1e-9);
+    }
+
     public function test_parallel_resume_draws_only_unfinished_items(): void
     {
         $row = Row::make(Column::make('a', 'b', 'c')->minLines(1), Column::make('x', 'y')->minLines(1));
@@ -186,12 +205,12 @@ final class FlexLayouterTest extends TestCase
 
     // --- Final review ---
 
-    public function test_page_break_inside_a_row_is_ignored_with_a_warning(): void
+    public function test_page_break_inside_a_row_is_ignored(): void
     {
         $h = new LayoutHarness();
         $r = $h->layout(Row::make(Text::make('a'), \Papercut\PageBreak::make(), Text::make('b')), 100, 100);
         self::assertSame(Status::Complete, $r->status);
         self::assertSame(['a', 'b'], array_column(LayoutHarness::runs($r->fragment), 'text'));
-        self::assertSame(['[row] PageBreak inside a row is ignored'], $h->warnings);
+        self::assertSame([], $h->warnings); // the note comes from NoteReporter
     }
 }

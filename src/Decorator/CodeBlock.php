@@ -11,6 +11,7 @@ use Papercut\Export\FidelityLevel;
 use Papercut\Markup\Note;
 use Papercut\{Span, Text, ThemedComponent, View};
 use Papercut\Style\{Style, Theme};
+use Papercut\Support\Utf8;
 
 /**
  * A block of source code with syntax highlighting, a muted language label and optional
@@ -31,6 +32,7 @@ final class CodeBlock implements Decorator, ThemedComponent
     private const array NO_HIGHLIGHT = ['nohighlight', 'no-highlight'];
 
     private string $code = '';
+    private bool $badUtf8 = false;
     private ?string $language = null;
     private ?string $theme = null;
     private string|false|null $label = null;
@@ -50,6 +52,7 @@ final class CodeBlock implements Decorator, ThemedComponent
     public static function make(string $code): self
     {
         $block = new self();
+        $code = Utf8::scrub($code, $block->badUtf8);
         $code = str_replace(["\r\n", "\r"], "\n", $code);
         // One final newline ends the last line; any further ones are the author's blank lines.
         $block->code = str_ends_with($code, "\n") ? substr($code, 0, -1) : $code;
@@ -134,7 +137,7 @@ final class CodeBlock implements Decorator, ThemedComponent
         }
         self::assertCompatible($block->variants());
 
-        $notes = [];
+        $notes = $this->badUtf8 ? [Utf8::note()] : [];
         $language = $this->language;
         $lower = $language === null ? null : strtolower($language);
         $wantsHighlight = $lower !== null && !in_array($lower, self::NO_HIGHLIGHT, true) && !in_array($lower, self::PLAIN, true);

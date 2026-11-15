@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace Papercut;
 
-use Papercut\Concerns\HasStyle;
+use Papercut\Concerns\{HasNotes, HasStyle};
+use Papercut\Support\Utf8;
 use Papercut\Exception\InvalidValue;
 
 /** A table of contents built from the document's headings. Only works in a page body. */
-final class Toc implements Styled
+final class Toc implements Styled, Annotated
 {
     use HasStyle;
+    use HasNotes;
 
     private int $from = 1;
     private int $to = 2;
@@ -41,7 +43,13 @@ final class Toc implements Styled
     public function title(?string $title): static
     {
         $c = clone $this;
+        $c->notes = [];
+        $bad = false;
+        $title = $title === null ? null : Utf8::scrub($title, $bad);
         $c->title = $title === null || trim($title) === '' ? null : $title;
+        if ($bad) {
+            $c->notes[] = Utf8::note();
+        }
         return $c;
     }
 

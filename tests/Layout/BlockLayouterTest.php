@@ -217,7 +217,7 @@ final class BlockLayouterTest extends TestCase
     {
         $h = new LayoutHarness();
         $h->layout(Column::make(Text::make('a'), Text::make('b'), View::make(Text::make("\u{65E5}"))), 100);
-        self::assertSame(["[column > column[2] > text[0]] Missing glyphs for \"\u{65E5}\" in font family Inter"], $h->warnings);
+        self::assertSame(["pdf: dropped missing glyphs in font family Inter (\"\u{65E5}\") at column > column[2] > text[0]"], $h->warnings);
         self::assertSame('', $h->engine->context()->path());
     }
 

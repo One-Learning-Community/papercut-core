@@ -15,9 +15,6 @@ final class Itemizer
 {
     private const string BREAK_AFTER = "-\u{2013}\u{2014}/";
 
-    /** @var array<string, true> */
-    private array $warned = [];
-
     /** @var \SplObjectStorage<MathNode, array<string, Box>> each formula's boxes by the size, font and style they were laid out at */
     private \SplObjectStorage $mathBoxes;
 
@@ -298,10 +295,10 @@ final class Itemizer
         if ($primary->covers($segment)) {
             return [[$segment, $primary]];
         }
-        /** @var list<array{string, bool}> $groups */
+        /** @var list<array{string, int}> $groups 1 covered, 0 not, 2 not covered and U+FFFD (kept apart so it can get its own face) */
         $groups = [];
         foreach (mb_str_split($segment, 1, 'UTF-8') as $ch) {
-            $covered = $primary->covers($ch);
+            $covered = $primary->covers($ch) ? 1 : ($ch === "\u{FFFD}" ? 2 : 0);
             $last = count($groups) - 1;
             if ($last >= 0 && $groups[$last][1] === $covered) {
                 $groups[$last][0] .= $ch;
@@ -311,7 +308,7 @@ final class Itemizer
         }
         $runs = [];
         foreach ($groups as [$run, $covered]) {
-            $runs[] = [$run, $covered ? $primary : $this->fallback($run, $style, $primary)];
+            $runs[] = [$run, $covered === 1 ? $primary : $this->fallback($run, $style, $primary)];
         }
         return $runs;
     }
@@ -328,12 +325,17 @@ final class Itemizer
                 return $candidate;
             }
         }
-        $key = $style->fontFamily . "\0" . $run;
-        if (!isset($this->warned[$key])) {
-            $this->warned[$key] = true;
-            if ($this->onWarning !== null) {
-                ($this->onWarning)(sprintf('Missing glyphs for "%s" in font family %s', $run, $style->fontFamily));
+        // A whole label (a badge) can arrive here with letters around it. A badge is one run, so its whole label then
+        // draws in STIX Two Math, not just the replacement character; accepted (ruling R1).
+        if (str_contains($run, "\u{FFFD}")) {
+            $replacement = $this->fonts->replacementFont();
+            if ($replacement->covers($run)) {
+                return $replacement;
             }
+        }
+        // Reported on every call: the layout context keeps one note per node and feature.
+        if ($this->onWarning !== null) {
+            ($this->onWarning)(sprintf('missing glyphs in font family %s', $style->fontFamily), $run);
         }
         return $primary;
     }

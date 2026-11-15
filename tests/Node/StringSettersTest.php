@@ -55,9 +55,9 @@ final class StringSettersTest extends TestCase
         self::assertEquals($qr->eyes(QrEyes::Dot), $qr->eyes('dot'));
     }
 
-    public function test_a_module_grid_keeps_its_logic_error_before_string_parsing(): void
+    public function test_a_module_grid_keeps_its_structure_error_before_string_parsing(): void
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(\Papercut\Exception\InvalidStructure::class);
         QrCode::fromModules([[1, 0], [0, 1]])->errorCorrection('nonsense');
     }
 

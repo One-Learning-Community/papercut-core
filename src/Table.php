@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Papercut;
 
 use Papercut\Concerns\HasStyle;
+use Papercut\Exception\InvalidValue;
 use Papercut\Value\{Auto, Fr, Length, Percent, TrackList};
 
 final class Table implements Styled
@@ -32,19 +33,23 @@ final class Table implements Styled
     public function columns(TrackList|string|Length|Percent|Fr|Auto ...$tracks): self
     {
         $clone = clone $this;
-        if (count($tracks) === 1 && $tracks[0] instanceof TrackList) {
-            $clone->trackList = $tracks[0];
-        } elseif (count($tracks) === 1 && is_string($tracks[0])) {
-            $clone->trackList = TrackList::parse($tracks[0]);
-        } else {
-            $typed = [];
-            foreach ($tracks as $t) {
-                if ($t instanceof TrackList || is_string($t)) {
-                    throw new \InvalidArgumentException('Pass one string/TrackList, or typed tracks.');
+        try {
+            if (count($tracks) === 1 && $tracks[0] instanceof TrackList) {
+                $clone->trackList = $tracks[0];
+            } elseif (count($tracks) === 1 && is_string($tracks[0])) {
+                $clone->trackList = TrackList::parse($tracks[0]);
+            } else {
+                $typed = [];
+                foreach ($tracks as $t) {
+                    if ($t instanceof TrackList || is_string($t)) {
+                        throw InvalidValue::for('columns()', get_debug_type($t), 'one string or TrackList, or typed tracks, not a mix')->withContext('Table::columns()');
+                    }
+                    $typed[] = $t;
                 }
-                $typed[] = $t;
+                $clone->trackList = TrackList::of(...$typed);
             }
-            $clone->trackList = TrackList::of(...$typed);
+        } catch (InvalidValue $e) {
+            throw $e->withContext('Table::columns()');
         }
         return $clone;
     }
@@ -96,7 +101,7 @@ final class Table implements Styled
 
     /**
      * @param iterable<mixed> $items
-     * @param callable(mixed, int): list<TableCell|Node|Component|string|int|float> $map
+     * @param callable(mixed, int): iterable<mixed, TableCell|Node|Component|string|int|float> $map
      */
     public function rows(iterable $items, callable $map): self
     {
@@ -104,8 +109,21 @@ final class Table implements Styled
         $i = 0;
         foreach ($items as $item) {
             $cells = [];
-            foreach ($map($item, $i) as $cell) {
-                $cells[] = (is_int($cell) || is_float($cell)) ? (string) $cell : $cell;
+            $mapped = $map($item, $i);
+            if (!is_iterable($mapped)) { // @phpstan-ignore function.alreadyNarrowedType
+                throw InvalidValue::for('rows() callback result', get_debug_type($mapped))
+                    ->withContext('Table::rows()')
+                    ->because('the callback must return a list of cells, such as fn ($item) => [$item->name, $item->total]; use bodyRow() to add a TableRow');
+            }
+            $n = 0;
+            foreach ($mapped as $cell) {
+                if (is_float($cell) && !is_finite($cell)) {
+                    throw InvalidValue::for('cell value', InvalidValue::number($cell))
+                        ->withContext('Table::rows() cell ' . $n . ' of row ' . $i)
+                        ->because('a cell must be text, a number that is finite, or a node');
+                }
+                $cells[] = is_int($cell) || is_float($cell) ? (string) $cell : $cell;
+                $n++;
             }
             $clone = $clone->row(...$cells);
             $i++;
