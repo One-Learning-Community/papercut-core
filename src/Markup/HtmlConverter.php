@@ -1341,6 +1341,6 @@ final class HtmlConverter
             return null;
         }
         $n = (float) $m[1];
-        return is_finite($n) && $n > 0 && is_finite($n * 0.75) ? $n : null;
+        return is_finite($n) && $n > 0 ? $n : null;
     }
 }
