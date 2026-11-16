@@ -134,7 +134,7 @@ final class HtmlMathTest extends TestCase
 
     public function test_mtable_note_reported_once(): void
     {
-        $table = '<mtable><mtr><mtd><mn>1</mn></mtd></mtr></mtable>';
+        $table = '<mtable rowlines="solid"><mtr><mtd><mn>1</mn></mtd></mtr></mtable>';
         $block = self::warnings('<math display="block">' . $table . '</math>');
         $inline = self::warnings('<p>x <math>' . $table . '</math> y</p>');
         self::assertCount(1, $block, implode("\n", $block));

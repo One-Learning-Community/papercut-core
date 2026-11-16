@@ -14,7 +14,7 @@ use PHPUnit\Framework\TestCase;
 
 final class MathNotesReportTest extends TestCase
 {
-    private const TABLE = '<math><mtable><mtr><mtd><mi>a</mi></mtd></mtr></mtable></math>';
+    private const TABLE = '<math><mtable rowlines="solid"><mtr><mtd><mi>a</mi></mtd></mtr></mtable></math>';
 
     /** @return list<string> */
     private function pdfMessages(Document $doc): array
