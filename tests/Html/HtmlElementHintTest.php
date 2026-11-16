@@ -69,8 +69,10 @@ final class HtmlElementHintTest extends TestCase
 
     public function test_pdf_ignores_hint(): void
     {
-        $plain = Document::make(Page::a4()->body(View::make('x')->padding(pt(4))))->toPdf()->bytes();
-        $hinted = Document::make(Page::a4()->body(View::make('x')->htmlTag('section')->padding(pt(4))))->toPdf()->bytes();
+        // A fixed date: the PDF's /ID and creation date come from the clock, which can tick between the two exports.
+        $made = new \DateTimeImmutable('2026-01-01T00:00:00Z');
+        $plain = Document::make(Page::a4()->body(View::make('x')->padding(pt(4))))->createdAt($made)->toPdf()->bytes();
+        $hinted = Document::make(Page::a4()->body(View::make('x')->htmlTag('section')->padding(pt(4))))->createdAt($made)->toPdf()->bytes();
         self::assertSame($plain, $hinted);
     }
 }

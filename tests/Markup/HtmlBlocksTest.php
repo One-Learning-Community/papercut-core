@@ -212,6 +212,18 @@ final class HtmlBlocksTest extends TestCase
         self::assertEquals(px(70), $image->style()->height);
     }
 
+    public function test_img_alt_is_carried_to_the_image(): void
+    {
+        $o = new MarkupOptions(images: fn (string $s): string => TestImages::png());
+        $v = Markup::html('<img src="a.png" alt="Chart"><img src="b.png">', $o);
+        self::assertInstanceOf(View::class, $v);
+        $images = $v->children();
+        self::assertInstanceOf(Image::class, $images[0]);
+        self::assertSame('Chart', $images[0]->altText());
+        self::assertInstanceOf(Image::class, $images[1]);
+        self::assertSame('', $images[1]->altText());
+    }
+
     public function test_missing_images(): void
     {
         $throws = new MarkupOptions(images: fn (string $s): ?string => throw new \RuntimeException('disk'));

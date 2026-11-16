@@ -55,9 +55,19 @@ final class SvgFonts
 
     private function registered(?string $list): ?string
     {
+        return self::firstRegistered($list, $this->fonts->has(...));
+    }
+
+    /**
+     * The first family in a CSS font-family list that is registered, as written in the list, or null.
+     *
+     * @param \Closure(string): bool $isRegistered
+     */
+    public static function firstRegistered(?string $list, \Closure $isRegistered): ?string
+    {
         foreach (explode(',', (string) $list) as $name) {
             $name = trim($name, " \t\n\r\"'");
-            if ($name !== '' && $this->fonts->has($name)) {
+            if ($name !== '' && $isRegistered($name)) {
                 return $name;
             }
         }

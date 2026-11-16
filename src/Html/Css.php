@@ -64,6 +64,30 @@ final class Css
         return implode(', ', [...array_map(self::string(...), [$family, ...$fallbacks]), $class?->cssGeneric() ?? 'system-ui, sans-serif']);
     }
 
+    /**
+     * box() for a table row or cell. Browsers ignore min-height there, but a row's or cell's height already acts as
+     * a minimum (content still grows it), so a minimum height is written as height. With both set, the larger wins
+     * when both are lengths, and the height otherwise.
+     *
+     * @return array<string,string>
+     */
+    public static function tableBox(ComputedStyle $s): array
+    {
+        $d = self::box($s);
+        if (!isset($d['min-height'])) {
+            return $d;
+        }
+        $min = $d['min-height'];
+        unset($d['min-height']);
+        if (!isset($d['height']) || ($s->height instanceof Percent && $s->minHeight instanceof Length)) {
+            $d['height'] = $min;
+        } elseif ($s->height instanceof Length && $s->minHeight instanceof Length && $s->minHeight->points > $s->height->points) {
+            $d['height'] = $min;
+        }
+
+        return $d;
+    }
+
     /** @return array<string,string> */
     public static function box(ComputedStyle $s): array
     {

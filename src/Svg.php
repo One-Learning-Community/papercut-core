@@ -6,6 +6,7 @@ namespace Papercut;
 
 use Papercut\Concerns\HasStyle;
 use Papercut\Exception\ImageUnreadable;
+use Papercut\Support\AltText;
 use Papercut\Vector\SvgDocument;
 
 /**
@@ -18,6 +19,8 @@ final class Svg implements Styled
     use HasStyle;
 
     private ?SvgDocument $document;
+
+    private ?string $alt = null;
 
     private function __construct(
         private readonly string $kind,
@@ -36,6 +39,28 @@ final class Svg implements Styled
     public static function fromString(string $svg): self
     {
         return new self('string', $svg);
+    }
+
+    /**
+     * Describes the drawing for people who cannot see it. HTML export writes it as the alt text;
+     * runs of whitespace are collapsed to one space. An empty string marks the drawing as
+     * decorative. Without a call to this, the SVG's own title is used.
+     */
+    public function alt(string $text): self
+    {
+        $clone = clone $this;
+        $clone->alt = AltText::normalize($text);
+        return $clone;
+    }
+
+    /**
+     * The alt text: the one set with alt(), else the SVG's title. An empty string means decorative.
+     *
+     * @throws ImageUnreadable when the SVG has no alt() and its markup cannot be read for a title
+     */
+    public function altText(): string
+    {
+        return $this->alt ?? $this->document()->title;
     }
 
     /** @return array{kind: 'file'|'string', value: string} */

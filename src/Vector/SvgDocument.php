@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Papercut\Vector;
 
 use Papercut\Exception\ImageUnreadable;
+use Papercut\Support\AltText;
 
 /**
  * An SVG source, parsed and checked once: its size, view box and alignment, and the cleaned-up
@@ -112,7 +113,7 @@ final readonly class SvgDocument
         foreach ($root->getElementsByTagName('*') as $el) {
             $name = $el->localName;
             if ($name === 'title' && $title === '' && $el->parentNode === $root) {
-                $title = trim((string) preg_replace('/\s+/u', ' ', $el->textContent));
+                $title = AltText::normalize($el->textContent);
             }
             $hasText = $hasText || $name === 'text';
             if (in_array($name, self::UNSUPPORTED, true)) {

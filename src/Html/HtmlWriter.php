@@ -14,7 +14,7 @@ use Papercut\Export\{Fidelity, HtmlOptions};
 use Papercut\Layout\{GridCell, LayoutEngine, TableGrid, WidthResolver};
 use Papercut\Style\{ComputedStyle, Justify, ListMarker, StyleName, TextAlign};
 use Papercut\Math\Render\MathmlWriter;
-use Papercut\Text\FontStyle;
+use Papercut\Text\{FontStyle, SvgFonts};
 use Papercut\Value\{Auto, ColumnSpec, Fr, Length, Percent};
 use Papercut\Toc\TocIndex;
 use Papercut\Layout\ColumnFlowLayouter;
@@ -73,6 +73,10 @@ final class HtmlWriter implements TreeVisitor
     /** @var array<string, string> element id of each table-of-contents heading, by node path */
     private array $slugs = [];
     private readonly TocIndex $toc;
+    /** Inline SVGs written so far this export; numbers the id prefix of each. */
+    private int $inlineSvgCount = 0;
+    /** @var array<string, string>|null spelling of each registered family, by lowercased name */
+    private ?array $registeredFamilies = null;
 
     public function __construct(
         Document $doc,
@@ -112,11 +116,16 @@ final class HtmlWriter implements TreeVisitor
 
     private function recordFont(ComputedStyle $s, ?string $path): void
     {
-        $this->families[$s->fontFamily] = true;
-        $key = strtolower($s->fontFamily);
-        $variant = new FontVariant($s->fontWeight, $s->italic ? FontStyle::Italic : FontStyle::Normal);
+        $this->recordFamily($s->fontFamily, $s->fontWeight, $s->italic, $path);
+    }
+
+    private function recordFamily(string $family, int $weight, bool $italic, ?string $path): void
+    {
+        $this->families[$family] = true;
+        $key = strtolower($family);
+        $variant = new FontVariant($weight, $italic ? FontStyle::Italic : FontStyle::Normal);
         if (!isset($this->usage[$key])) {
-            $this->usage[$key] = ['family' => $s->fontFamily, 'variants' => [], 'path' => $path];
+            $this->usage[$key] = ['family' => $family, 'variants' => [], 'path' => $path];
         }
         foreach ($this->usage[$key]['variants'] as $seen) {
             if ($seen->weight === $variant->weight && $seen->style === $variant->style) {
@@ -742,14 +751,15 @@ final class HtmlWriter implements TreeVisitor
             $decls += Css::flexItem($s);
         }
         $decls['object-fit'] = $n->fitMode()->value;
-        $this->out .= '<img src="' . self::esc(ImageSource::uri($n, $this->options->imageUrl(), $this->backend, fn () => $this->fidelity->warn(sprintf('[%s] imageUrl returned an unsafe URL; the image was embedded instead', $at->path())), $this->loadImage(...))) . '" alt=""' . self::styleAttr($decls) . '>';
+        $this->out .= '<img src="' . self::esc(ImageSource::uri($n, $this->options->imageUrl(), $this->backend, fn () => $this->fidelity->warn(sprintf('[%s] imageUrl returned an unsafe URL; the image was embedded instead', $at->path())), $this->loadImage(...))) . '" alt="' . self::esc($n->altText()) . '"' . self::styleAttr($decls) . '>';
 
         return '';
     }
 
     /**
-     * An img with a data URI, never inline markup: a browser runs no script and fetches nothing
-     * for an SVG image. Its text is set in the browser's fonts, which cannot be the page's.
+     * By default an img with a data URI: a browser runs no script and fetches nothing for an SVG image, but
+     * its text is set in the browser's fonts, which cannot be the page's. With inlineSvgs the markup is written
+     * inline (ids prefixed, styles scoped) so the text can use the page's fonts.
      */
     private function svg(Svg $n, ComputedStyle $s, Visit $at): string
     {
@@ -758,12 +768,55 @@ final class HtmlWriter implements TreeVisitor
         if ($this->parentIsFlex($at)) {
             $decls += Css::flexItem($s);
         }
-        if ($svg->hasText) {
-            $this->fidelity->approximated('SVG text in the browser\'s own fonts', $at->path());
+        $keepAsImage = null;
+        if ($this->options->inlineSvgs()) {
+            $keepAsImage = InlineSvg::inlinable($svg->xml);
+            if ($keepAsImage === null) {
+                $written = (new InlineSvg($this->svgFamily($s, $at)))->write($svg->xml, 'pc-' . substr(sha1($svg->xml), 0, 6) . '-' . ++$this->inlineSvgCount . '-', $n->altText(), $decls);
+                foreach ($written['approximated'] as $note) {
+                    $this->fidelity->approximated($note, $at->path());
+                }
+                $this->out .= $written['html'];
+
+                return '';
+            }
+            $this->fidelity->approximated('SVG kept as an image (' . $keepAsImage . ')', $at->path());
         }
-        $this->out .= '<img src="data:image/svg+xml;base64,' . base64_encode($svg->xml) . '" alt="' . self::esc($svg->title) . '"' . self::styleAttr($decls) . '>';
+        if ($svg->hasText) {
+            $this->fidelity->approximated($keepAsImage === null ? 'SVG text in the browser\'s own fonts (set inlineSvgs to use the page\'s fonts)' : 'SVG text in the browser\'s own fonts', $at->path());
+        }
+        $this->out .= '<img src="data:image/svg+xml;base64,' . base64_encode($svg->xml) . '" alt="' . self::esc($n->altText()) . '"' . self::styleAttr($decls) . '>';
 
         return '';
+    }
+
+    /**
+     * Resolves an inline SVG's font-family list as the PDF does: the first registered family in the list,
+     * else the Svg node's own family. The family is recorded so font modes that write @font-face include it.
+     *
+     * @return \Closure(?string, int, bool): string
+     */
+    private function svgFamily(ComputedStyle $s, Visit $at): \Closure
+    {
+        $fonts = $this->options->fonts();
+        if ($this->registeredFamilies === null) {
+            $this->registeredFamilies = [];
+            foreach ($fonts->effectiveFaces() as $face) {
+                $this->registeredFamilies[strtolower($face->family)] ??= $face->family;
+            }
+        }
+        $registered = $this->registeredFamilies;
+        $path = $at->path();
+        /** @var array<string, string> $stacks the CSS family stack of each family, read once */
+        $stacks = [];
+
+        return function (?string $list, int $weight, bool $italic) use ($s, $fonts, $registered, $path, &$stacks): string {
+            $name = SvgFonts::firstRegistered($list, static fn (string $n): bool => isset($registered[strtolower($n)]));
+            $family = $name === null ? $s->fontFamily : $registered[strtolower($name)];
+            $this->recordFamily($family, $weight, $italic, $path);
+
+            return $stacks[$family] ??= Css::fontFamily($family, $fonts->fallbacks, $fonts->info($family)?->class);
+        };
     }
 
     /** Positioned in the page section; a percentage of the page height is of the section's height. */
@@ -884,7 +937,7 @@ final class HtmlWriter implements TreeVisitor
             array_pop($this->sections);
             $this->sections[] = $want;
         }
-        $box = Css::box($s);
+        $box = Css::tableBox($s);
         if (isset($box['padding'])) {
             unset($box['padding']);
             $this->fidelity->approximated('row padding', $at->path());
@@ -907,7 +960,7 @@ final class HtmlWriter implements TreeVisitor
         $colspan = $p->colspan ?? $n->span();
         $rowspan = $p->rowspan ?? $n->rowsSpanned();
         $span = ($colspan > 1 ? ' colspan="' . $colspan . '"' : '') . ($rowspan > 1 ? ' rowspan="' . $rowspan . '"' : '');
-        $td = [...Css::box($s), ...$this->textCss($s, $parent, $at->path())];
+        $td = [...Css::tableBox($s), ...$this->textCss($s, $parent, $at->path())];
         if ($s->justify === Justify::Center) {
             $td['vertical-align'] = 'middle';
         } elseif ($s->justify === Justify::End) {

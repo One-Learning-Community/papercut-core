@@ -58,6 +58,18 @@ final class HtmlTablesImagesTest extends TestCase
         return Document::make(Page::a4()->body(...$nodes));
     }
 
+    public function test_image_alt_is_written(): void
+    {
+        $html = $this->html($this->body(Image::bytes(TestImages::png())->alt("A  \"red\" & <blue>\n dot")));
+        self::assertStringContainsString('alt="A &quot;red&quot; &amp; &lt;blue&gt; dot"', $html);
+    }
+
+    public function test_image_without_alt_is_decorative(): void
+    {
+        $html = $this->html($this->body(Image::bytes(TestImages::png())));
+        self::assertStringContainsString(' alt=""', $html);
+    }
+
     public function test_table_has_colgroup_widths_thead_and_colspan(): void
     {
         $messages = [];
@@ -175,6 +187,39 @@ final class HtmlTablesImagesTest extends TestCase
     {
         $html = $this->html($this->body(Table::make()->columns('1fr')->bodyRow(TableRow::make('a')->background(\Papercut\Value\Color::hex('#ff0000')))));
         self::assertStringContainsString('background:#ff0000', $this->style($this->xpath($html, '//tbody/tr')[0]));
+    }
+
+    public function test_cell_and_row_min_height_is_written_as_height_which_browsers_treat_as_a_minimum(): void
+    {
+        // Browsers ignore min-height on table rows and cells; their height already acts as a floor.
+        $html = $this->html($this->body(Table::make()->columns('1fr 1fr')->bodyRow(
+            TableRow::make(TableCell::make()->minHeight(pt(21)), TableCell::make('x')->height(pt(30))->minHeight(pt(40)))->minHeight(pt(18)),
+        )));
+        $cells = $this->xpath($html, '//tbody/tr/td');
+        self::assertMatchesRegularExpression('/(^|;)height:21pt(;|$)/', $this->style($cells[0]));
+        self::assertStringNotContainsString('min-height', $this->style($cells[0]));
+        self::assertMatchesRegularExpression('/(^|;)height:40pt(;|$)/', $this->style($cells[1]));
+        self::assertStringNotContainsString('min-height', $this->style($cells[1]));
+        $row = $this->style($this->xpath($html, '//tbody/tr')[0]);
+        self::assertMatchesRegularExpression('/(^|;)height:18pt(;|$)/', $row);
+        self::assertStringNotContainsString('min-height', $row);
+    }
+
+    public function test_cell_length_min_height_wins_over_a_percentage_height(): void
+    {
+        // A percentage height on a td or tr usually computes to auto, so the length is the one written.
+        $html = $this->html($this->body(Table::make()->columns('1fr 1fr')->bodyRow(
+            TableRow::make(
+                TableCell::make('a')->height(\Papercut\Value\Percent::of(50))->minHeight(pt(30)),
+                TableCell::make('b')->height(pt(25))->minHeight(\Papercut\Value\Percent::of(50)),
+            ),
+        )));
+        $cells = $this->xpath($html, '//tbody/tr/td');
+        self::assertMatchesRegularExpression('/(^|;)height:30pt(;|$)/', $this->style($cells[0]));
+        self::assertStringNotContainsString('%', $this->style($cells[0]));
+        self::assertStringNotContainsString('min-height', $this->style($cells[0]));
+        self::assertMatchesRegularExpression('/(^|;)height:25pt(;|$)/', $this->style($cells[1]));
+        self::assertStringNotContainsString('%', $this->style($cells[1]));
     }
 
     public function test_png_and_jpeg_embed_as_data_uris(): void

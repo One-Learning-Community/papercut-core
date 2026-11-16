@@ -1076,6 +1076,10 @@ final class HtmlConverter
 
         if ($bytes !== null) {
             $image = Image::bytes($bytes);
+            $alt = $el->getAttribute('alt');
+            if ($alt !== null) {
+                $image = $image->alt($alt);
+            }
             $width = self::attributeWidth($el, $bytes);
             if ($width !== null) {
                 $image = $image->width(px($width));
