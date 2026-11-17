@@ -50,7 +50,7 @@ final class TestImages
     }
 
     /**
-     * A palette GIF; with $transparent its fill colour is the transparent index.
+     * A palette GIF; with $transparent its fill color is the transparent index.
      *
      * @param int<1, max> $w
      * @param int<1, max> $h

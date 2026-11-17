@@ -15,7 +15,7 @@ final class HtmlCodeBlockTest extends TestCase
         return Document::make(Page::a4()->body($block))->toHtml()->bytes();
     }
 
-    public function test_code_exports_as_pre_with_coloured_token_spans(): void
+    public function test_code_exports_as_pre_with_colored_token_spans(): void
     {
         $html = $this->html(CodeBlock::make("<?php\n// note\n\$a = 1;")->language('php'));
         self::assertStringContainsString('<pre', $html);
@@ -29,7 +29,7 @@ final class HtmlCodeBlockTest extends TestCase
         self::assertMatchesRegularExpression('~style="[^"]*background(-color)?:#f6f8fa~i', $html);
     }
 
-    public function test_label_carries_the_muted_colour(): void
+    public function test_label_carries_the_muted_color(): void
     {
         $html = $this->html(CodeBlock::make('echo 1;')->language('php'));
         self::assertMatchesRegularExpression('~<[a-z]+ style="[^"]*color:#94a3b8[^"]*">PHP<~i', $html);

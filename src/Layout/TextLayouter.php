@@ -12,7 +12,7 @@ use Papercut\Value\Length;
 
 /**
  * Lays out a Text node as a stack of line boxes and fragments it between
- * lines, honouring min-lines as both orphans and widows. Box styles
+ * lines, honoring min-lines as both orphans and widows. Box styles
  * (width, padding, border, background, opacity) apply via BoxGeometry with
  * sliced semantics; margins are the parent's job.
  *
@@ -84,7 +84,7 @@ final class TextLayouter implements Layouter
             if (!$c->fresh) {
                 return LayoutResult::doesNotFit();
             }
-            // Orphans cannot be honoured on an empty page; with nothing fitting, one line overflows by design.
+            // Orphans cannot be honored on an empty page; with nothing fitting, one line overflows by design.
             $n = max(1, $n);
         } else {
             $remaining = $total - ($start + $n);
@@ -314,7 +314,7 @@ final class TextLayouter implements Layouter
         foreach ($line->items as $item) {
             $key = $this->styleKey($item);
             if ($item->box || $item->math !== null) {
-                // An inline box or equation is its own run and its own highlight: neighbours never merge into it.
+                // An inline box or equation is its own run and its own highlight: neighbors never merge into it.
                 $key .= "\0box" . spl_object_id($item);
             }
             $styleKeys[] = $key;
@@ -489,7 +489,7 @@ final class TextLayouter implements Layouter
 
     /**
      * How much wider a run is drawn as one string than its items measured apart, for a font that joins in pairs (see
-     * JoinsInPairs): the kerning (and any letter-spacing difference) where neighbouring items meet. Each join is measured from the characters that meet, and a space
+     * JoinsInPairs): the kerning (and any letter-spacing difference) where neighboring items meet. Each join is measured from the characters that meet, and a space
      * together with the characters on both sides of it, so the font's cache answers almost every join instead of
      * shaping the whole run again.
      *

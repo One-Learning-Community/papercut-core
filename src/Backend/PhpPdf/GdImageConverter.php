@@ -70,7 +70,7 @@ final readonly class GdImageConverter
 
     /**
      * Read from the header. Palette images (GIF) keep their transparent
-     * colour either way; BMP is treated as opaque; AVIF is not inspected.
+     * color either way; BMP is treated as opaque; AVIF is not inspected.
      */
     private static function mayHaveAlpha(string $bytes, string $mime): bool
     {

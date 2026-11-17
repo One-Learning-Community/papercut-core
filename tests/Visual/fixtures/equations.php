@@ -8,7 +8,7 @@ use Papercut\{Column, Document, Equation, Page, Span, Table, Text};
 
 use function Papercut\{mm, pt};
 
-// The formulas are the ones in packages/math/tests/Fixtures.php. Generic, made-up formulas: fractions, roots, scripts, fences and text, then alignment, size and colour from context.
+// The formulas are the ones in packages/math/tests/Fixtures.php. Generic, made-up formulas: fractions, roots, scripts, fences and text, then alignment, size and color from context.
 $quad = Math::row('x =', Math::frac(Math::row('−b ±', Math::sqrt(Math::sup('b', '2'), '− 4ac')), '2a'));
 
 $formulas = [
@@ -42,7 +42,7 @@ $items = [
     Equation::of($quad)->textAlign(TextAlign::Center),
     Text::make('Right')->size(pt(8))->color('#64748b'),
     Equation::of($quad)->textAlign(TextAlign::Right),
-    Text::make('Large and coloured')->size(pt(8))->color('#64748b'),
+    Text::make('Large and colored')->size(pt(8))->color('#64748b'),
     Equation::of($quad)->size(pt(20))->color('#b91c1c'),
     Text::make('Inline')->size(pt(8))->color('#64748b'),
     Text::spans(

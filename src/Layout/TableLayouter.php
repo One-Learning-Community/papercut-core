@@ -586,7 +586,7 @@ final class TableLayouter implements Layouter
 
     /**
      * For a table that fits its columns: the Length tracks scaled down together so they and the minimum
-     * widths of the other columns fit $width, none below its own min-content when that can be honoured.
+     * widths of the other columns fit $width, none below its own min-content when that can be honored.
      * Empty when everything fits already, or when even the minimums do not.
      *
      * @param list<Length|Percent|Fr|Auto> $tracks

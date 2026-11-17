@@ -67,7 +67,7 @@ final class Itemizer
             if ($style->isInlineBox()) {
                 $label = trim(preg_replace('/[ \t\n\r\f]+/', ' ', $text) ?? $text);
                 if ($label !== '') {
-                    // Spaces just inside the box space it from its neighbours, as in HTML; the label itself is trimmed.
+                    // Spaces just inside the box space it from its neighbors, as in HTML; the label itself is trimmed.
                     if ($pending === null && !$atStart && preg_match('/^[ \t\n\r\f]/', $text) === 1) {
                         $pending = $this->space($paragraph, $this->primary($paragraph), $span->href);
                     }

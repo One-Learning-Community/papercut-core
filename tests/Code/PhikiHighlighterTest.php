@@ -38,7 +38,7 @@ final class PhikiHighlighterTest extends TestCase
         self::assertTrue(PhikiHighlighter::available());
     }
 
-    public function test_tokens_carry_theme_colours_and_font_styles(): void
+    public function test_tokens_carry_theme_colors_and_font_styles(): void
     {
         $h = (new PhikiHighlighter())->highlight("<?php\n// hi\n\$x = 'a';", 'php', 'papercut-light');
         self::assertSame('#f6f8fa', (string) $h->background);
@@ -52,7 +52,7 @@ final class PhikiHighlighterTest extends TestCase
         self::assertSame('#0a7a4b', (string) self::find($h, 'a')->color);
     }
 
-    public function test_storage_keywords_take_the_keyword_colour(): void
+    public function test_storage_keywords_take_the_keyword_color(): void
     {
         $h = (new PhikiHighlighter())->highlight("<?php\nclass A {}\nconst X = 1;\ninterface I {}", 'php', 'papercut-light');
         foreach (['class', 'const', 'interface'] as $word) {
@@ -60,13 +60,13 @@ final class PhikiHighlighterTest extends TestCase
         }
     }
 
-    public function test_markup_tag_and_attribute_names_are_coloured_but_tag_punctuation_is_not(): void
+    public function test_markup_tag_and_attribute_names_are_colored_but_tag_punctuation_is_not(): void
     {
         foreach (['html' => '<a href="x">y</a>', 'xml' => '<a href="x">y</a>', 'vue' => "<template>\n  <a href=\"x\">y</a>\n</template>"] as $lang => $code) {
             $h = (new PhikiHighlighter())->highlight($code, $lang, 'papercut-light');
             self::assertSame('#116329', (string) self::find($h, 'a')->color, $lang . ' tag name');
             self::assertSame('#0550ae', (string) self::find($h, 'href')->color, $lang . ' attribute name');
-            self::assertSame('#24292f', (string) ($h->lines[0][0]->color ?? $h->foreground), $lang . ' tag punctuation stays the text colour');
+            self::assertSame('#24292f', (string) ($h->lines[0][0]->color ?? $h->foreground), $lang . ' tag punctuation stays the text color');
         }
     }
 
@@ -103,7 +103,7 @@ final class PhikiHighlighterTest extends TestCase
         (new PhikiHighlighter())->highlight('x', 'php', 'no-such-theme');
     }
 
-    public function test_bundled_themes_have_editor_colours(): void
+    public function test_bundled_themes_have_editor_colors(): void
     {
         $h = (new PhikiHighlighter())->highlight('x', 'php', 'github-dark');
         self::assertSame('#24292e', (string) $h->background);

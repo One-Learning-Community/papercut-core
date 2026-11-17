@@ -326,7 +326,7 @@ final class PhpPdfBackend implements Backend, PdfPageLoader
     }
 
     /**
-     * php-pdf's ContentStream caches the last text fill colour and char spacing and skips
+     * php-pdf's ContentStream caches the last text fill color and char spacing and skips
      * `rg`/`Tc` when unchanged, but our q...Q wrappers discard that graphics state. Poison
      * the cache (NAN never === anything) so the next text run re-emits both.
      */

@@ -52,7 +52,7 @@ $long = "<?php\n\nfunction long_listing(\$input)\n{\n" . implode("\n", array_map
     range(1, 68),
 )) . "\n}\n";
 
-$text = "plain  text with\ttabs\n  and indentation\n\nno colours here";
+$text = "plain  text with\ttabs\n  and indentation\n\nno colors here";
 
 return Document::make(
     Page::a5()->margin(mm(12))->body(

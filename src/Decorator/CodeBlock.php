@@ -154,13 +154,13 @@ final class CodeBlock implements Decorator, ThemedComponent
         if ($highlighted === null) {
             [$highlighted, $theme] = $this->plain($highlighter, $this->code, $theme, $notes, $wantsHighlight);
         }
-        $coloured = $wantsHighlight && !self::hasNote($notes, 'unknown language');
+        $colored = $wantsHighlight && !self::hasNote($notes, 'unknown language');
 
         $background = $highlighted->background;
         $colors = CodeColors::for($background);
         $labelText = $this->labelText($lower, $language, $displayName);
 
-        $spans = self::spans($highlighted, $coloured);
+        $spans = self::spans($highlighted, $colored);
         $code = Text::spans(...$spans)->htmlCode($language)->apply($block->part('code-block.code'));
 
         $strip = in_array('strip', $block->variants(), true);
@@ -180,7 +180,7 @@ final class CodeBlock implements Decorator, ThemedComponent
         );
 
         if ($caption) {
-            // The rule is the code Text's left border (code-block.code.caption), so its colour goes there.
+            // The rule is the code Text's left border (code-block.code.caption), so its color goes there.
             $code = $code->apply(Style::make(borderColor: $colors->rule));
             $box = View::make($code)->apply($block->part('code-block'))->apply($boxStyle)->apply($this->style());
             $parts = $labelNode === null ? [$box] : [$labelNode->keepWithNext(true), $box];
@@ -251,7 +251,7 @@ final class CodeBlock implements Decorator, ThemedComponent
     }
 
     /**
-     * The code as uncoloured lines on the theme's background.
+     * The code as uncolored lines on the theme's background.
      *
      * @param list<Note> $notes
      * @return array{0: HighlightedCode, 1: string}
@@ -274,7 +274,7 @@ final class CodeBlock implements Decorator, ThemedComponent
                     }
                     $theme = CodeTheme::DEFAULT;
                 } catch (UnknownLanguage) {
-                    break; // a highlighter without a 'text' grammar: use the default theme's colours
+                    break; // a highlighter without a 'text' grammar: use the default theme's colors
                 }
             }
         }
@@ -294,7 +294,7 @@ final class CodeBlock implements Decorator, ThemedComponent
     }
 
     /** @return list<Span> */
-    private static function spans(HighlightedCode $code, bool $coloured): array
+    private static function spans(HighlightedCode $code, bool $colored): array
     {
         $spans = [];
         foreach ($code->lines as $i => $line) {
@@ -302,7 +302,7 @@ final class CodeBlock implements Decorator, ThemedComponent
                 $spans[] = Span::break();
             }
             foreach ($line as $token) {
-                $style = $coloured
+                $style = $colored
                     ? Style::make(
                         color: $token->color,
                         fontWeight: $token->bold ? 700 : null,

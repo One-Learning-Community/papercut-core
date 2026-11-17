@@ -21,7 +21,7 @@ interface FontHandle
 
     /**
      * True when every non-whitespace character has a glyph. Whitespace and control characters
-     * (<= U+0020) are always reported as covered; layout must normalise tabs and control
+     * (<= U+0020) are always reported as covered; layout must normalize tabs and control
      * characters before drawing.
      */
     public function covers(string $text): bool;

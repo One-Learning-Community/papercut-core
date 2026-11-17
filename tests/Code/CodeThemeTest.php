@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 final class CodeThemeTest extends TestCase
 {
-    public function test_default_theme_editor_colours(): void
+    public function test_default_theme_editor_colors(): void
     {
         $c = CodeTheme::editorColors(CodeTheme::defaultPath());
         self::assertSame(['#f6f8fa', '#24292f'], [(string) $c['background'], (string) $c['foreground']]);
@@ -22,7 +22,7 @@ final class CodeThemeTest extends TestCase
         CodeTheme::editorColors('/nope.json');
     }
 
-    public function test_theme_without_editor_colours_names_the_path(): void
+    public function test_theme_without_editor_colors_names_the_path(): void
     {
         $path = tempnam(sys_get_temp_dir(), 'theme');
         self::assertIsString($path);

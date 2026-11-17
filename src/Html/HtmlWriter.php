@@ -587,7 +587,7 @@ final class HtmlWriter implements TreeVisitor
         }
         $body = self::esc($span->text);
         if ($span->math !== null) {
-            // An inline equation: MathML inherits the paragraph's size and colour; a span's own are on a wrapper.
+            // An inline equation: MathML inherits the paragraph's size and color; a span's own are on a wrapper.
             $this->hasEquation = true;
             $body = (new MathmlWriter())->write($span->math, false);
             $diff = array_intersect_key($diff, array_flip(['color', 'font-size', 'background-color']));
@@ -677,7 +677,7 @@ final class HtmlWriter implements TreeVisitor
         return $this->images[$key] ??= LoadedImage::load($n, $this->backend);
     }
 
-    /** A block equation: a styled div holding MathML, which inherits the div's size and colour. */
+    /** A block equation: a styled div holding MathML, which inherits the div's size and color. */
     private function equation(Equation $n, ComputedStyle $s, ComputedStyle $parent, Visit $at): string
     {
         $this->hasEquation = true;
@@ -686,7 +686,7 @@ final class HtmlWriter implements TreeVisitor
             $decls += Css::flexItem($s);
         }
         $decls = [...$decls, ...$this->textCss($s, $parent, $at->path())];
-        // The math box shrinks to its content (see Stylesheet), so margins place it: a browser would centre it otherwise.
+        // The math box shrinks to its content (see Stylesheet), so margins place it: a browser would center it otherwise.
         $place = match ($s->textAlign) {
             TextAlign::Center => 'margin-inline:auto',
             TextAlign::Right => 'margin-left:auto',

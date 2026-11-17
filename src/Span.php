@@ -64,7 +64,7 @@ final readonly class Span
 
     /**
      * An equation inside running text, laid out in text style (compact: scripts and fractions at the size of a line)
-     * with the math font. It sits on the line's baseline, takes the text's size and colour, grows the line it is on,
+     * with the math font. It sits on the line's baseline, takes the text's size and color, grows the line it is on,
      * and never breaks across lines. Parts are strings and nodes built with {@see Math}, tokenized as in Math::row().
      */
     public static function math(string|MathNode ...$parts): self

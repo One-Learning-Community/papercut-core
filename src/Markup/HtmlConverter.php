@@ -365,7 +365,7 @@ final class HtmlConverter
      * $inline: a span-level element, which takes text properties only.
      * $part: 'table' or 'cell' take a width only (other sizes would break the
      * grid; a cell also takes no margin); a cell's notes are made once per
-     * table; 'rule' (an hr) takes its colours as the border colour.
+     * table; 'rule' (an hr) takes its colors as the border color.
      *
      * `columns` is set only where the element may become a column flow and its CSS has a column count.
      *
@@ -925,7 +925,7 @@ final class HtmlConverter
 
     /**
      * Emits the `pre` as a CodeBlock over its text, `br` as a newline and one final newline dropped.
-     * Markup other than span, br and code inside is flattened (the highlighter colours the code
+     * Markup other than span, br and code inside is flattened (the highlighter colors the code
      * afresh) and noted.
      */
     private function codeBlock(\Dom\Element $el, string $language, CodeHighlighting $options, ?string $outer): void

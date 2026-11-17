@@ -193,7 +193,7 @@ final class HtmlMathTest extends TestCase
         self::assertNotNull($spans[1]->style->color);
     }
 
-    public function test_math_keeps_only_colour_size_background_and_href(): void
+    public function test_math_keeps_only_color_size_background_and_href(): void
     {
         $html = '<p><a href="https://e.test/a"><b><i><u><s><span style="color:#c00;font-size:20px;background-color:#eee;letter-spacing:2px">'
             . self::PI . '</span></s></u></i></b></a></p>';

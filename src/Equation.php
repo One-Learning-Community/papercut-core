@@ -9,7 +9,7 @@ use Papercut\Math\Math;
 use Papercut\Math\Node\Node as MathNode;
 
 /**
- * A displayed equation, set on a line of its own. It takes the text's size and colour and is laid out in
+ * A displayed equation, set on a line of its own. It takes the text's size and color and is laid out in
  * display style with the math font; characters in it stay text in the PDF. It never splits across pages
  * and, wider than its box, overflows rather than breaking. Align it with text-align (left by default).
  */

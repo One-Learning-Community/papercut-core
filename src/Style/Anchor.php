@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Papercut\Style;
 
-/** The point of a placed box that sits at its x and y: a corner, the middle of a side, or the centre. */
+/** The point of a placed box that sits at its x and y: a corner, the middle of a side, or the center. */
 enum Anchor: string
 {
     case TopLeft = 'top-left';

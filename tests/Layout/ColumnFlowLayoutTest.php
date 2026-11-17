@@ -143,7 +143,7 @@ final class ColumnFlowLayoutTest extends TestCase
         self::assertSame([...self::at('L', 1, 4, 10.0), ...self::at('L', 5, 7, 120.0), ['Mid', 10.0], ['L8', 10.0], ['L9', 120.0]], $this->runs($pages[0]));
     }
 
-    public function test_rule_draws_one_line_per_gap_at_the_gap_centre(): void
+    public function test_rule_draws_one_line_per_gap_at_the_gap_center(): void
     {
         $flow = $this->flow(...self::lines(1, 8))->columnRule(pt(1), Color::black());
         $pages = $this->paginate(Document::make($this->page()->body($flow)));

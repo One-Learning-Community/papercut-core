@@ -125,7 +125,7 @@ final readonly class SvgDocument
 
         $xml = $dom->saveXML($root);
         if ($xml === false) {
-            throw new ImageUnreadable('Cannot read SVG: it could not be serialised again');
+            throw new ImageUnreadable('Cannot read SVG: it could not be serialized again');
         }
 
         return new self($xml, $widthPt, $heightPt, $viewBox, $align, $slice, $title, $hasText, $unsupported);

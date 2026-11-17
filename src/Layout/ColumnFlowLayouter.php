@@ -191,8 +191,8 @@ final class ColumnFlowLayouter implements Layouter
                 if (!isset($placed[$i + 1]) || $placed[$i]['fragment']->height <= 0.0 || $placed[$i + 1]['fragment']->height <= 0.0) {
                     continue;
                 }
-                $centre = $boxes[$i]['x'] + $boxes[$i]['width'] + $gap / 2;
-                $f->addOp(new Line($centre, 0.0, $centre, $height, $spec->rule->color, $spec->rule->width));
+                $center = $boxes[$i]['x'] + $boxes[$i]['width'] + $gap / 2;
+                $f->addOp(new Line($center, 0.0, $center, $height, $spec->rule->color, $spec->rule->width));
             }
         }
 

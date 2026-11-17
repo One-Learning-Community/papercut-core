@@ -10,7 +10,7 @@ namespace Papercut\Layout;
  * this page at any ancestor level; $definiteHeight is a stretch or explicit
  * height the node must fill (on a resumed slice too).
  *
- * A table cell sharing a page slice with its neighbours is also given $fill,
+ * A table cell sharing a page slice with its neighbors is also given $fill,
  * the outer height of the slice, which a box that breaks takes in full (so its
  * background and side borders reach the slice bottom), and $open, which says
  * the box's rows go on in the next slice, so it draws no bottom edge even if

@@ -463,7 +463,7 @@ final class HtmlBlocksTest extends TestCase
         self::assertSame(15.0, $rule->style()->margin?->top->points);
     }
 
-    public function test_hr_colour_applies_to_the_rule_in_original_mode(): void
+    public function test_hr_color_applies_to_the_rule_in_original_mode(): void
     {
         foreach (['border-color:#ff0000', 'border-bottom-color:#ff0000', 'border-top-color:#ff0000', 'color:#ff0000'] as $css) {
             $v = Markup::html('<hr style="' . $css . '">', new MarkupOptions(styles: StyleMode::Original));

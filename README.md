@@ -96,12 +96,12 @@ $document = Document::make(
 ## Styles
 
 Style methods are available on every component and cascade to descendants where it makes sense (font, size,
-colour, alignment). Layout: `width height minWidth maxWidth minHeight maxHeight padding margin border borderWidth
+color, alignment). Layout: `width height minWidth maxWidth minHeight maxHeight padding margin border borderWidth
 borderColor radius background opacity grow shrink basis alignSelf gap justify`. Text: `font size weight bold italic
 color lineHeight letterSpacing left center right justify underline strike`. Pagination: `keepTogether keepWithNext
 breakBefore breakAfter minLines`.
 
-Colours are `Color` values or strings: hex (`'#336699'`) or the bundled Tailwind palette (`'slate-900'`,
+Colors are `Color` values or strings: hex (`'#336699'`) or the bundled Tailwind palette (`'slate-900'`,
 `'indigo-500'`).
 
 Named styles live in the `Theme`; apply one by name:
@@ -142,7 +142,7 @@ use function Papercut\{mm, pt};
 $document = Document::make(
     Page::a4()->margin(mm(20))->body(
         Column::make(
-            Text::markup('Plain, <b>bold</b>, <i>italic</i> and <span color="indigo-600">coloured</span>.'),
+            Text::markup('Plain, <b>bold</b>, <i>italic</i> and <span color="indigo-600">colored</span>.'),
             Text::spans(
                 Span::text('Built from '),
                 Span::text('spans', new Style(fontWeight: 700)),
@@ -243,7 +243,7 @@ as one blank line each. A truly empty `<p></p>` is dropped in both modes.
 ### Images
 
 Papercut never reads an `<img src>` itself. The `images` closure gets the raw decoded `src` and returns the image
-bytes, or `null` for a missing image (a throw counts as missing). Bytes that are not a recognised image format
+bytes, or `null` for a missing image (a throw counts as missing). Bytes that are not a recognized image format
 (PNG, JPEG, and with `ext-gd` WebP, GIF, BMP, AVIF; sniffed at conversion time) are treated as missing too. A missing
 image shows its `alt` text in italics, or nothing without `alt`. `width` and `height` attributes apply in both style
 modes (CSS pixels at 0.75pt) as a width only: with both, the `width` wins; with only a `height`, the width follows
@@ -280,8 +280,8 @@ In `Original` mode these properties are understood; `px` converts at 0.75pt.
 | `list-style-type` | Lists |
 
 Every other declaration, and any value Papercut's parsers refuse, is dropped and reported by declaration. A trailing
-`!important` is ignored and units are case-insensitive (`12PX`). Known gap: CSS colour keywords such as `red` and
-`hsl()` are not recognised yet.
+`!important` is ignored and units are case-insensitive (`12PX`). Known gap: CSS color keywords such as `red` and
+`hsl()` are not recognized yet.
 `float: left|right` renders a normal block (reported); floats set through classes are invisible and not reported.
 
 ### What gets reported
@@ -614,7 +614,7 @@ Every error extends `Papercut\PapercutException` and says what is wrong and wher
 | Exception | Cause |
 |---|---|
 | `UnknownAttribute` | A style attribute that does not exist; the message suggests the closest valid name. |
-| `InvalidValue` | A value that cannot be parsed (`'12 parsecs'`, a bad colour, a bad track list). |
+| `InvalidValue` | A value that cannot be parsed (`'12 parsecs'`, a bad color, a bad track list). |
 | `FontNotFound` | A family/weight/style that is not registered. |
 | `ImageUnreadable` | A file or bytes that are not a supported image. |
 | `LayoutOverflow` | Content that cannot fit on an empty page, such as an image with an explicit `height` taller than the page body. |

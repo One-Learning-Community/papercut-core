@@ -36,7 +36,7 @@ final class InlineMathHtmlTest extends TestCase
         self::assertMatchesRegularExpression('~<td[^>]*>.*v <math [^>]*display="inline"~s', $html);
     }
 
-    public function test_math_wrapper_has_only_colour_size_and_background(): void
+    public function test_math_wrapper_has_only_color_size_and_background(): void
     {
         $style = \Papercut\Style\Style::make(underline: true, strike: true, italic: true, fontWeight: 700, letterSpacing: \Papercut\px(2), color: \Papercut\Value\Color::hex('#cc0000'), background: \Papercut\Value\Color::hex('#eeeeee'));
         $html = $this->html(Text::spans(new Span('', $style, math: Math::frac('a', 'b'))));

@@ -117,7 +117,7 @@ final class EquationLayouterTest extends TestCase
         $this->assertGreaterThan(40.0, $right);
     }
 
-    public function test_takes_text_colour_and_size(): void
+    public function test_takes_text_color_and_size(): void
     {
         $h = new LayoutHarness();
         $red = Color::hex('#ff0000');
@@ -173,7 +173,7 @@ final class EquationLayouterTest extends TestCase
         $this->assertEqualsWithDelta($box->width + 6.0, $h->engine->intrinsic($eq, \Papercut\Style\ComputedStyle::root(Theme::default()))['max'], 1.0);
     }
 
-    public function test_translucent_colour_reaches_path_pieces(): void
+    public function test_translucent_color_reaches_path_pieces(): void
     {
         $h = new LayoutHarness();
         $eq = Equation::of(Math::fenced('(', ')', Math::frac('a', 'b')))->color(Color::rgb(255, 0, 0, 0.5));

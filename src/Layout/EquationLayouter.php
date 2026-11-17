@@ -10,7 +10,7 @@ use Papercut\Style\{ComputedStyle, TextAlign};
 
 /**
  * A displayed equation is a monolithic box as tall as its formula, laid out in display style at the text's size
- * and drawn in its colour. It never splits, and a formula wider than the space overflows it, as an overlong word does.
+ * and drawn in its color. It never splits, and a formula wider than the space overflows it, as an overlong word does.
  * The math font's script-size alternates are off, because the PDF can only draw glyphs that have a code point.
  *
  * @internal Part of Papercut's engine, not its public API. It may change in any release.

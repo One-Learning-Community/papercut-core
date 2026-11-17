@@ -958,9 +958,9 @@ final class TableLayouterTest extends TestCase
         $slices = self::slices($t, 180, 150);
         self::assertGreaterThan(1, count($slices));
         foreach ($slices as ['height' => $height, 'fills' => $fills, 'last' => $last]) {
-            foreach (['#ff0000', '#00ff00'] as $colour) {
-                self::assertArrayHasKey($colour, $fills, 'slot must paint on every slice');
-                self::assertSame([[0.0, $height]], self::merged($fills[$colour]), "$colour covers the slice");
+            foreach (['#ff0000', '#00ff00'] as $color) {
+                self::assertArrayHasKey($color, $fills, 'slot must paint on every slice');
+                self::assertSame([[0.0, $height]], self::merged($fills[$color]), "$color covers the slice");
             }
         }
     }
@@ -991,9 +991,9 @@ final class TableLayouterTest extends TestCase
         $slices = self::slices($t, 200, 150);
         self::assertGreaterThan(1, count($slices));
         foreach ($slices as ['height' => $height, 'fills' => $fills, 'horizontal' => $horizontal, 'last' => $last]) {
-            foreach (['#ff0000', '#0000ff'] as $colour) {
-                self::assertArrayHasKey($colour, $fills);
-                self::assertSame([[0.0, $height]], self::merged($fills[$colour]));
+            foreach (['#ff0000', '#0000ff'] as $color) {
+                self::assertArrayHasKey($color, $fills);
+                self::assertSame([[0.0, $height]], self::merged($fills[$color]));
             }
             if (!$last) {
                 self::assertSame([], array_values(array_filter($horizontal, static fn (array $l): bool => abs($l['y'] - ($height - 0.5)) < 1e-6)), 'no bottom edge at the cut');

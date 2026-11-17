@@ -99,7 +99,7 @@ final class ChoiceList implements Decorator
         if ($selected) {
             $marker = View::make(View::make()->apply($this->part('choice.mark') . ($this->radio ? ' ' . $this->part('choice.mark.radio') : '')));
         }
-        // A slot one line tall centres the marker on the label's first line at any font size or line height.
+        // A slot one line tall centers the marker on the label's first line at any font size or line height.
         return View::make($marker->apply($name))->height(Length::lh(1))->justify(Justify::Center)->shrink(0);
     }
 

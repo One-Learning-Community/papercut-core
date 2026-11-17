@@ -147,7 +147,7 @@ final class VariantsTest extends TestCase
         yield 'callout' => [Callout::make('x')->tone('warning')->title('t')];
         yield 'radio' => [ChoiceList::radio()->option('a', true)->option('b')->emphasizeSelected()];
         yield 'checkbox' => [ChoiceList::checkbox()->option('a', true)->option('b')->emphasizeSelected()];
-        yield 'field labelled' => [Field::make()->label('l')->placeholder('p')->lines(2)];
+        yield 'field labeled' => [Field::make()->label('l')->placeholder('p')->lines(2)];
         yield 'key-value' => [KeyValueList::make(KeyValuePair::of('k', 'v'))];
         yield 'section' => [Section::make('x')->title('t')->number(1)->rule()];
     }

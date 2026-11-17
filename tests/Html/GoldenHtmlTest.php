@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Full-page HTML (FontMode::None, so the files stay small) for every visual fixture and example document,
- * canonicalised through the HTML5 parser. Refresh with: UPDATE_HTML_GOLDEN=1 vendor/bin/phpunit tests/Html/GoldenHtmlTest.php
+ * canonicalized through the HTML5 parser. Refresh with: UPDATE_HTML_GOLDEN=1 vendor/bin/phpunit tests/Html/GoldenHtmlTest.php
  */
 final class GoldenHtmlTest extends TestCase
 {

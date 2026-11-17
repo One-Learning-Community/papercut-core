@@ -15,13 +15,13 @@ return Document::make(
                 ->row('Submitted', '2026-03-02 14:30')
                 ->row('Course', 'Introduction to Research Methods'),
             Section::make(
-                Field::make(Text::make('I usually start with the library catalogue, then widen to a general search.'))
+                Field::make(Text::make('I usually start with the library catalog, then widen to a general search.'))
                     ->label('Comments'),
                 Field::make()->label('Anything else?')->placeholder('No response')->lines(2),
             )->title('Search terms')->number('1')->rule(),
             Section::make(
                 ChoiceList::checkbox()
-                    ->option('Library catalogue', selected: true)
+                    ->option('Library catalog', selected: true)
                     ->option('Web search')
                     ->option('Ask a colleague')
                     ->emphasizeSelected(),

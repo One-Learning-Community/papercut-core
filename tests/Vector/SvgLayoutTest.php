@@ -126,7 +126,7 @@ final class SvgLayoutTest extends TestCase
     public static function aspectRatios(): iterable
     {
         // A 20 x 10 view box in a 100 x 100 box.
-        yield 'meet centres it' => ['xMidYMid meet', [0, 25, 100, 50]];
+        yield 'meet centers it' => ['xMidYMid meet', [0, 25, 100, 50]];
         yield 'meet at the end' => ['xMaxYMax meet', [0, 50, 100, 50]];
         yield 'meet at the start' => ['xMinYMin', [0, 0, 100, 50]];
         yield 'slice fills and crops' => ['xMidYMid slice', [-50, 0, 200, 100]];

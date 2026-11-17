@@ -89,7 +89,7 @@ final class OverlayTest extends TestCase
 
         self::assertTrue(Raster::ink($image, 181, 5));
         self::assertTrue(Raster::ink($image, 219, 5));
-        self::assertFalse(Raster::ink($image, 178, 5), '40pt wide, centred on x = 200');
+        self::assertFalse(Raster::ink($image, 178, 5), '40pt wide, centered on x = 200');
         self::assertFalse(Raster::ink($image, 222, 5));
     }
 
@@ -98,7 +98,7 @@ final class OverlayTest extends TestCase
         $page = self::page()->overlay(Place::at('50%', '50%', QrCode::make('https://example.com')->width(Percent::of(100)))->width('20%')->anchor(Anchor::Center));
         $image = Raster::of(self::pdf($page));
 
-        // 80pt square centred on (200, 100); the first module of the finder pattern sits just inside the quiet zone.
+        // 80pt square centered on (200, 100); the first module of the finder pattern sits just inside the quiet zone.
         $inked = 0;
         for ($x = 160; $x < 240; $x++) {
             $inked += Raster::ink($image, $x, 100) ? 1 : 0;
@@ -115,8 +115,8 @@ final class OverlayTest extends TestCase
 
         $words = PdfInspector::words($pdf);
         self::assertSame(['Ada', 'Lovelace'], array_column($words, 'text'));
-        $centre = ($words[0]['xMin'] + $words[1]['xMax']) / 2;
-        self::assertEqualsWithDelta(200.0, $centre, 1.0, 'the line is centred on x');
+        $center = ($words[0]['xMin'] + $words[1]['xMax']) / 2;
+        self::assertEqualsWithDelta(200.0, $center, 1.0, 'the line is centered on x');
         self::assertEqualsWithDelta(100.0, ($words[0]['yMin'] + $words[0]['yMax']) / 2, 4.0, 'and on y');
     }
 

@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 use function Papercut\pt;
 
 /**
- * SVG drawn into real PDFs and rasterised with pdftoppm. Every fixture has a 100 x 100 view box
+ * SVG drawn into real PDFs and rasterized with pdftoppm. Every fixture has a 100 x 100 view box
  * drawn 100pt wide on a 100pt page with no margin, so at 72 dpi a user unit is a pixel.
  */
 final class SvgPdfTest extends TestCase
@@ -26,7 +26,7 @@ final class SvgPdfTest extends TestCase
             self::markTestSkipped('pdftoppm (poppler) is not installed.');
         }
         if (!extension_loaded('gd')) {
-            self::markTestSkipped('GD is needed to read the rasterised page.');
+            self::markTestSkipped('GD is needed to read the rasterized page.');
         }
     }
 
@@ -58,9 +58,9 @@ final class SvgPdfTest extends TestCase
     private static function ink(\GdImage $image, int $x, int $y): bool
     {
         $rgb = imagecolorat($image, $x, $y);
-        $grey = ((($rgb >> 16) & 0xFF) + (($rgb >> 8) & 0xFF) + ($rgb & 0xFF)) / 3;
+        $gray = ((($rgb >> 16) & 0xFF) + (($rgb >> 8) & 0xFF) + ($rgb & 0xFF)) / 3;
 
-        return $grey < 128;
+        return $gray < 128;
     }
 
     /** @return iterable<string, array{string, list<array{int, int}>, list<array{int, int}>}> */

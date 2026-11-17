@@ -181,7 +181,7 @@ final class HtmlTablesTest extends TestCase
         self::assertInstanceOf(Table::class, $v->children()[1]);
     }
 
-    public function test_stray_cells_outside_a_table_keep_todays_behaviour(): void
+    public function test_stray_cells_outside_a_table_keep_todays_behavior(): void
     {
         $t = Markup::html('<td>a</td>');
 

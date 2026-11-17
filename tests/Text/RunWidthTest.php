@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * A merged run's width is its items' widths plus what each join adds, measured from the characters that meet (for fonts
- * that join in pairs, as the bundled ones do; TextLayouter also measures a space with both its neighbours).
+ * that join in pairs, as the bundled ones do; TextLayouter also measures a space with both its neighbors).
  * TextLayouter relies on this to place merged runs without shaping each whole run again.
  */
 final class RunWidthTest extends TestCase

@@ -20,7 +20,7 @@ use function Papercut\pt;
 final class CodeBlockTest extends TestCase
 {
     /** @return list<string> */
-    private static function spanColours(Text $text): array
+    private static function spanColors(Text $text): array
     {
         $out = [];
         foreach ($text->spanList() as $span) {
@@ -103,7 +103,7 @@ final class CodeBlockTest extends TestCase
         }
     }
 
-    public function test_renders_coloured_spans_and_a_label_line(): void
+    public function test_renders_colored_spans_and_a_label_line(): void
     {
         $view = CodeBlock::make("<?php\n// hi")->language('php')->render();
         $label = self::textAt($view, 0);
@@ -111,7 +111,7 @@ final class CodeBlockTest extends TestCase
         self::assertSame('PHP', self::words($label));
         self::assertSame('#94a3b8', (string) $label->style()->color);
         self::assertSame('#f6f8fa', (string) $view->style()->background);
-        self::assertContains('#8b949e', self::spanColours($code));
+        self::assertContains('#8b949e', self::spanColors($code));
         self::assertSame([], $view->notes());
     }
 
@@ -152,12 +152,12 @@ final class CodeBlockTest extends TestCase
     {
         $text = CodeBlock::make('a b')->language('text')->render();
         self::assertSame('TEXT', self::words(self::textAt($text, 0)));
-        self::assertSame([], self::spanColours(self::textAt($text, 1)));
+        self::assertSame([], self::spanColors(self::textAt($text, 1)));
         self::assertSame([], $text->notes());
 
         $none = CodeBlock::make('a b')->language('nohighlight')->render();
         self::assertCount(1, $none->children());
-        self::assertSame([], self::spanColours(self::textAt($none, 0)));
+        self::assertSame([], self::spanColors(self::textAt($none, 0)));
         self::assertSame([], $none->notes());
     }
 
@@ -165,7 +165,7 @@ final class CodeBlockTest extends TestCase
     {
         $view = CodeBlock::make('abc')->language('phpp')->render();
         self::assertSame('PHPP', self::words(self::textAt($view, 0)));
-        self::assertSame([], self::spanColours(self::textAt($view, 1)));
+        self::assertSame([], self::spanColors(self::textAt($view, 1)));
         self::assertEquals([self::dropped("syntax highlighting (unknown language 'phpp')")], $view->notes());
     }
 
@@ -174,7 +174,7 @@ final class CodeBlockTest extends TestCase
         $view = CodeBlock::make('<?php echo 1;')->language('php')->theme('nope')->render();
         self::assertSame('#f6f8fa', (string) $view->style()->background);
         self::assertEquals([self::dropped("syntax highlighting (unknown theme 'nope'; the default theme was used)")], $view->notes());
-        self::assertNotSame([], self::spanColours(self::textAt($view, 1)));
+        self::assertNotSame([], self::spanColors(self::textAt($view, 1)));
     }
 
     private static function withoutHighlighter(): CodeBlock
@@ -186,7 +186,7 @@ final class CodeBlockTest extends TestCase
     {
         $view = self::withoutHighlighter()->render();
         self::assertSame('PHP', self::words(self::textAt($view, 0)));
-        self::assertSame([], self::spanColours(self::textAt($view, 1)));
+        self::assertSame([], self::spanColors(self::textAt($view, 1)));
         self::assertSame('#f6f8fa', (string) $view->style()->background);
         self::assertEquals([self::dropped('syntax highlighting (install phiki/phiki)')], $view->notes());
     }
@@ -198,7 +198,7 @@ final class CodeBlockTest extends TestCase
         (new PdfExporter())->export($doc, new PdfOptions(strict: true));
     }
 
-    public function test_dark_theme_colours_the_box_and_label(): void
+    public function test_dark_theme_colors_the_box_and_label(): void
     {
         $view = CodeBlock::make('<?php')->language('php')->theme('github-dark')->render();
         self::assertSame('#24292e', (string) $view->style()->background);
@@ -253,7 +253,7 @@ final class CodeBlockTest extends TestCase
         self::assertInstanceOf(View::class, $strip->children()[0], 'the block variant wins; caption is not added');
     }
 
-    public function test_own_style_overrides_theme_colours(): void
+    public function test_own_style_overrides_theme_colors(): void
     {
         $view = CodeBlock::make('x')->language('php')->background(Color::hex('#ffffff'))->render();
         self::assertSame('#ffffff', (string) $view->style()->background);
@@ -308,11 +308,11 @@ final class CodeBlockTest extends TestCase
     {
         $view = CodeBlock::make('a b')->language('no-highlight')->render();
         self::assertCount(1, $view->children());
-        self::assertSame([], self::spanColours(self::textAt($view, 0)));
+        self::assertSame([], self::spanColors(self::textAt($view, 0)));
         self::assertSame([], $view->notes());
     }
 
-    public function test_every_plain_word_is_labelled_text(): void
+    public function test_every_plain_word_is_labeled_text(): void
     {
         foreach (['text', 'plaintext', 'txt', 'plain'] as $word) {
             $view = CodeBlock::make('a')->language($word)->render();

@@ -29,7 +29,7 @@ final class FieldTest extends TestCase
         self::assertCount(1, $box->children());
     }
 
-    public function test_labelled_field_style_goes_on_outer_column_not_box(): void
+    public function test_labeled_field_style_goes_on_outer_column_not_box(): void
     {
         $outer = Field::make('x')->label('L')->padding(pt(9))->apply('mine')->render();
 

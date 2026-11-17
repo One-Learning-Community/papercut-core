@@ -13,6 +13,6 @@ enum QrGradient: string
     case Diagonal = 'diagonal';
     /** From the bottom-left corner to the top-right one. */
     case InverseDiagonal = 'inverse-diagonal';
-    /** From the centre outwards. */
+    /** From the center outwards. */
     case Radial = 'radial';
 }

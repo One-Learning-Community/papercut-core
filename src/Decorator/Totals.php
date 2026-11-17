@@ -10,7 +10,7 @@ use Papercut\Value\{Auto, Fr};
 
 /**
  * Label and amount rows with the amounts right-aligned, such as an invoice's subtotal, tax and total.
- * Total rows are emphasised. Rendered as a borderless two-column Table, like KeyValueList.
+ * Total rows are emphasized. Rendered as a borderless two-column Table, like KeyValueList.
  */
 final class Totals implements Decorator
 {
@@ -44,7 +44,7 @@ final class Totals implements Decorator
         return $this->add(KeyValuePair::of($label, $amount));
     }
 
-    /** Adds an emphasised row, such as the amount due. Any row can be one, so several are fine. */
+    /** Adds an emphasized row, such as the amount due. Any row can be one, so several are fine. */
     public function total(string|Node|Component $label, string|Node|Component $amount): self
     {
         return $this->add(KeyValuePair::of($label, $amount, total: true));

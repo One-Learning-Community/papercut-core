@@ -36,7 +36,7 @@ final class MarkupCodeBlockTest extends TestCase
         ));
     }
 
-    private static function hasColour(View|Text $node): bool
+    private static function hasColor(View|Text $node): bool
     {
         foreach (self::texts($node) as $t) {
             foreach ($t->spanList() as $s) {
@@ -64,7 +64,7 @@ final class MarkupCodeBlockTest extends TestCase
         $v = Markup::html('<pre><code class="language-php">$a = 1;</code></pre>');
         self::assertInstanceOf(View::class, $v);
         self::assertStringContainsString('PHP', self::plain($v));
-        self::assertTrue(self::hasColour($v));
+        self::assertTrue(self::hasColor($v));
     }
 
     public function test_lang_class_and_class_on_pre_work_too(): void
@@ -75,7 +75,7 @@ final class MarkupCodeBlockTest extends TestCase
         self::assertStringStartsWith("SQL\n", self::plain($lang));
         $sql = Markup::html('<pre class="language-sql"><code>SELECT 1;</code></pre>');
         self::assertStringContainsString('SQL', self::plain($sql));
-        self::assertTrue(self::hasColour($sql));
+        self::assertTrue(self::hasColor($sql));
     }
 
     public function test_switch_off_keeps_the_plain_pre(): void
@@ -83,7 +83,7 @@ final class MarkupCodeBlockTest extends TestCase
         $html = '<pre><code class="language-php">$a = 1;</code></pre>';
         $off = Markup::html($html, new MarkupOptions(code: false));
         self::assertStringNotContainsString('PHP', self::plain($off));
-        self::assertFalse(self::hasColour($off));
+        self::assertFalse(self::hasColor($off));
         self::assertEquals(Markup::html('<pre><code>$a = 1;</code></pre>', new MarkupOptions(code: false)), $off);
     }
 

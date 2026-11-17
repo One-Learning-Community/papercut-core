@@ -6,7 +6,7 @@ namespace Papercut\Decorator;
 
 use Papercut\{Component, Node, Text};
 
-/** One row of a KeyValueList or Totals: its label, its value, and whether it is an emphasised total row (Totals only). */
+/** One row of a KeyValueList or Totals: its label, its value, and whether it is an emphasized total row (Totals only). */
 final readonly class KeyValuePair
 {
     public function __construct(

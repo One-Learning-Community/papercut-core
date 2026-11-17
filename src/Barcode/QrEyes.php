@@ -10,6 +10,6 @@ enum QrEyes: string
     case Square = 'square';
     /** A square ring around a round dot. */
     case Dot = 'dot';
-    /** A ring rounded on three corners and square on the one facing the middle of the code, around a round centre. */
+    /** A ring rounded on three corners and square on the one facing the middle of the code, around a round center. */
     case Pointy = 'pointy';
 }

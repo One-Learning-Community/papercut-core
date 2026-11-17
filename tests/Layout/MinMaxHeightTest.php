@@ -51,7 +51,7 @@ final class MinMaxHeightTest extends TestCase
         self::assertEqualsWithDelta(140.0, self::frag($r)->height, 0.001);
     }
 
-    public function test_text_honours_min_max_and_explicit_height(): void
+    public function test_text_honors_min_max_and_explicit_height(): void
     {
         $h = new LayoutHarness();
         self::assertEqualsWithDelta(80.0, self::frag($h->layout(Text::make('x')->border(pt(1))->minHeight(pt(80)), 200))->height, 0.001);

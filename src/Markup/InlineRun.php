@@ -38,7 +38,7 @@ final class InlineRun
         }
     }
 
-    /** A formula takes only the colour, size, background and link of the text around it, not its weight, slant, spacing or decorations. */
+    /** A formula takes only the color, size, background and link of the text around it, not its weight, slant, spacing or decorations. */
     public function math(MathNode $math, Style $style, ?string $href): void
     {
         $this->spans[] = new Span('', new Style(fontSize: $style->fontSize, color: $style->color, background: $style->background), $href, math: $math);

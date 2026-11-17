@@ -60,7 +60,7 @@ final class NameRules
         }
         foreach ($words as $word) {
             if (in_array($word, $toneNames, true)) {
-                throw new InvalidVariant("The variant '$word' is one of this decorator's built-in tones (" . implode(', ', $toneNames) . "); use tone('$word') for the tone's colours, or pick another variant word.");
+                throw new InvalidVariant("The variant '$word' is one of this decorator's built-in tones (" . implode(', ', $toneNames) . "); use tone('$word') for the tone's colors, or pick another variant word.");
             }
         }
         return $words;

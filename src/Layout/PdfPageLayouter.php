@@ -11,7 +11,7 @@ use Papercut\Value\Length;
 
 /**
  * A page of another PDF is monolithic, sized like an image from the page's own size. When both
- * width and height are set, the page keeps its proportions and is centred in its box.
+ * width and height are set, the page keeps its proportions and is centered in its box.
  *
  * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */

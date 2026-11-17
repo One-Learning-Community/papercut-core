@@ -130,7 +130,7 @@ final class DefaultStyles
 
         $s['choice'] = Style::make(gap: pt(4));
         $s['choice.option'] = Style::make(gap: pt(6));
-        // Sized from the text (0.75em: 9pt at 12pt); Choice centres it in a one-line slot.
+        // Sized from the text (0.75em: 9pt at 12pt); Choice centers it in a one-line slot.
         $s['choice.marker'] = Style::make(
             width: Length::em(0.75),
             height: Length::em(0.75),
@@ -163,7 +163,7 @@ final class DefaultStyles
 
         $s['badge'] = Style::make(alignSelf: Align::Start, padding: Edges::of(pt(1.5), pt(6)), radius: pt(8), fontSize: Length::em(0.9), fontWeight: 700);
         foreach (['neutral' => 'slate', 'note' => 'sky', 'tip' => 'emerald', 'warning' => 'amber', 'danger' => 'red'] as $tone => $hue) {
-            // The border colour only shows when a border is drawn, as in the outline variant.
+            // The border color only shows when a border is drawn, as in the outline variant.
             $s['badge.' . $tone] = Style::make(background: self::c($hue . '-100'), color: self::c($hue . '-800'), borderColor: self::c($hue . '-300'));
         }
         $s['badge.outline'] = Style::make(background: self::c('transparent'), borderWidth: Edges::all(pt(0.75)));
@@ -219,7 +219,7 @@ final class DefaultStyles
         $s['equation'] = Style::make(margin: self::sides(0, 0, 6, 0));
         $s['code'] = Style::make(fontFamily: 'monospace', fontSize: Length::em(0.9), background: self::c('slate-100'));
 
-        // Code blocks: geometry only; the colours come from the code theme (see CodeBlock).
+        // Code blocks: geometry only; the colors come from the code theme (see CodeBlock).
         $s['code-block'] = Style::make(padding: self::sides(6, 8, 6, 8), margin: self::sides(0, 0, 6, 0), radius: pt(3), borderWidth: Edges::all(pt(0.5)), fontWeight: 400, italic: false, underline: false, strike: false);
         $s['code-block.code'] = Style::make(fontFamily: 'monospace', fontSize: Length::em(0.9), whiteSpace: WhiteSpace::PreWrap);
         $s['code-block.label'] = Style::make(fontSize: Length::em(0.7), fontWeight: 600, italic: false, underline: false, strike: false, letterSpacing: pt(0.4), textAlign: TextAlign::Right, margin: self::sides(0, 0, 2, 0));

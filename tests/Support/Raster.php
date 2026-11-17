@@ -6,7 +6,7 @@ namespace Papercut\Tests\Support;
 
 use PHPUnit\Framework\Assert;
 
-/** PDFs rasterised at 72 dpi with pdftoppm, so a point is a pixel. */
+/** PDFs rasterized at 72 dpi with pdftoppm, so a point is a pixel. */
 final class Raster
 {
     /** Null when pdftoppm or GD is missing, else the reason to skip. */
@@ -16,7 +16,7 @@ final class Raster
         if ($code !== 0) {
             return 'pdftoppm (poppler) is not installed.';
         }
-        return extension_loaded('gd') ? null : 'GD is needed to read the rasterised page.';
+        return extension_loaded('gd') ? null : 'GD is needed to read the rasterized page.';
     }
 
     public static function of(string $pdf, string $password = '', int $page = 1): \GdImage

@@ -11,8 +11,8 @@ use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Renders each fixture, rasterises every page with pdftoppm at 72 dpi and compares it with the committed
- * snapshot. Poppler versions rasterise text slightly differently, so the comparison tolerates 0.5% of
+ * Renders each fixture, rasterizes every page with pdftoppm at 72 dpi and compares it with the committed
+ * snapshot. Poppler versions rasterize text slightly differently, so the comparison tolerates 0.5% of
  * pixels differing by more than 32 per channel.
  *
  * Refresh with: UPDATE_SNAPSHOTS=1 php -d xdebug.mode=off vendor/bin/phpunit tests/Visual
@@ -45,7 +45,7 @@ final class SnapshotTest extends TestCase
     {
         $document = require __DIR__ . "/fixtures/$name.php";
         self::assertInstanceOf(Document::class, $document);
-        $pages = $this->rasterise($document->toPdf()->bytes());
+        $pages = $this->rasterize($document->toPdf()->bytes());
         self::assertNotSame([], $pages, 'pdftoppm produced no pages');
 
         $snapshotDir = __DIR__ . '/snapshots';
@@ -98,7 +98,7 @@ final class SnapshotTest extends TestCase
     }
 
     /** @return list<string> PNG bytes, one per page */
-    private function rasterise(string $pdf): array
+    private function rasterize(string $pdf): array
     {
         $dir = sys_get_temp_dir() . '/papercut-visual-' . getmypid() . '-' . bin2hex(random_bytes(4));
         mkdir($dir);

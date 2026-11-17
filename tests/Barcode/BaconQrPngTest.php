@@ -30,7 +30,7 @@ final class BaconQrPngTest extends TestCase
         self::assertSame([300, 300], [$size[0], $size[1]]);
         $im = imagecreatefromstring($png);
         self::assertNotFalse($im);
-        // The quiet zone is see-through; the top-left eye's outer ring is drawn in the colour.
+        // The quiet zone is see-through; the top-left eye's outer ring is drawn in the color.
         self::assertSame(127, imagecolorsforindex($im, (int) imagecolorat($im, 2, 2))['alpha']);
         $module = 300 / $qr->span();
         $eye = imagecolorsforindex($im, (int) imagecolorat($im, (int) (($qr->quietZoneModules() + 0.5) * $module), (int) (($qr->quietZoneModules() + 3) * $module)));

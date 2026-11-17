@@ -23,7 +23,7 @@ trait HasVariants
     }
 
     /**
-     * The built-in tone names a variant word may not equal, as the tone's colours would then apply
+     * The built-in tone names a variant word may not equal, as the tone's colors would then apply
      * through the variant. A decorator with built-in tones overrides this.
      *
      * @return list<string>

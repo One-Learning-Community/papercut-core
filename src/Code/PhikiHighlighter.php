@@ -154,11 +154,11 @@ final class PhikiHighlighter implements Highlighter
         $code = str_replace(["\r\n", "\r"], "\n", $code);
         if ($code === '') {
             // Phiki turns the empty string into one empty line; there is nothing to show.
-            $this->tokenise('', $language, $theme, $original);
+            $this->tokenize('', $language, $theme, $original);
             return new HighlightedCode([], $colors['background'], $colors['foreground']);
         }
 
-        $tokenLines = $this->tokenise($code, $language, $theme, $original);
+        $tokenLines = $this->tokenize($code, $language, $theme, $original);
 
         $lines = [];
         foreach ($tokenLines as $tokenLine) {
@@ -179,7 +179,7 @@ final class PhikiHighlighter implements Highlighter
     }
 
     /** @return iterable<array<\Phiki\Token\HighlightedToken>> */
-    private function tokenise(string $code, string $language, string $theme, string $original): iterable
+    private function tokenize(string $code, string $language, string $theme, string $original): iterable
     {
         try {
             return $this->phiki->codeToHighlightedTokens($code, $language, $theme);

@@ -38,7 +38,7 @@ final class BaconQrEncoderTest extends TestCase
         $m = (new BaconQrEncoder())->encode('Grüße aus Köln', ErrorCorrection::Medium);
         $n = count($m);
 
-        // Each finder pattern: a dark 7 x 7 ring, a light ring, a dark 3 x 3 centre.
+        // Each finder pattern: a dark 7 x 7 ring, a light ring, a dark 3 x 3 center.
         foreach ([[0, 0], [$n - 7, 0], [0, $n - 7]] as [$x, $y]) {
             self::assertTrue($m[$y][$x] && $m[$y + 6][$x + 6] && $m[$y + 3][$x + 3]);
             self::assertFalse($m[$y + 1][$x + 1] || $m[$y + 5][$x + 5]);

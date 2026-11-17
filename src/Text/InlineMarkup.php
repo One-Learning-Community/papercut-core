@@ -11,7 +11,7 @@ use Papercut\Style\Style;
 use Papercut\Value\Color;
 
 /**
- * Parses the small inline tag vocabulary into spans. Tags are recognised
+ * Parses the small inline tag vocabulary into spans. Tags are recognized
  * first; entities are decoded afterwards, only inside text, so escaped
  * markup (&lt;b&gt;) can never become a tag.
  *

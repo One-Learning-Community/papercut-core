@@ -54,7 +54,7 @@ final class CodeBlockThemeTest extends TestCase
         return CodeBlock::make('<?php echo 1;')->language('php');
     }
 
-    public function test_page_code_theme_colours_blocks_without_their_own(): void
+    public function test_page_code_theme_colors_blocks_without_their_own(): void
     {
         $plain = self::fills(Document::make(self::page()->body(self::block())));
         $dark = self::fills(Document::make(self::page(new ThemeOverride(codeTheme: 'github-dark'))->body(self::block())));

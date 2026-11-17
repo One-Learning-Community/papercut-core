@@ -8,7 +8,7 @@ use Papercut\Style\ImageFit;
 
 use function Papercut\{mm, pt};
 
-// 60x30 gradient with a white frame so fit behaviour is visible; generated, so no binary fixture.
+// 60x30 gradient with a white frame so fit behavior is visible; generated, so no binary fixture.
 $im = imagecreatetruecolor(60, 30);
 for ($x = 0; $x < 60; $x++) {
     imageline($im, $x, 0, $x, 29, ((int) ($x * 4.2) << 16) | (90 << 8) | (255 - (int) ($x * 4.2)));

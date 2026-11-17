@@ -19,8 +19,8 @@ final class LengthTest extends TestCase
     {
         yield 'points' => ['12pt', 12.0];
         yield 'pixels' => ['16px', 12.0];
-        yield 'millimetres' => ['25.4mm', 72.0];
-        yield 'centimetres' => ['2.54cm', 72.0];
+        yield 'millimeters' => ['25.4mm', 72.0];
+        yield 'centimeters' => ['2.54cm', 72.0];
         yield 'inches' => ['1in', 72.0];
         yield 'leading dot' => ['.5in', 36.0];
         yield 'negative' => ['-10pt', -10.0];

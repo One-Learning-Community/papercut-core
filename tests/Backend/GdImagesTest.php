@@ -56,7 +56,7 @@ final class GdImagesTest extends TestCase
 
     public function test_opaque_images_convert_without_an_alpha_channel(): void
     {
-        // PNG colour type (IHDR byte 25): 2 = RGB, 6 = RGBA. An alpha channel php-pdf must split out costs ~10x.
+        // PNG color type (IHDR byte 25): 2 = RGB, 6 = RGBA. An alpha channel php-pdf must split out costs ~10x.
         $type = static fn (string $bytes, string $mime): int => ord(GdImageConverter::detect()->toPng($bytes, $mime)[25]);
         self::assertSame(2, $type(TestImages::webp(), 'image/webp'), 'lossless');
         self::assertSame(2, $type(TestImages::webp(lossless: false), 'image/webp'), 'lossy');

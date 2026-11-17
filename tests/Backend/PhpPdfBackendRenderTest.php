@@ -174,7 +174,7 @@ final class PhpPdfBackendRenderTest extends TestCase
         return [
             'clip' => ['clip'],
             'opacity' => ['opacity'],
-            'translucent colour' => ['alpha'],
+            'translucent color' => ['alpha'],
         ];
     }
 

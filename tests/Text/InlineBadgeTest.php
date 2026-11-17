@@ -226,7 +226,7 @@ final class InlineBadgeTest extends TestCase
         self::assertSame(['alpha beta', 'gamma'], array_map(static fn (TextRun $r): string => $r->text, $runs));
     }
 
-    public function test_spaces_inside_a_padded_span_still_space_it_from_its_neighbours(): void
+    public function test_spaces_inside_a_padded_span_still_space_it_from_its_neighbors(): void
     {
         $style = Style::make(padding: Edges::parse('0 4pt'));
         $glued = self::runs(self::ops(Text::spans(Span::text('run'), Span::text('npm', $style), Span::text('now')), 300));

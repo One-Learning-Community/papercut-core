@@ -51,7 +51,7 @@ final class DefaultStylesTest extends TestCase
         $m = DefaultStyles::get('choice.marker');
         self::assertSame('0.75em', (string) $m?->width);
         self::assertSame('0.75em', (string) $m?->height);
-        self::assertNull($m?->margin, 'the one-line slot centres the marker; no hand-tuned offset');
+        self::assertNull($m?->margin, 'the one-line slot centers the marker; no hand-tuned offset');
     }
 
     public function test_built_in_variants(): void
