@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Exception;
+namespace Quoin\Exception;
 
-use Papercut\Export\FidelityReport;
-use Papercut\PapercutException;
+use Quoin\Export\FidelityReport;
+use Quoin\QuoinException;
 
-final class UnsupportedFeature extends PapercutException
+final class UnsupportedFeature extends QuoinException
 {
     private function __construct(public readonly FidelityReport $report)
     {

@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
-use Papercut\Table;
+use Quoin\Table;
 
 /**
  * Resolves a table's cells onto a grid, the way a browser does: each cell takes
  * the first column not covered by a rowspan from an earlier row. Header rows and
  * body rows are separate sections; a rowspan never crosses from one into the other.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final readonly class TableGrid
 {

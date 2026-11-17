@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Value;
+namespace Quoin\Tests\Value;
 
-use Papercut\Exception\InvalidValue;
-use Papercut\Value\Length;
-use Papercut\Value\Unit;
+use Quoin\Exception\InvalidValue;
+use Quoin\Value\Length;
+use Quoin\Value\Unit;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\{cm, in, mm, pt, px};
+use function Quoin\{cm, in, mm, pt, px};
 
 final class LengthTest extends TestCase
 {

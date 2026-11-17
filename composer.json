@@ -1,13 +1,13 @@
 {
-    "name": "papercut/core",
+    "name": "quoin/core",
     "description": "Page-aware PDF and HTML documents for modern PHP, built from typed, immutable components.",
     "type": "library",
     "license": "MIT",
-    "homepage": "https://github.com/One-Learning-Community/papercut",
+    "homepage": "https://github.com/One-Learning-Community/quoin",
     "support": {
-        "issues": "https://github.com/One-Learning-Community/papercut/issues",
-        "source": "https://github.com/One-Learning-Community/papercut",
-        "docs": "https://one-learning-community.github.io/papercut/guide/"
+        "issues": "https://github.com/One-Learning-Community/quoin/issues",
+        "source": "https://github.com/One-Learning-Community/quoin",
+        "docs": "https://one-learning-community.github.io/quoin/guide/"
     },
     "authors": [
         {
@@ -31,7 +31,7 @@
             "options": {
                 "symlink": true,
                 "versions": {
-                    "papercut/math": "0.15.x-dev"
+                    "quoin/math": "0.16.x-dev"
                 }
             }
         }
@@ -42,7 +42,7 @@
         "ext-mbstring": "*",
         "ext-zlib": "*",
         "dskripchenko/php-pdf": "^1.26",
-        "papercut/math": "^0.15"
+        "quoin/math": "^0.16"
     },
     "require-dev": {
         "bacon/bacon-qr-code": "^3.1",
@@ -57,7 +57,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Papercut\\": "src/"
+            "Quoin\\": "src/"
         },
         "files": [
             "src/functions.php"
@@ -65,7 +65,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Papercut\\Tests\\": "tests/"
+            "Quoin\\Tests\\": "tests/"
         }
     },
     "scripts": {
@@ -77,7 +77,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "0.15.x-dev"
+            "dev-main": "0.16.x-dev"
         }
     },
     "minimum-stability": "dev",

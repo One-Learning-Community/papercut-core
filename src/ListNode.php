@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut;
+namespace Quoin;
 
-use Papercut\Concerns\HasStyle;
-use Papercut\Style\ListMarker;
-use Papercut\Support\EnumValue;
+use Quoin\Concerns\HasStyle;
+use Quoin\Style\ListMarker;
+use Quoin\Support\EnumValue;
 
 /**
  * An ordered or unordered list of ListItems.
@@ -39,7 +39,7 @@ final class ListNode implements Styled
         return $clone;
     }
 
-    /** @throws \Papercut\Exception\InvalidValue for a string that is not a list marker */
+    /** @throws \Quoin\Exception\InvalidValue for a string that is not a list marker */
     public function marker(ListMarker|string $m): self
     {
         $m = EnumValue::from(ListMarker::class, $m, 'ListNode::marker()');

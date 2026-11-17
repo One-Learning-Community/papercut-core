@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Decorator;
+namespace Quoin\Decorator;
 
-use Papercut\Style\{Align, Direction, Justify, Style, TextAlign, WhiteSpace};
-use Papercut\Value\{Color, Edges, Length, Percent};
+use Quoin\Style\{Align, Direction, Justify, Style, TextAlign, WhiteSpace};
+use Quoin\Value\{Color, Edges, Length, Percent};
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 /**
  * Built-in styles for the decorator components. A Theme consults its own

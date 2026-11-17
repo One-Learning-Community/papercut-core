@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Exception;
+namespace Quoin\Exception;
 
 use InvalidArgumentException;
 

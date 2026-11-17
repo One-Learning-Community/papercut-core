@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use Papercut\Math\Math;
-use Papercut\Style\TextAlign;
-use Papercut\{Column, Document, Equation, Page, Span, Table, Text};
+use Quoin\Math\Math;
+use Quoin\Style\TextAlign;
+use Quoin\{Column, Document, Equation, Page, Span, Table, Text};
 
-use function Papercut\{mm, pt};
+use function Quoin\{mm, pt};
 
 // The formulas are the ones in packages/math/tests/Fixtures.php. Generic, made-up formulas: fractions, roots, scripts, fences and text, then alignment, size and color from context.
 $quad = Math::row('x =', Math::frac(Math::row('−b ±', Math::sqrt(Math::sup('b', '2'), '− 4ac')), '2a'));

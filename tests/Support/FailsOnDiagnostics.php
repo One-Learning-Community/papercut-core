@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Support;
+namespace Quoin\Tests\Support;
 
 /** Makes any PHP diagnostic (warning, notice, deprecation) fail the test that raised it. */
 trait FailsOnDiagnostics

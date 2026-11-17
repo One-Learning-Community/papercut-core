@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Node;
+namespace Quoin\Tests\Node;
 
-use Papercut\{Document, ListItem, ListNode, Node, Page, Text};
-use Papercut\Style\{ComputedStyle, ListMarker, StyleResolver, Theme};
-use Papercut\Tree\{Region, TreeVisitor, TreeWalker, Visit};
+use Quoin\{Document, ListItem, ListNode, Node, Page, Text};
+use Quoin\Style\{ComputedStyle, ListMarker, StyleResolver, Theme};
+use Quoin\Tree\{Region, TreeVisitor, TreeWalker, Visit};
 use PHPUnit\Framework\TestCase;
 
 final class ListNodeTest extends TestCase

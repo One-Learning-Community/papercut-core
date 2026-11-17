@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Export;
+namespace Quoin\Export;
 
-use Papercut\Document;
-use Papercut\Exception\UnsupportedFeature;
-use Papercut\Layout\{LayoutContext, LayoutEngine, Paginator};
-use Papercut\Paint\{Clip, Op, Opacity, PageDisplayList, Painter, TextRun};
-use Papercut\Style\PageThemes;
-use Papercut\Text\FontRegistry;
-use Papercut\Toc\TocIndex;
+use Quoin\Document;
+use Quoin\Exception\UnsupportedFeature;
+use Quoin\Layout\{LayoutContext, LayoutEngine, Paginator};
+use Quoin\Paint\{Clip, Op, Opacity, PageDisplayList, Painter, TextRun};
+use Quoin\Style\PageThemes;
+use Quoin\Text\FontRegistry;
+use Quoin\Toc\TocIndex;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
+/** @internal Engine detail, not public API. It may change in any release. */
 final class PdfExporter implements Exporter
 {
     /**

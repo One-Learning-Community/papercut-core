@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Support;
+namespace Quoin\Tests\Support;
 
 /**
  * Stands in for the http, https, file and data stream wrappers while a test

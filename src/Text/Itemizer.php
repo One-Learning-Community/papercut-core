@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Text;
+namespace Quoin\Text;
 
-use Papercut\Math\Layout\Box;
-use Papercut\Math\Math;
-use Papercut\Math\Node\Node as MathNode;
-use Papercut\Span;
-use Papercut\Style\{ComputedStyle, StyleResolver, Theme, WhiteSpace};
+use Quoin\Math\Layout\Box;
+use Quoin\Math\Math;
+use Quoin\Math\Node\Node as MathNode;
+use Quoin\Span;
+use Quoin\Style\{ComputedStyle, StyleResolver, Theme, WhiteSpace};
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
+/** @internal Engine detail, not public API. It may change in any release. */
 final class Itemizer
 {
     private const string BREAK_AFTER = "-\u{2013}\u{2014}/";

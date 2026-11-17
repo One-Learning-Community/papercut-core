@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Text;
+namespace Quoin\Text;
 
-use Papercut\Backend\{FontHandle, JoinsInPairs};
+use Quoin\Backend\{FontHandle, JoinsInPairs};
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
+/** @internal Engine detail, not public API. It may change in any release. */
 final class CachedFont implements FontHandle
 {
     /** @var array<string, float> unit-size advances keyed by text */

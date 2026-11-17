@@ -2,31 +2,31 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Markup;
+namespace Quoin\Tests\Markup;
 
-use Papercut\Decorator\DefaultStyles;
-use Papercut\Document;
-use Papercut\Export\FidelityLevel;
-use Papercut\Export\PdfOptions;
-use Papercut\Image;
-use Papercut\Layout\TableGrid;
-use Papercut\ListItem;
-use Papercut\ListNode;
-use Papercut\Markup\Markup;
-use Papercut\Markup\MarkupOptions;
-use Papercut\Markup\Note;
-use Papercut\Page;
-use Papercut\Table;
-use Papercut\TableCell;
-use Papercut\TableRow;
-use Papercut\Tests\Support\TestImages;
-use Papercut\Text;
-use Papercut\Value\Auto;
-use Papercut\Value\Color;
-use Papercut\Value\Length;
-use Papercut\Value\Percent;
-use Papercut\Value\Unit;
-use Papercut\View;
+use Quoin\Decorator\DefaultStyles;
+use Quoin\Document;
+use Quoin\Export\FidelityLevel;
+use Quoin\Export\PdfOptions;
+use Quoin\Image;
+use Quoin\Layout\TableGrid;
+use Quoin\ListItem;
+use Quoin\ListNode;
+use Quoin\Markup\Markup;
+use Quoin\Markup\MarkupOptions;
+use Quoin\Markup\Note;
+use Quoin\Page;
+use Quoin\Table;
+use Quoin\TableCell;
+use Quoin\TableRow;
+use Quoin\Tests\Support\TestImages;
+use Quoin\Text;
+use Quoin\Value\Auto;
+use Quoin\Value\Color;
+use Quoin\Value\Length;
+use Quoin\Value\Percent;
+use Quoin\Value\Unit;
+use Quoin\View;
 use PHPUnit\Framework\TestCase;
 
 final class HtmlTablesTest extends TestCase
@@ -259,7 +259,7 @@ final class HtmlTablesTest extends TestCase
         self::assertCount(3, self::tracks($table));
     }
 
-    /** @return list<\Papercut\Value\Length|\Papercut\Value\Percent|\Papercut\Value\Fr|Auto> */
+    /** @return list<\Quoin\Value\Length|\Quoin\Value\Percent|\Quoin\Value\Fr|Auto> */
     private static function tracks(Table $table): array
     {
         $list = $table->trackList();
@@ -360,7 +360,7 @@ final class HtmlTablesTest extends TestCase
         $cell = self::table('<table><tr><td style="background-color:#fee;text-align:right">a</td></tr></table>', self::original())->bodyRows()[0]->cells()[0];
 
         self::assertNotNull($cell->style()->background);
-        self::assertSame(\Papercut\Style\TextAlign::Right, $cell->style()->textAlign);
+        self::assertSame(\Quoin\Style\TextAlign::Right, $cell->style()->textAlign);
         self::assertSame([[FidelityLevel::Dropped, 'markup CSS "border:1px solid red"']], array_map(
             static fn (Note $n): array => [$n->level, $n->feature],
             $v->notes(),
@@ -517,7 +517,7 @@ final class HtmlTablesTest extends TestCase
     #[\PHPUnit\Framework\Attributes\DataProvider('widthCases')]
     public function test_original_tables_fit_the_width_they_are_given(string $html, float $container, ?float $extent): void
     {
-        $harness = new \Papercut\Tests\Support\LayoutHarness();
+        $harness = new \Quoin\Tests\Support\LayoutHarness();
         $v = self::view($html, self::original());
         $r = $harness->layout($v, $container);
         self::assertNotNull($r->fragment);
@@ -528,7 +528,7 @@ final class HtmlTablesTest extends TestCase
             $table = $v->children()[0];
             self::assertInstanceOf(Table::class, $table);
             $first = self::tracks($table)[0];
-            $runs = \Papercut\Tests\Support\LayoutHarness::runs($r->fragment);
+            $runs = \Quoin\Tests\Support\LayoutHarness::runs($r->fragment);
             $width = $table->style()->width;
             if ($width instanceof Length) {
                 self::assertEqualsWithDelta($width->points, $r->fragment->children()[0]['fragment']->width, 0.01, 'declared table width kept');
@@ -542,24 +542,24 @@ final class HtmlTablesTest extends TestCase
 
     public function test_columns_wider_than_a_narrower_declared_table_width_fit_inside_it(): void
     {
-        $harness = new \Papercut\Tests\Support\LayoutHarness();
+        $harness = new \Quoin\Tests\Support\LayoutHarness();
         $v = self::view('<table width="400"><tr><td width="300">a</td><td width="300">b</td></tr></table>', self::original());
         $r = $harness->layout($v, 481.89);
         self::assertNotNull($r->fragment);
         self::assertEqualsWithDelta(300.0, $r->fragment->children()[0]['fragment']->width, 0.01);
-        $runs = \Papercut\Tests\Support\LayoutHarness::runs($r->fragment);
+        $runs = \Quoin\Tests\Support\LayoutHarness::runs($r->fragment);
         self::assertEqualsWithDelta(150.0, $runs[1]['x'] - $runs[0]['x'], 0.5);
         self::assertSame([], $harness->warnings);
     }
 
     public function test_original_table_fits_inside_a_list_item(): void
     {
-        $harness = new \Papercut\Tests\Support\LayoutHarness();
+        $harness = new \Quoin\Tests\Support\LayoutHarness();
         $v = self::view('<ul><li><table><tr><td width="300">a</td><td width="300">b</td></tr></table></li></ul>', self::original());
         $r = $harness->layout($v, 481.89);
         self::assertNotNull($r->fragment);
         self::assertSame([], $harness->warnings);
-        $runs = \Papercut\Tests\Support\LayoutHarness::runs($r->fragment);
+        $runs = \Quoin\Tests\Support\LayoutHarness::runs($r->fragment);
         self::assertLessThanOrEqual(481.89, max([0.0, ...array_column($runs, 'x')]));
         $table = $r->fragment->children()[0]['fragment'];
         self::assertLessThanOrEqual(481.89 + 1e-6, $table->width);
@@ -567,18 +567,18 @@ final class HtmlTablesTest extends TestCase
 
     public function test_fill_width_splits_evenly_when_no_column_has_content(): void
     {
-        $table = Table::make()->columns('auto auto')->fillWidth()->row(TableCell::make()->padding(\Papercut\pt(0)), TableCell::make()->padding(\Papercut\pt(0)));
-        $widths = (new \Papercut\Layout\TableLayouter(new \Papercut\Layout\BlockLayouter()))->columns($table, \Papercut\Style\ComputedStyle::root(\Papercut\Style\Theme::default()), 200.0, (new \Papercut\Tests\Support\LayoutHarness())->engine);
+        $table = Table::make()->columns('auto auto')->fillWidth()->row(TableCell::make()->padding(\Quoin\pt(0)), TableCell::make()->padding(\Quoin\pt(0)));
+        $widths = (new \Quoin\Layout\TableLayouter(new \Quoin\Layout\BlockLayouter()))->columns($table, \Quoin\Style\ComputedStyle::root(\Quoin\Style\Theme::default()), 200.0, (new \Quoin\Tests\Support\LayoutHarness())->engine);
         self::assertEqualsWithDelta([100.0, 100.0], $widths, 1e-6);
     }
 
     private static function original(): MarkupOptions
     {
-        return new MarkupOptions(styles: \Papercut\Markup\StyleMode::Original);
+        return new MarkupOptions(styles: \Quoin\Markup\StyleMode::Original);
     }
 
     /** @return list<float> top, right, bottom, left in points */
-    private static function widths(\Papercut\Style\Style $style): array
+    private static function widths(\Quoin\Style\Style $style): array
     {
         $e = $style->borderWidth;
         self::assertNotNull($e);

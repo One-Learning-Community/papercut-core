@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Decorator;
+namespace Quoin\Tests\Decorator;
 
-use Papercut\{Document, Page, Table, Text, View};
-use Papercut\Decorator\{Decorator, KeyValueList, KeyValuePair};
-use Papercut\Style\{ComputedStyle, StyleResolver, Theme};
-use Papercut\Value\TrackList;
+use Quoin\{Document, Page, Table, Text, View};
+use Quoin\Decorator\{Decorator, KeyValueList, KeyValuePair};
+use Quoin\Style\{ComputedStyle, StyleResolver, Theme};
+use Quoin\Value\TrackList;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class KeyValueListTest extends TestCase
 {

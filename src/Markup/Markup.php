@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Markup;
+namespace Quoin\Markup;
 
-use Papercut\Component;
-use Papercut\Export\FidelityLevel;
-use Papercut\Image;
-use Papercut\ListItem;
-use Papercut\ListNode;
-use Papercut\Node;
-use Papercut\Span;
-use Papercut\Style\StyleName;
-use Papercut\Table;
-use Papercut\Text;
-use Papercut\View;
+use Quoin\Component;
+use Quoin\Export\FidelityLevel;
+use Quoin\Image;
+use Quoin\ListItem;
+use Quoin\ListNode;
+use Quoin\Node;
+use Quoin\Span;
+use Quoin\Style\StyleName;
+use Quoin\Table;
+use Quoin\Text;
+use Quoin\View;
 
-/** Converts plain text and markup into Papercut nodes. */
+/** Converts plain text and markup into nodes. */
 final class Markup
 {
     /**

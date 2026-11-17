@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Export;
+namespace Quoin\Export;
 
-use Papercut\{Annotated, Document, Equation, Node, Page, PageBreak, Table, Text, View};
-use Papercut\Layout\TableGrid;
-use Papercut\Markup\{MathNotes, Note};
-use Papercut\Style\{ComputedStyle, Direction, PageThemes, StyleResolver};
-use Papercut\Tree\{Region, TreeVisitor, TreeWalker, Visit};
+use Quoin\{Annotated, Document, Equation, Node, Page, PageBreak, Table, Text, View};
+use Quoin\Layout\TableGrid;
+use Quoin\Markup\{MathNotes, Note};
+use Quoin\Style\{ComputedStyle, Direction, PageThemes, StyleResolver};
+use Quoin\Tree\{Region, TreeVisitor, TreeWalker, Visit};
 
 /**
  * Reports every conversion note in the tree through Fidelity, once per export.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class NoteReporter implements TreeVisitor
 {

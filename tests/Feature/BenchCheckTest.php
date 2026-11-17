@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Feature;
+namespace Quoin\Tests\Feature;
 
 use PHPUnit\Framework\TestCase;
 
@@ -14,7 +14,7 @@ final class BenchCheckTest extends TestCase
 
     protected function setUp(): void
     {
-        $base = sys_get_temp_dir() . '/papercut-bench-check-' . getmypid() . '-' . bin2hex(random_bytes(4));
+        $base = sys_get_temp_dir() . '/quoin-bench-check-' . getmypid() . '-' . bin2hex(random_bytes(4));
         $this->baseline = $base . '-baseline.json';
         $this->result = $base . '-result.json';
     }
@@ -32,7 +32,7 @@ final class BenchCheckTest extends TestCase
     private function check(string $result, array $env = []): array
     {
         file_put_contents($this->result, $result);
-        $env += ['PAPERCUT_BASELINE' => $this->baseline, 'PAPERCUT_BENCH_MACHINE' => 'test', 'PATH' => (string) getenv('PATH')];
+        $env += ['QUOIN_BASELINE' => $this->baseline, 'QUOIN_BENCH_MACHINE' => 'test', 'PATH' => (string) getenv('PATH')];
         $proc = proc_open(
             [PHP_BINARY, '-d', 'display_startup_errors=0', __DIR__ . '/../../bench/check.php', $this->result],
             [1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
@@ -182,13 +182,13 @@ final class BenchCheckTest extends TestCase
     {
         file_put_contents($this->baseline, json_encode(['machines' => ['test' => ['median_ms' => 100.0, 'peak_mb' => 10.0, 'article_median_ms' => 50.0]]]));
         $slow = (string) json_encode(['median_ms' => 150.0, 'pages' => 10, 'peak_mb' => 10.0, 'article_median_ms' => 80.0]);
-        $run = $this->check($slow, ['PAPERCUT_BENCH_TIMINGS' => 'warn']);
+        $run = $this->check($slow, ['QUOIN_BENCH_TIMINGS' => 'warn']);
         self::assertSame(0, $run['exit'], $run['out']);
         self::assertStringContainsString('check: WARN: median 150.00 ms is more than 20% slower', $run['out']);
         self::assertStringContainsString('check: WARN: article median 80.00 ms exceeds 60.00 ms', $run['out']);
 
         $heavy = (string) json_encode(['median_ms' => 150.0, 'pages' => 10, 'peak_mb' => 12.5]);
-        $run = $this->check($heavy, ['PAPERCUT_BENCH_TIMINGS' => 'warn']);
+        $run = $this->check($heavy, ['QUOIN_BENCH_TIMINGS' => 'warn']);
         self::assertSame(1, $run['exit'], $run['out']);
         self::assertStringContainsString('check: FAIL: peak 12.50 MB exceeds 12.00 MB', $run['out']);
         self::assertSame(1, $this->check($slow)['exit']);

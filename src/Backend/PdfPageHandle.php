@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Backend;
+namespace Quoin\Backend;
 
 /**
  * A page of an existing PDF, ready to draw. Its size is the page upright, after any rotation.
  *
- * @internal Part of Papercut's PDF writer. Custom backends aren't supported, and it may change in any release.
+ * @internal Part of the PDF writer. Custom backends aren't supported, and it may change in any release.
  */
 interface PdfPageHandle
 {

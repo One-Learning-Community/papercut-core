@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Html;
+namespace Quoin\Tests\Html;
 
-use Papercut\{Document, Page, Text, Toc};
-use Papercut\Export\{FidelityReport, HtmlOptions};
+use Quoin\{Document, Page, Text, Toc};
+use Quoin\Export\{FidelityReport, HtmlOptions};
 use PHPUnit\Framework\TestCase;
 
 final class TocHtmlTest extends TestCase
@@ -71,9 +71,9 @@ final class TocHtmlTest extends TestCase
             Text::h2('Gamma'),
             Text::h1('Delta'),
         )));
-        $nav = $dom->querySelector('nav.papercut-toc');
+        $nav = $dom->querySelector('nav.quoin-toc');
         self::assertNotNull($nav);
-        self::assertSame('Contents', $nav->querySelector('p.papercut-toc-title')?->textContent);
+        self::assertSame('Contents', $nav->querySelector('p.quoin-toc-title')?->textContent);
         $top = $nav->querySelectorAll('nav > ol > li > a');
         self::assertSame(['#alpha', '#delta'], array_map(static fn ($a): string => (string) $a->getAttribute('href'), iterator_to_array($top)));
         $nested = $nav->querySelectorAll('nav > ol > li > ol > li > a');
@@ -98,8 +98,8 @@ final class TocHtmlTest extends TestCase
     public function test_toc_without_entries_writes_the_title_only(): void
     {
         $dom = $this->dom(Document::make(Page::a4()->body(Toc::make()->title('Contents'), Text::make('plain'))));
-        self::assertNotNull($dom->querySelector('nav.papercut-toc p.papercut-toc-title'));
-        self::assertNull($dom->querySelector('nav.papercut-toc ol'));
+        self::assertNotNull($dom->querySelector('nav.quoin-toc p.quoin-toc-title'));
+        self::assertNull($dom->querySelector('nav.quoin-toc ol'));
     }
 
     public function test_nesting_after_a_skipped_level(): void
@@ -111,11 +111,11 @@ final class TocHtmlTest extends TestCase
             Text::h2('B'),
             Text::h1('D'),
         )));
-        $nav = $dom->querySelector('nav.papercut-toc');
+        $nav = $dom->querySelector('nav.quoin-toc');
         self::assertNotNull($nav);
         $shape = preg_replace('/ (style|href)="[^"]*"/', '', $dom->saveHtml($nav));
         self::assertSame(
-            '<nav class="papercut-toc"><ol><li><a>A</a><ol><li><a>C</a></li><li><a>B</a></li></ol></li><li><a>D</a></li></ol></nav>',
+            '<nav class="quoin-toc"><ol><li><a>A</a><ol><li><a>C</a></li><li><a>B</a></li></ol></li><li><a>D</a></li></ol></nav>',
             $shape,
         );
     }

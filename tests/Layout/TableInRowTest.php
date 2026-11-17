@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Layout;
+namespace Quoin\Tests\Layout;
 
-use Papercut\{Column, Document, Image, Page, Row, Table, Text};
-use Papercut\Export\PdfOptions;
+use Quoin\{Column, Document, Image, Page, Row, Table, Text};
+use Quoin\Export\PdfOptions;
 
-use function Papercut\mm;
-use Papercut\Tests\Support\LayoutHarness;
+use function Quoin\mm;
+use Quoin\Tests\Support\LayoutHarness;
 use PHPUnit\Framework\TestCase;
 
 /** A table too wide for its row is narrowed like one outside a row, not clipped at the page edge. */
@@ -73,7 +73,7 @@ final class TableInRowTest extends TestCase
         }
     }
 
-    private static function rightEdge(\Papercut\Layout\Fragment $f, float $ox = 0.0): float
+    private static function rightEdge(\Quoin\Layout\Fragment $f, float $ox = 0.0): float
     {
         $right = $ox + $f->width;
         foreach ($f->children() as $c) {

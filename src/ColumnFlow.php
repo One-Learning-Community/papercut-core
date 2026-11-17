@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut;
+namespace Quoin;
 
-use Papercut\Value\ColumnSpec;
+use Quoin\Value\ColumnSpec;
 
 /** A box whose content flows down one column, then the next, like Word's section columns. */
 final class ColumnFlow

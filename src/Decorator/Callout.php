@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Decorator;
+namespace Quoin\Decorator;
 
 use InvalidArgumentException;
-use Papercut\{Component, Node, Text, View};
-use Papercut\Concerns\{HasStyle, HasVariants};
+use Quoin\{Component, Node, Text, View};
+use Quoin\Concerns\{HasStyle, HasVariants};
 
 /**
  * A toned aside box (note, tip, warning, danger or a theme-defined tone) with an optional title.

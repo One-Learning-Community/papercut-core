@@ -2,28 +2,28 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Html;
+namespace Quoin\Html;
 
-use Papercut\Backend\Backend;
-use Papercut\Export\LoadedImage;
-use Papercut\{ColumnBreak, Document, Equation, Image, Link, ListItem, ListNode, Node, Page, PageBreak, PageNumber, PdfPage, Place, QrCode, Spacer, Svg, Table, TableCell, TableRow, Text, Toc, View};
-use Papercut\Barcode\Bacon\BaconQrSvg;
-use Papercut\Barcode\ModuleRects;
-use Papercut\Exception\InvalidValue;
-use Papercut\Export\{Fidelity, HtmlOptions};
-use Papercut\Layout\{GridCell, LayoutEngine, TableGrid, WidthResolver};
-use Papercut\Style\{ComputedStyle, Justify, ListMarker, StyleName, TextAlign};
-use Papercut\Math\Render\MathmlWriter;
-use Papercut\Text\{FontStyle, SvgFonts};
-use Papercut\Value\{Auto, ColumnSpec, Fr, Length, Percent};
-use Papercut\Toc\TocIndex;
-use Papercut\Layout\ColumnFlowLayouter;
-use Papercut\Tree\{ColumnFlows, Region, TreeVisitor, Visit};
+use Quoin\Backend\Backend;
+use Quoin\Export\LoadedImage;
+use Quoin\{ColumnBreak, Document, Equation, Image, Link, ListItem, ListNode, Node, Page, PageBreak, PageNumber, PdfPage, Place, QrCode, Spacer, Svg, Table, TableCell, TableRow, Text, Toc, View};
+use Quoin\Barcode\Bacon\BaconQrSvg;
+use Quoin\Barcode\ModuleRects;
+use Quoin\Exception\InvalidValue;
+use Quoin\Export\{Fidelity, HtmlOptions};
+use Quoin\Layout\{GridCell, LayoutEngine, TableGrid, WidthResolver};
+use Quoin\Style\{ComputedStyle, Justify, ListMarker, StyleName, TextAlign};
+use Quoin\Math\Render\MathmlWriter;
+use Quoin\Text\{FontStyle, SvgFonts};
+use Quoin\Value\{Auto, ColumnSpec, Fr, Length, Percent};
+use Quoin\Toc\TocIndex;
+use Quoin\Layout\ColumnFlowLayouter;
+use Quoin\Tree\{ColumnFlows, Region, TreeVisitor, Visit};
 
 /**
  * Turns a tree walk into HTML. One method per node type, so new node types slot in without touching the walk.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class HtmlWriter implements TreeVisitor
 {
@@ -31,10 +31,10 @@ final class HtmlWriter implements TreeVisitor
     private bool $hasEquation = false;
     private readonly int $pageCount;
     /** The theme of the page being written. */
-    private \Papercut\Style\Theme $theme;
+    private \Quoin\Style\Theme $theme;
     /** The current page theme's resolver, for span styles. */
-    private \Papercut\Style\StyleResolver $resolver;
-    private readonly \Papercut\Style\PageThemes $themes;
+    private \Quoin\Style\StyleResolver $resolver;
+    private readonly \Quoin\Style\PageThemes $themes;
     private ?Page $page = null;
     /** Output held back while a hidden region is walked; null outside one. */
     private ?string $held = null;
@@ -84,9 +84,9 @@ final class HtmlWriter implements TreeVisitor
         private readonly HtmlOptions $options,
         private readonly Backend $backend,
         ?TocIndex $toc = null,
-        ?\Papercut\Style\PageThemes $themes = null,
+        ?\Quoin\Style\PageThemes $themes = null,
     ) {
-        $this->themes = $themes ?? \Papercut\Style\PageThemes::for($options->theme(), $doc);
+        $this->themes = $themes ?? \Quoin\Style\PageThemes::for($options->theme(), $doc);
         $this->toc = $toc ?? TocIndex::empty();
         $taken = [];
         foreach ($this->toc->entries(1, 4) as $entry) {
@@ -183,7 +183,7 @@ final class HtmlWriter implements TreeVisitor
     }
 
     /**
-     * The text declarations a page's root style adds to the document root, which the .papercut div carries;
+     * The text declarations a page's root style adds to the document root, which the .quoin div carries;
      * everything inside the page is written relative to the page root, so the cascade stays right.
      *
      * @return array<string,string>
@@ -490,10 +490,10 @@ final class HtmlWriter implements TreeVisitor
     {
         $this->checkDecoration($s, $parent, $at->path());
         $this->fidelity->approximated('table of contents page numbers', $at->path());
-        $this->out .= '<nav class="papercut-toc"' . self::styleAttr([...Css::box($s), ...($this->parentIsFlex($at) ? Css::flexItem($s) : []), ...Css::pagination($s, $parent), ...$this->textCss($s, $parent, $at->path())]) . '>';
+        $this->out .= '<nav class="quoin-toc"' . self::styleAttr([...Css::box($s), ...($this->parentIsFlex($at) ? Css::flexItem($s) : []), ...Css::pagination($s, $parent), ...$this->textCss($s, $parent, $at->path())]) . '>';
         if ($n->titleText() !== null) {
             $title = $s->child($this->theme->named('toc.title'));
-            $this->out .= '<p class="papercut-toc-title"' . self::styleAttr(['margin' => '0', ...Css::box($title), ...$this->textCss($title, $s, $at->path())]) . '>' . self::esc($n->titleText()) . '</p>';
+            $this->out .= '<p class="quoin-toc-title"' . self::styleAttr(['margin' => '0', ...Css::box($title), ...$this->textCss($title, $s, $at->path())]) . '>' . self::esc($n->titleText()) . '</p>';
         }
         $entries = $this->toc->entries($n->fromLevel(), $n->toLevel());
         $listStyle = self::styleAttr(['list-style-type' => 'none', 'margin' => '0', 'padding' => '0']);
@@ -568,7 +568,7 @@ final class HtmlWriter implements TreeVisitor
     }
 
     /** @return bool whether the span turns off a decoration the paragraph has on */
-    private function span(\Papercut\Span $span, ComputedStyle $text, bool &$nested, string $path): bool
+    private function span(\Quoin\Span $span, ComputedStyle $text, bool &$nested, string $path): bool
     {
         if ($span->lineBreak) {
             $this->out .= '<br>';
@@ -1023,7 +1023,7 @@ final class HtmlWriter implements TreeVisitor
 
     private static function href(string $uri): string
     {
-        if (!\Papercut\Paint\Link::allowed($uri)) {
+        if (!\Quoin\Paint\Link::allowed($uri)) {
             throw InvalidValue::for('link', $uri)->because('only http, https, mailto, tel and #fragment links are allowed');
         }
 

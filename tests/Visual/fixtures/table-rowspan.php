@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use Papercut\Style\TextAlign;
-use Papercut\{Column, Document, Page, Table, TableCell, Text};
+use Quoin\Style\TextAlign;
+use Quoin\{Column, Document, Page, Table, TableCell, Text};
 
-use function Papercut\{mm, pt};
+use function Quoin\{mm, pt};
 
 $long = [];
 foreach (range(1, 36) as $i) {

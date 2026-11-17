@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Backend;
+namespace Quoin\Tests\Backend;
 
-use Papercut\Backend\PhpPdf\PhpPdfBackend;
-use Papercut\Paint\{Anchor, Clip, DocumentMeta, DrawImage, Line, Link, Op, Opacity, PageDisplayList, Rect, TextRun};
-use Papercut\Tests\Support\{FakeFont, PdfInspector, TestImages};
-use Papercut\Text\FontRegistry;
-use Papercut\Value\Color;
+use Quoin\Backend\PhpPdf\PhpPdfBackend;
+use Quoin\Paint\{Anchor, Clip, DocumentMeta, DrawImage, Line, Link, Op, Opacity, PageDisplayList, Rect, TextRun};
+use Quoin\Tests\Support\{FakeFont, PdfInspector, TestImages};
+use Quoin\Text\FontRegistry;
+use Quoin\Value\Color;
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\TestCase;
 
@@ -82,11 +82,11 @@ final class PhpPdfBackendRenderTest extends TestCase
             new DrawImage(300, 50, 80, 40, $png),
             new Clip(50, 200, 100, 20, [new TextRun(50, 215, 'Clipped long text that overflows', $font, 12, Color::black())]),
             new Opacity(0.5, [new Rect(300, 200, 50, 50, fill: Color::black())]),
-            new Link(50, 50, 200, 100, 'https://example.com/papercut'),
+            new Link(50, 50, 200, 100, 'https://example.com/quoin'),
         ]);
         PdfInspector::check($pdf);
         $qdf = PdfInspector::qdf($pdf);
-        self::assertStringContainsString('/URI (https://example.com/papercut)', $qdf);
+        self::assertStringContainsString('/URI (https://example.com/quoin)', $qdf);
         self::assertStringContainsString('/SMask', $qdf);
     }
 
@@ -103,7 +103,7 @@ final class PhpPdfBackendRenderTest extends TestCase
         $info = PdfInspector::info($pdf);
         self::assertSame('Café ✓ Report', $info['Title']);
         self::assertSame('Zoë', $info['Author']);
-        self::assertSame('Papercut', $info['Creator']);
+        self::assertSame('Quoin', $info['Creator']);
         self::assertStringContainsString('/Lang (en-US)', PdfInspector::qdf($pdf));
     }
 
@@ -214,7 +214,7 @@ final class PhpPdfBackendRenderTest extends TestCase
     public function test_foreign_image_handle_is_rejected(): void
     {
         $this->expectException(\LogicException::class);
-        $img = new class implements \Papercut\Backend\ImageHandle {
+        $img = new class implements \Quoin\Backend\ImageHandle {
             public function widthPx(): int { return 1; }
             public function heightPx(): int { return 1; }
             public function id(): string { return 'x'; }
@@ -238,7 +238,7 @@ final class PhpPdfBackendRenderTest extends TestCase
         ];
         $qdf = PdfInspector::qdf($this->backend->render($this->meta(), $pages));
 
-        self::assertSame(2, \Papercut\Tests\Feature\TocPdfTest::destinationPage($qdf, 'a'));
+        self::assertSame(2, \Quoin\Tests\Feature\TocPdfTest::destinationPage($qdf, 'a'));
         self::assertStringNotContainsString('/URI', $qdf);
     }
 }

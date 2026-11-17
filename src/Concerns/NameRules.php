@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Concerns;
+namespace Quoin\Concerns;
 
 use InvalidArgumentException;
-use Papercut\Exception\InvalidVariant;
+use Quoin\Exception\InvalidVariant;
 
 /**
  * The rules for tone and variant names, shared by the block Badge and the inline Span::badge().
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class NameRules
 {

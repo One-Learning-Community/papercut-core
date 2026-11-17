@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Decorator;
+namespace Quoin\Decorator;
 
-use Papercut\{Component, Node, Text, View};
-use Papercut\Concerns\{HasStyle, HasVariants};
+use Quoin\{Component, Node, Text, View};
+use Quoin\Concerns\{HasStyle, HasVariants};
 
 /**
  * A figure on a tinted panel: a small label, a large value and an optional note, top to bottom.

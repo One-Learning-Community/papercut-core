@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Markup;
+namespace Quoin\Tests\Markup;
 
-use Papercut\{Document, Node, Page, Text, View};
-use Papercut\Export\FidelityLevel;
-use Papercut\Layout\{LayoutContext, LayoutEngine, Paginator};
-use Papercut\Markup\{Markup, MarkupOptions, StyleMode};
-use Papercut\Paint\{Painter, TextRun};
-use Papercut\Style\Theme;
-use Papercut\Value\ColumnSpec;
-use Papercut\Tests\Support\FakeBackend;
-use Papercut\Text\FontRegistry;
+use Quoin\{Document, Node, Page, Text, View};
+use Quoin\Export\FidelityLevel;
+use Quoin\Layout\{LayoutContext, LayoutEngine, Paginator};
+use Quoin\Markup\{Markup, MarkupOptions, StyleMode};
+use Quoin\Paint\{Painter, TextRun};
+use Quoin\Style\Theme;
+use Quoin\Value\ColumnSpec;
+use Quoin\Tests\Support\FakeBackend;
+use Quoin\Text\FontRegistry;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class MarkupColumnsTest extends TestCase
 {
@@ -158,7 +158,7 @@ final class MarkupColumnsTest extends TestCase
 
     public function test_builder_rejects_more_than_the_maximum_columns(): void
     {
-        $this->expectException(\Papercut\Exception\InvalidValue::class);
+        $this->expectException(\Quoin\Exception\InvalidValue::class);
         View::make()->columns(46);
     }
 
@@ -185,7 +185,7 @@ final class MarkupColumnsTest extends TestCase
         $html = '<div style="column-count: 2; column-gap: 20pt">' . implode('', array_map(static fn (int $i) => "<p>L$i</p>", range(1, 8))) . '</div>';
         $page = Page::size(pt(220), pt(100))->margin(pt(10))->headerGap(pt(0))->footerGap(pt(0));
         $b = new FakeBackend();
-        $ctx = new LayoutContext(FontRegistry::withDefaults($b), Theme::default(), $b, \Papercut\OverflowMode::Throw, static function (string $w): void {});
+        $ctx = new LayoutContext(FontRegistry::withDefaults($b), Theme::default(), $b, \Quoin\OverflowMode::Throw, static function (string $w): void {});
         $pages = Painter::paint((new Paginator(new LayoutEngine($ctx), $ctx))->paginate(Document::make($page->body(self::original($html)))));
         $xs = [];
         foreach ($pages[0]->ops as $o) {

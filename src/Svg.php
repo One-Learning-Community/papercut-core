@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut;
+namespace Quoin;
 
-use Papercut\Concerns\HasStyle;
-use Papercut\Exception\ImageUnreadable;
-use Papercut\Support\AltText;
-use Papercut\Vector\SvgDocument;
+use Quoin\Concerns\HasStyle;
+use Quoin\Exception\ImageUnreadable;
+use Quoin\Support\AltText;
+use Quoin\Vector\SvgDocument;
 
 /**
  * An SVG drawing, kept as vector paths in PDF and embedded as an image in HTML. It is sized

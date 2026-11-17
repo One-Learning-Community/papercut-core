@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Style;
+namespace Quoin\Style;
 
 /** The point of a placed box that sits at its x and y: a corner, the middle of a side, or the center. */
 enum Anchor: string

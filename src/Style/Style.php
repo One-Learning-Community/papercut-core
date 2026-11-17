@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Style;
+namespace Quoin\Style;
 
-use Papercut\Exception\{InvalidValue, UnknownAttribute};
-use Papercut\Support\{Check, EnumValue, Suggest};
-use Papercut\Value\{Auto, Color, Edges, Length, Percent};
+use Quoin\Exception\{InvalidValue, UnknownAttribute};
+use Quoin\Support\{Check, EnumValue, Suggest};
+use Quoin\Value\{Auto, Color, Edges, Length, Percent};
 
 /**
  * A sparse bag of style properties; null means "not set".

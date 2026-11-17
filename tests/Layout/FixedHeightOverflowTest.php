@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Layout;
+namespace Quoin\Tests\Layout;
 
-use Papercut\{Column, Document, ListNode, Node, OverflowMode, Page, Row, Text};
-use Papercut\Exception\LayoutOverflow;
-use Papercut\Layout\{LayoutContext, LayoutEngine, Paginator};
-use Papercut\Paint\{Clip, PageDisplayList, Painter, TextRun};
-use Papercut\Style\Theme;
-use Papercut\Tests\Support\FakeBackend;
-use Papercut\Text\FontRegistry;
+use Quoin\{Column, Document, ListNode, Node, OverflowMode, Page, Row, Text};
+use Quoin\Exception\LayoutOverflow;
+use Quoin\Layout\{LayoutContext, LayoutEngine, Paginator};
+use Quoin\Paint\{Clip, PageDisplayList, Painter, TextRun};
+use Quoin\Style\Theme;
+use Quoin\Tests\Support\FakeBackend;
+use Quoin\Text\FontRegistry;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 /** Content taller than a box's fixed height or max-height follows the overflow mode instead of drawing over what follows. */
 final class FixedHeightOverflowTest extends TestCase
@@ -105,7 +105,7 @@ final class FixedHeightOverflowTest extends TestCase
     public function test_a_negative_top_margin_does_not_hide_real_overflow_in_a_fixed_box(): void
     {
         // The child is 125pt tall and starts 20pt above the box: its bottom is at 105pt, past the box's 100pt.
-        $box = Column::make(\Papercut\View::make()->height(pt(125))->margin(pt(-20), pt(0), pt(0), pt(0)))->height(pt(100));
+        $box = Column::make(\Quoin\View::make()->height(pt(125))->margin(pt(-20), pt(0), pt(0), pt(0)))->height(pt(100));
         $this->expectException(LayoutOverflow::class);
         $this->paginate($box, OverflowMode::Throw);
     }

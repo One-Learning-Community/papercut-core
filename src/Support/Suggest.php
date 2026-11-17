@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Support;
+namespace Quoin\Support;
 
 /**
  * "Did you mean" suggestions for unknown names.

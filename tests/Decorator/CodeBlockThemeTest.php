@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Decorator;
+namespace Quoin\Tests\Decorator;
 
-use Papercut\{Document, OverflowMode, Page};
-use Papercut\Decorator\CodeBlock;
-use Papercut\Exception\UnsupportedFeature;
-use Papercut\Export\{PdfExporter, PdfOptions};
-use Papercut\Layout\{LayoutContext, LayoutEngine, Paginator};
-use Papercut\Paint\{Painter, Rect};
-use Papercut\Style\{PageThemes, Theme, ThemeOverride};
-use Papercut\Tests\Support\FakeBackend;
-use Papercut\Text\FontRegistry;
+use Quoin\{Document, OverflowMode, Page};
+use Quoin\Decorator\CodeBlock;
+use Quoin\Exception\UnsupportedFeature;
+use Quoin\Export\{PdfExporter, PdfOptions};
+use Quoin\Layout\{LayoutContext, LayoutEngine, Paginator};
+use Quoin\Paint\{Painter, Rect};
+use Quoin\Style\{PageThemes, Theme, ThemeOverride};
+use Quoin\Tests\Support\FakeBackend;
+use Quoin\Text\FontRegistry;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class CodeBlockThemeTest extends TestCase
 {
@@ -72,7 +72,7 @@ final class CodeBlockThemeTest extends TestCase
 
     public function test_a_blocks_own_theme_wins_over_the_page(): void
     {
-        $page = self::page(new ThemeOverride(codeTheme: 'github-dark'))->body(self::block()->theme('papercut-light'));
+        $page = self::page(new ThemeOverride(codeTheme: 'github-dark'))->body(self::block()->theme('quoin-light'));
         $fills = self::fills(Document::make($page))[0];
         self::assertContains(self::LIGHT, $fills);
         self::assertNotContains(self::DARK, $fills);
@@ -108,8 +108,8 @@ final class CodeBlockThemeTest extends TestCase
     public function test_markup_code_blocks_take_the_page_code_theme(): void
     {
         $html = '<pre><code class="language-php">&lt;?php echo 1;</code></pre>';
-        $dark = self::fills(Document::make(self::page(new ThemeOverride(codeTheme: 'github-dark'))->body(\Papercut\Markup\Markup::html($html))));
-        $plain = self::fills(Document::make(self::page()->body(\Papercut\Markup\Markup::html($html))));
+        $dark = self::fills(Document::make(self::page(new ThemeOverride(codeTheme: 'github-dark'))->body(\Quoin\Markup\Markup::html($html))));
+        $plain = self::fills(Document::make(self::page()->body(\Quoin\Markup\Markup::html($html))));
         self::assertContains(self::DARK, $dark[0]);
         self::assertNotContains(self::LIGHT, $dark[0]);
         self::assertContains(self::LIGHT, $plain[0]);

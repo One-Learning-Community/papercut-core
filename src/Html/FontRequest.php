@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Html;
+namespace Quoin\Html;
 
-use Papercut\Text\{FontSet, FontStyle};
+use Quoin\Text\{FontSet, FontStyle};
 
 /** What a document needs from one family; the question a FontSource answers. */
 final readonly class FontRequest

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Value;
+namespace Quoin\Value;
 
 enum Unit: string
 {

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Node;
+namespace Quoin\Tests\Node;
 
-use Papercut\Equation;
-use Papercut\Math\Math;
-use Papercut\Math\Node\Fraction;
+use Quoin\Equation;
+use Quoin\Math\Math;
+use Quoin\Math\Node\Fraction;
 use PHPUnit\Framework\TestCase;
 
 final class EquationTest extends TestCase

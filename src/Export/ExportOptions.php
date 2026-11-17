@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Export;
+namespace Quoin\Export;
 
-use Papercut\Style\Theme;
-use Papercut\Text\FontSet;
+use Quoin\Style\Theme;
+use Quoin\Text\FontSet;
 
 readonly class ExportOptions
 {

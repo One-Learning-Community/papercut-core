@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Text;
+namespace Quoin\Tests\Text;
 
-use Papercut\Tests\Support\FakeFont;
-use Papercut\Text\CachedFont;
+use Quoin\Tests\Support\FakeFont;
+use Quoin\Text\CachedFont;
 use PHPUnit\Framework\TestCase;
 
 final class CachedFontTest extends TestCase

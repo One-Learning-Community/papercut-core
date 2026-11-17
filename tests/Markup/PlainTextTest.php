@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Markup;
+namespace Quoin\Tests\Markup;
 
-use Papercut\Markup\Markup;
-use Papercut\Span;
-use Papercut\Text;
-use Papercut\View;
+use Quoin\Markup\Markup;
+use Quoin\Span;
+use Quoin\Text;
+use Quoin\View;
 use PHPUnit\Framework\TestCase;
 
 final class PlainTextTest extends TestCase

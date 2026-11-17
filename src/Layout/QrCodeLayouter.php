@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
-use Papercut\Barcode\Bacon\BaconQrSvg;
-use Papercut\Barcode\ModuleRects;
-use Papercut\{Node, QrCode};
-use Papercut\Paint\{DrawSvg, Rect};
-use Papercut\Style\ComputedStyle;
-use Papercut\Value\Length;
-use Papercut\Vector\SvgDocument;
+use Quoin\Barcode\Bacon\BaconQrSvg;
+use Quoin\Barcode\ModuleRects;
+use Quoin\{Node, QrCode};
+use Quoin\Paint\{DrawSvg, Rect};
+use Quoin\Style\ComputedStyle;
+use Quoin\Value\Length;
+use Quoin\Vector\SvgDocument;
 
 /**
  * A QR code is a monolithic square. Its side is the width (or height) when set, else 25mm,
  * clamped by min/max-width and the space available; an empty page that is too short shrinks it.
  * A plain code is drawn as rectangles; a styled one as the SVG Bacon draws, quiet zone included.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class QrCodeLayouter implements Layouter
 {
@@ -90,6 +90,6 @@ final class QrCodeLayouter implements Layouter
 
     private static function defaultSide(): float
     {
-        return \Papercut\mm(25)->points;
+        return \Quoin\mm(25)->points;
     }
 }

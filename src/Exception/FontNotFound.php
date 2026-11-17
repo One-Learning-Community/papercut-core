@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Exception;
+namespace Quoin\Exception;
 
-use Papercut\PapercutException;
+use Quoin\QuoinException;
 
-final class FontNotFound extends PapercutException
+final class FontNotFound extends QuoinException
 {
 }

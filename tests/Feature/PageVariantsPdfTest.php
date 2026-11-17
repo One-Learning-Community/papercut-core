@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Feature;
+namespace Quoin\Tests\Feature;
 
-use Papercut\{Document, Page, PageNumber, Text};
-use Papercut\Tests\Support\PdfInspector;
+use Quoin\{Document, Page, PageNumber, Text};
+use Quoin\Tests\Support\PdfInspector;
 use PHPUnit\Framework\TestCase;
-use function Papercut\pt;
+use function Quoin\pt;
 
 /** First-page and even-page headers and footers, through a full PDF render. */
 final class PageVariantsPdfTest extends TestCase

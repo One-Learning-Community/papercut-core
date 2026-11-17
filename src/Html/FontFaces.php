@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Html;
+namespace Quoin\Html;
 
-use Papercut\Exception\FontNotFound;
-use Papercut\Export\FontMode;
-use Papercut\Text\{FontFace, FontSet, FontStyle};
+use Quoin\Exception\FontNotFound;
+use Quoin\Export\FontMode;
+use Quoin\Text\{FontFace, FontSet, FontStyle};
 
 /**
  * Builds the @font-face rules for the families a document actually uses.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class FontFaces
 {

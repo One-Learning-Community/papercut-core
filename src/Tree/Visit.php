@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tree;
+namespace Quoin\Tree;
 
-use Papercut\Node;
-use Papercut\Style\ComputedStyle;
+use Quoin\Node;
+use Quoin\Style\ComputedStyle;
 
 /**
  * Where a node sits in the walk. Built by TreeWalker; visitors only read it.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class Visit
 {

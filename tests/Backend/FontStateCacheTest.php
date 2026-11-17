@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Backend;
+namespace Quoin\Tests\Backend;
 
 use Dskripchenko\PhpPdf\Font\Ttf\TtfFile;
-use Papercut\{Document, Page, Text};
-use Papercut\Backend\PhpPdf\{FontStateCache, PhpPdfBackend};
-use Papercut\Export\PdfOptions;
-use Papercut\Text\{FontFace, FontSet};
+use Quoin\{Document, Page, Text};
+use Quoin\Backend\PhpPdf\{FontStateCache, PhpPdfBackend};
+use Quoin\Export\PdfOptions;
+use Quoin\Text\{FontFace, FontSet};
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class FontStateCacheTest extends TestCase
 {
@@ -24,7 +24,7 @@ final class FontStateCacheTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->dir = (string) realpath(sys_get_temp_dir()) . '/papercut-font-test-' . getmypid() . '-' . bin2hex(random_bytes(4));
+        $this->dir = (string) realpath(sys_get_temp_dir()) . '/quoin-font-test-' . getmypid() . '-' . bin2hex(random_bytes(4));
         mkdir($this->dir . '-fonts');
         $this->font = $this->dir . '-fonts/Inter-Regular.ttf';
         copy(self::INTER, $this->font);
@@ -78,7 +78,7 @@ final class FontStateCacheTest extends TestCase
     public function test_default_dir_is_under_the_system_temp_dir(): void
     {
         $suffix = function_exists('posix_geteuid') ? '-' . posix_geteuid() : '';
-        self::assertSame(sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'papercut-cache' . $suffix, FontStateCache::defaultDir());
+        self::assertSame(sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'quoin-cache' . $suffix, FontStateCache::defaultDir());
     }
 
     public function test_an_unknown_format_is_refused(): void

@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Layout;
+namespace Quoin\Tests\Layout;
 
-use Papercut\{Component, Node, OverflowMode, Table, TableCell, TableRow, Text};
-use Papercut\Exception\LayoutOverflow;
-use Papercut\Layout\{Fragment, Status};
-use Papercut\Paint\{Line, Rect};
-use Papercut\Style\{ComputedStyle, Theme};
-use Papercut\Value\Edges;
-use Papercut\Tests\Support\LayoutHarness;
+use Quoin\{Component, Node, OverflowMode, Table, TableCell, TableRow, Text};
+use Quoin\Exception\LayoutOverflow;
+use Quoin\Layout\{Fragment, Status};
+use Quoin\Paint\{Line, Rect};
+use Quoin\Style\{ComputedStyle, Theme};
+use Quoin\Value\Edges;
+use Quoin\Tests\Support\LayoutHarness;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class TableLayouterTest extends TestCase
 {
@@ -138,7 +138,7 @@ final class TableLayouterTest extends TestCase
 
     public function test_a_fixed_width_box_keeps_its_column_wide_enough(): void
     {
-        $box = \Papercut\Column::make(Text::make('x'))->width(pt(100));
+        $box = \Quoin\Column::make(Text::make('x'))->width(pt(100));
         $t = Table::make()->columns('auto auto')->row(TableCell::make($box), str_repeat('c', 40));
         self::assertEqualsWithDelta([112.0, 38.0], $this->columnWidths($t, 150.0), 1e-6);
     }
@@ -153,7 +153,7 @@ final class TableLayouterTest extends TestCase
 
     public function test_an_image_column_shrinks_to_its_padding(): void
     {
-        $t = Table::make()->columns('auto auto')->row(TableCell::make(\Papercut\Image::bytes(\Papercut\Tests\Support\TestImages::png(200, 10))), str_repeat('c', 40));
+        $t = Table::make()->columns('auto auto')->row(TableCell::make(\Quoin\Image::bytes(\Quoin\Tests\Support\TestImages::png(200, 10))), str_repeat('c', 40));
         $widths = $this->columnWidths($t, 100.0);
         self::assertEqualsWithDelta(100.0, array_sum($widths), 1e-6);
         self::assertEqualsWithDelta($widths[0], $widths[1], 1e-6);
@@ -170,8 +170,8 @@ final class TableLayouterTest extends TestCase
 
     public function test_svgs_and_images_with_a_width_scale_down_with_their_column(): void
     {
-        $svg = \Papercut\Svg::fromString('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="40" viewBox="0 0 400 40"><rect width="400" height="40"/></svg>');
-        $image = \Papercut\Image::bytes(\Papercut\Tests\Support\TestImages::png(40, 10))->width(pt(300));
+        $svg = \Quoin\Svg::fromString('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="40" viewBox="0 0 400 40"><rect width="400" height="40"/></svg>');
+        $image = \Quoin\Image::bytes(\Quoin\Tests\Support\TestImages::png(40, 10))->width(pt(300));
         foreach ([$svg, $image] as $box) {
             $t = Table::make()->columns('auto auto')->row(TableCell::make($box), 'text');
             $f = (new LayoutHarness())->layout($t, 200)->fragment;
@@ -249,7 +249,7 @@ final class TableLayouterTest extends TestCase
     private function columnWidths(Table $t, float $width, OverflowMode $overflow = OverflowMode::Throw): array
     {
         $engine = (new LayoutHarness(overflow: $overflow))->engine;
-        return (new \Papercut\Layout\TableLayouter(new \Papercut\Layout\BlockLayouter()))->columns($t, ComputedStyle::root(Theme::default()), $width, $engine);
+        return (new \Quoin\Layout\TableLayouter(new \Quoin\Layout\BlockLayouter()))->columns($t, ComputedStyle::root(Theme::default()), $width, $engine);
     }
 
     public function test_colspan(): void
@@ -277,9 +277,9 @@ final class TableLayouterTest extends TestCase
         $f = (new LayoutHarness())->layout(Table::make()->head('H')->row('b'), 100)->fragment;
         self::assertNotNull($f);
         $fonts = [];
-        $walk = function (\Papercut\Layout\Fragment $fr) use (&$walk, &$fonts): void {
+        $walk = function (\Quoin\Layout\Fragment $fr) use (&$walk, &$fonts): void {
             foreach ($fr->ops() as $op) {
-                if ($op instanceof \Papercut\Paint\TextRun) { $fonts[$op->text] = $op->font->id(); }
+                if ($op instanceof \Quoin\Paint\TextRun) { $fonts[$op->text] = $op->font->id(); }
             }
             foreach ($fr->children() as $c) { $walk($c['fragment']); }
         };
@@ -313,7 +313,7 @@ final class TableLayouterTest extends TestCase
 
     public function test_percent_track_resolves_against_table_content_width(): void
     {
-        $t = Table::make()->columns('25% 1fr')->padding(\Papercut\pt(10))->row('a', 'b');
+        $t = Table::make()->columns('25% 1fr')->padding(\Quoin\pt(10))->row('a', 'b');
         $runs = LayoutHarness::runs((new LayoutHarness())->layout($t, 220)->fragment);
         // content width 200 => 50 + 150
         self::assertSame([16.0, 66.0], array_column($runs, 'x'));
@@ -610,9 +610,9 @@ final class TableLayouterTest extends TestCase
         $root = ComputedStyle::root(Theme::default());
         $h->engine->intrinsic($t, $root);
         $before = $counter->renders;
-        $h->engine->intrinsic($t, $root->child(\Papercut\Style\Style::make(color: \Papercut\Value\Color::parse('red-500'), background: \Papercut\Value\Color::white())));
+        $h->engine->intrinsic($t, $root->child(\Quoin\Style\Style::make(color: \Quoin\Value\Color::parse('red-500'), background: \Quoin\Value\Color::white())));
         self::assertSame($before, $counter->renders);
-        $h->engine->intrinsic($t, $root->child(\Papercut\Style\Style::make(fontSize: pt(20))));
+        $h->engine->intrinsic($t, $root->child(\Quoin\Style\Style::make(fontSize: pt(20))));
         self::assertGreaterThan($before, $counter->renders);
     }
 
@@ -643,7 +643,7 @@ final class TableLayouterTest extends TestCase
     public function test_short_undecorated_cells_are_laid_out_once_and_keep_the_row_height(): void
     {
         $short = self::counter();
-        $t = Table::make()->columns('50pt 20pt')->row(TableCell::make(\Papercut\View::make($short)), 'b c'); // "b c" wraps to 2 lines: 28 + 8
+        $t = Table::make()->columns('50pt 20pt')->row(TableCell::make(\Quoin\View::make($short)), 'b c'); // "b c" wraps to 2 lines: 28 + 8
         $f = (new LayoutHarness())->layout($t, 70)->fragment;
         self::assertNotNull($f);
         self::assertSame(1, $short->renders); // @phpstan-ignore property.notFound
@@ -653,7 +653,7 @@ final class TableLayouterTest extends TestCase
 
     public function test_bottom_aligned_cells_are_stretched_before_aligning(): void
     {
-        $t = Table::make()->columns('50pt 20pt')->row(TableCell::make('a')->apply(\Papercut\Style\Style::make(justify: \Papercut\Style\Justify::End)), 'b c');
+        $t = Table::make()->columns('50pt 20pt')->row(TableCell::make('a')->apply(\Quoin\Style\Style::make(justify: \Quoin\Style\Justify::End)), 'b c');
         $runs = LayoutHarness::runs((new LayoutHarness())->layout($t, 70)->fragment);
         $top = LayoutHarness::runs((new LayoutHarness())->layout(Table::make()->columns('50pt 20pt')->row('a', 'b c'), 70)->fragment);
         self::assertSame('a', $runs[0]['text']);
@@ -662,7 +662,7 @@ final class TableLayouterTest extends TestCase
 
     public function test_growing_cell_children_are_stretched(): void
     {
-        $t = Table::make()->columns('50pt 20pt')->row(TableCell::make(\Papercut\View::make('a')->grow()->background('#ff0000')), 'b c');
+        $t = Table::make()->columns('50pt 20pt')->row(TableCell::make(\Quoin\View::make('a')->grow()->background('#ff0000')), 'b c');
         $f = (new LayoutHarness())->layout($t, 70)->fragment;
         self::assertNotNull($f);
         $grown = self::cellFragments($f)[0]->children()[0]['fragment'];
@@ -710,7 +710,7 @@ final class TableLayouterTest extends TestCase
         $text = null;
         $rect = null;
         foreach ($ops as $i => [$op, $oy]) {
-            if ($op instanceof \Papercut\Paint\TextRun && $op->text === 'a') {
+            if ($op instanceof \Quoin\Paint\TextRun && $op->text === 'a') {
                 $text = $i;
             }
             if ($op instanceof Rect && $oy + $op->y === 22.0) {
@@ -847,7 +847,7 @@ final class TableLayouterTest extends TestCase
         // the page: B places nothing there and starts whole on page 2.
         $t = Table::make()->columns('1fr 1fr 1fr')
             ->row(TableCell::make('A')->rowspan(2), 'x', 'y')
-            ->row(TableCell::make(\Papercut\View::make('B')->height(pt(40)))->rowspan(2), 'c')
+            ->row(TableCell::make(\Quoin\View::make('B')->height(pt(40)))->rowspan(2), 'c')
             ->row('d', 'e');
         $pages = self::pages($t, 300, 50);
         self::assertCount(2, $pages);
@@ -894,7 +894,7 @@ final class TableLayouterTest extends TestCase
         // break there and must start again on the next page with that row, never vanish.
         $t = Table::make()->columns('1fr 1fr 1fr')
             ->row(TableCell::make('A')->rowspan(2), 'x', 'y')
-            ->row(TableCell::make(\Papercut\View::make('B')->height(pt($viewHeight)))->rowspan(2), 'c')
+            ->row(TableCell::make(\Quoin\View::make('B')->height(pt($viewHeight)))->rowspan(2), 'c')
             ->row('d', 'e');
         $all = array_merge(...self::pages($t, 300, $page));
         sort($all);
@@ -905,7 +905,7 @@ final class TableLayouterTest extends TestCase
     {
         // An unbreakable cell taller than a page is DoesNotFit on a fresh page (the paginator then clips with
         // a warning or throws), as in a single row. The table must not place its other rows and lose the cell.
-        $tall = fn () => \Papercut\View::make('B')->height(pt(70));
+        $tall = fn () => \Quoin\View::make('B')->height(pt(70));
         $spanning = Table::make()->columns('1fr 1fr')->row('h')->row(TableCell::make($tall())->rowspan(2), 'c')->row('d');
         $single = Table::make()->columns('1fr 1fr')->row('h')->row(TableCell::make($tall()), 'c')->row('d');
         $run = function (Table $t): array {
@@ -1110,13 +1110,13 @@ final class TableLayouterTest extends TestCase
 
     public function test_bare_cell_warns_once_and_bytes_are_unchanged(): void
     {
-        $doc = fn () => \Papercut\Document::make(\Papercut\Page::a4()->body(\Papercut\View::make(TableCell::th('x'))));
+        $doc = fn () => \Quoin\Document::make(\Quoin\Page::a4()->body(\Quoin\View::make(TableCell::th('x'))));
         $warnings = [];
-        $withHook = $doc()->toPdf(new \Papercut\Export\PdfOptions(
-            backend: new \Papercut\Tests\Support\FakeBackend(),
+        $withHook = $doc()->toPdf(new \Quoin\Export\PdfOptions(
+            backend: new \Quoin\Tests\Support\FakeBackend(),
             onWarning: function (string $m) use (&$warnings): void { $warnings[] = $m; },
         ))->bytes();
-        $plain = $doc()->toPdf(new \Papercut\Export\PdfOptions(backend: new \Papercut\Tests\Support\FakeBackend()))->bytes();
+        $plain = $doc()->toPdf(new \Quoin\Export\PdfOptions(backend: new \Quoin\Tests\Support\FakeBackend()))->bytes();
 
         $stray = array_values(array_filter($warnings, static fn (string $m): bool => str_ends_with($m, 'A table cell outside a table is laid out as a column')));
         self::assertCount(1, $stray);
@@ -1128,13 +1128,13 @@ final class TableLayouterTest extends TestCase
     public function test_reused_cell_warns_when_used_bare_after_a_table(): void
     {
         $cell = TableCell::make('x')->padding(pt(3)); // own padding: theme defaults change nothing
-        $doc = \Papercut\Document::make(\Papercut\Page::a4()->body(
+        $doc = \Quoin\Document::make(\Quoin\Page::a4()->body(
             Table::make()->columns('1fr')->row($cell),
-            \Papercut\View::make($cell),
+            \Quoin\View::make($cell),
         ));
         $warnings = [];
-        $doc->toPdf(new \Papercut\Export\PdfOptions(
-            backend: new \Papercut\Tests\Support\FakeBackend(),
+        $doc->toPdf(new \Quoin\Export\PdfOptions(
+            backend: new \Quoin\Tests\Support\FakeBackend(),
             onWarning: function (string $m) use (&$warnings): void { $warnings[] = $m; },
         ));
 
@@ -1144,26 +1144,26 @@ final class TableLayouterTest extends TestCase
     }
 
     /**
-     * @return array<string, array{\Papercut\Style\Style}>
+     * @return array<string, array{\Quoin\Style\Style}>
      */
     public static function cellWidthConstraints(): array
     {
         return [
-            'max-width' => [new \Papercut\Style\Style(maxWidth: \Papercut\px(1))],
-            'min-width' => [new \Papercut\Style\Style(minWidth: \Papercut\px(5000))],
-            'width' => [new \Papercut\Style\Style(width: \Papercut\px(1))],
+            'max-width' => [new \Quoin\Style\Style(maxWidth: \Quoin\px(1))],
+            'min-width' => [new \Quoin\Style\Style(minWidth: \Quoin\px(5000))],
+            'width' => [new \Quoin\Style\Style(width: \Quoin\px(1))],
         ];
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider('cellWidthConstraints')]
-    public function test_min_and_max_width_on_a_cell_never_make_it_a_stray_cell(\Papercut\Style\Style $style): void
+    public function test_min_and_max_width_on_a_cell_never_make_it_a_stray_cell(\Quoin\Style\Style $style): void
     {
-        $doc = \Papercut\Document::make(\Papercut\Page::a4()->body(
+        $doc = \Quoin\Document::make(\Quoin\Page::a4()->body(
             Table::make()->columns('100pt 1fr')->row(TableCell::make('x')->apply($style), 'y'),
         ));
         $warnings = [];
-        $doc->toPdf(new \Papercut\Export\PdfOptions(
-            backend: new \Papercut\Tests\Support\FakeBackend(),
+        $doc->toPdf(new \Quoin\Export\PdfOptions(
+            backend: new \Quoin\Tests\Support\FakeBackend(),
             onWarning: function (string $m) use (&$warnings): void { $warnings[] = $m; },
         ));
 
@@ -1171,7 +1171,7 @@ final class TableLayouterTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider('cellWidthConstraints')]
-    public function test_a_cell_width_constraint_leaves_the_columns_where_the_track_list_puts_them(\Papercut\Style\Style $style): void
+    public function test_a_cell_width_constraint_leaves_the_columns_where_the_track_list_puts_them(\Quoin\Style\Style $style): void
     {
         $t = Table::make()->columns('100pt 1fr')->row(TableCell::make('x')->apply($style), 'y');
         $runs = LayoutHarness::runs((new LayoutHarness())->layout($t, 400)->fragment);

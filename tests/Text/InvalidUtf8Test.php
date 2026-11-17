@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Text;
+namespace Quoin\Tests\Text;
 
-use Papercut\{Document, Equation, Link, Page, PageNumber, Span, Table, Text, Toc};
-use Papercut\Exception\InvalidValue;
-use Papercut\Tests\Support\PdfInspector;
-use Papercut\Decorator\{Badge, CodeBlock};
-use Papercut\Export\{HtmlOptions, PdfOptions};
-use Papercut\Math\Math;
+use Quoin\{Document, Equation, Link, Page, PageNumber, Span, Table, Text, Toc};
+use Quoin\Exception\InvalidValue;
+use Quoin\Tests\Support\PdfInspector;
+use Quoin\Decorator\{Badge, CodeBlock};
+use Quoin\Export\{HtmlOptions, PdfOptions};
+use Quoin\Math\Math;
 use PHPUnit\Framework\TestCase;
 
 final class InvalidUtf8Test extends TestCase

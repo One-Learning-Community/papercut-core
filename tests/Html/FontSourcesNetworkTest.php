@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Html;
+namespace Quoin\Tests\Html;
 
-use Papercut\Document;
-use Papercut\Export\{FontMode, HtmlOptions};
-use Papercut\Html\GoogleFonts;
+use Quoin\Document;
+use Quoin\Export\{FontMode, HtmlOptions};
+use Quoin\Html\GoogleFonts;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
-/** Live check that the stylesheet URLs we build are accepted. Run with: PAPERCUT_NETWORK_TESTS=1 vendor/bin/phpunit tests/Html/FontSourcesNetworkTest.php */
+/** Live check that the stylesheet URLs we build are accepted. Run with: QUOIN_NETWORK_TESTS=1 vendor/bin/phpunit tests/Html/FontSourcesNetworkTest.php */
 final class FontSourcesNetworkTest extends TestCase
 {
     /** @return iterable<string, array{string, string}> */
@@ -26,8 +26,8 @@ final class FontSourcesNetworkTest extends TestCase
     #[DataProvider('cases')]
     public function test_stylesheets_answer_200(string $example, string $host): void
     {
-        if (getenv('PAPERCUT_NETWORK_TESTS') !== '1') {
-            self::markTestSkipped('Set PAPERCUT_NETWORK_TESTS=1 to run the live font host check.');
+        if (getenv('QUOIN_NETWORK_TESTS') !== '1') {
+            self::markTestSkipped('Set QUOIN_NETWORK_TESTS=1 to run the live font host check.');
         }
         $document = (static fn () => require __DIR__ . "/../../../../examples/core/documents/$example.php")();
         self::assertInstanceOf(Document::class, $document);

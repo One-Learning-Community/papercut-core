@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Paint;
+namespace Quoin\Paint;
 
-use Papercut\Value\Color;
+use Quoin\Value\Color;
 
 /** @internal Part of the display list between layout and the PDF writer. It may change in any release. */
 final readonly class Rect implements Op

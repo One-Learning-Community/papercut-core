@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Paint;
+namespace Quoin\Paint;
 
 /**
  * An entry in the PDF's bookmarks panel, pointing at the top-left of the block that set it.

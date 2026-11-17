@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Paint;
+namespace Quoin\Paint;
 
-use Papercut\Backend\PdfPageHandle;
+use Quoin\Backend\PdfPageHandle;
 
 /**
  * A page of another PDF, drawn to fill this rectangle.

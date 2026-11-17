@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut;
+namespace Quoin;
 
-use Papercut\Concerns\HasStyle;
-use Papercut\Exception\InvalidValue;
-use Papercut\Paint\Link as PaintLink;
+use Quoin\Concerns\HasStyle;
+use Quoin\Exception\InvalidValue;
+use Quoin\Paint\Link as PaintLink;
 
 /**
  * A hyperlinked block; lays out like a column View.

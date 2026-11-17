@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Feature;
+namespace Quoin\Tests\Feature;
 
-use Papercut\{Column, Document, Page, PdfPage, Text};
-use Papercut\Exception\{InvalidValue, PdfUnreadable};
-use Papercut\Export\{Encryption, FidelityReport, HtmlOptions, PdfOptions};
-use Papercut\Tests\Support\{FakeBackend, PdfInspector, Raster};
+use Quoin\{Column, Document, Page, PdfPage, Text};
+use Quoin\Exception\{InvalidValue, PdfUnreadable};
+use Quoin\Export\{Encryption, FidelityReport, HtmlOptions, PdfOptions};
+use Quoin\Tests\Support\{FakeBackend, PdfInspector, Raster};
 use PHPUnit\Framework\TestCase;
-use function Papercut\pt;
+use function Quoin\pt;
 
 /**
- * Pages of existing PDFs drawn into new ones. The templates are made by Papercut: a 200 x 100pt
+ * Pages of existing PDFs drawn into new ones. The templates are made here: a 200 x 100pt
  * page with a 50pt black square in its top-left corner and one word below it.
  */
 final class PdfPageTest extends TestCase
@@ -46,7 +46,7 @@ final class PdfPageTest extends TestCase
 
     private static function textOf(string $pdf, string $password = ''): string
     {
-        $file = tempnam(sys_get_temp_dir(), 'papercut-pdfpage-');
+        $file = tempnam(sys_get_temp_dir(), 'quoin-pdfpage-');
         file_put_contents($file, $pdf);
         try {
             exec(sprintf('pdftotext %s %s - 2>&1', $password === '' ? '' : '-upw ' . escapeshellarg($password), escapeshellarg($file)), $out, $code);
@@ -72,7 +72,7 @@ final class PdfPageTest extends TestCase
 
     public function test_a_rotated_page_is_drawn_upright(): void
     {
-        $dir = sys_get_temp_dir() . '/papercut-rotate-' . bin2hex(random_bytes(4));
+        $dir = sys_get_temp_dir() . '/quoin-rotate-' . bin2hex(random_bytes(4));
         mkdir($dir);
         try {
             file_put_contents("$dir/in.pdf", self::template());
@@ -103,7 +103,7 @@ final class PdfPageTest extends TestCase
 
     public function test_reads_a_file(): void
     {
-        $file = tempnam(sys_get_temp_dir(), 'papercut-template-');
+        $file = tempnam(sys_get_temp_dir(), 'quoin-template-');
         file_put_contents($file, self::template('FromFile'));
         try {
             self::assertStringContainsString('FromFile', self::textOf(self::pdf(PdfPage::file($file))));

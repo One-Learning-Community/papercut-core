@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Support;
+namespace Quoin\Tests\Support;
 
-use Papercut\Support\Suggest;
+use Quoin\Support\Suggest;
 use PHPUnit\Framework\TestCase;
 
 final class SuggestTest extends TestCase

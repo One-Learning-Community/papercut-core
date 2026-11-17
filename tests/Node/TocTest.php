@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Node;
+namespace Quoin\Tests\Node;
 
-use Papercut\Exception\InvalidValue;
-use Papercut\Style\{ComputedStyle, Style, StyleResolver, Theme};
-use Papercut\{Text, Toc};
+use Quoin\Exception\InvalidValue;
+use Quoin\Style\{ComputedStyle, Style, StyleResolver, Theme};
+use Quoin\{Text, Toc};
 use PHPUnit\Framework\TestCase;
 
 final class TocTest extends TestCase

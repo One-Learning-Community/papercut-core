@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
 /**
  * Space offered to a node. $height is what is left on the current page
@@ -16,7 +16,7 @@ namespace Papercut\Layout;
  * the box's rows go on in the next slice, so it draws no bottom edge even if
  * its own content is done.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final readonly class Constraints
 {

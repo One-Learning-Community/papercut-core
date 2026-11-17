@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Support;
+namespace Quoin\Support;
 
-use Papercut\Exception\InvalidValue;
-use Papercut\Value\{Auto, Edges, Length, Percent};
+use Quoin\Exception\InvalidValue;
+use Quoin\Value\{Auto, Edges, Length, Percent};
 
 /**
  * Checks a developer's number when it is set, so a bad one fails at the call that gave it and

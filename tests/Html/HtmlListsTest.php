@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Html;
+namespace Quoin\Tests\Html;
 
-use Papercut\{Document, ListItem, ListNode, Page, Text};
-use Papercut\Style\ListMarker;
+use Quoin\{Document, ListItem, ListNode, Page, Text};
+use Quoin\Style\ListMarker;
 use PHPUnit\Framework\TestCase;
 
 final class HtmlListsTest extends TestCase
@@ -35,7 +35,7 @@ final class HtmlListsTest extends TestCase
         return (string) $e->getAttribute('style');
     }
 
-    private function body(\Papercut\Node|\Papercut\Component ...$nodes): Document
+    private function body(\Quoin\Node|\Quoin\Component ...$nodes): Document
     {
         return Document::make(Page::a4()->body(...$nodes));
     }

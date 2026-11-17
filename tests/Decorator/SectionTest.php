@@ -2,27 +2,27 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Decorator;
+namespace Quoin\Tests\Decorator;
 
-use Papercut\{Column, Document, Page, Text, View};
-use Papercut\Decorator\{Decorator, Section};
-use Papercut\Paint\{Painter, TextRun};
-use Papercut\Value\Edges;
-use Papercut\Style\{ComputedStyle, Direction, Style, StyleResolver, Theme};
-use Papercut\Tests\Support\FakeBackend;
+use Quoin\{Column, Document, Page, Text, View};
+use Quoin\Decorator\{Decorator, Section};
+use Quoin\Paint\{Painter, TextRun};
+use Quoin\Value\Edges;
+use Quoin\Style\{ComputedStyle, Direction, Style, StyleResolver, Theme};
+use Quoin\Tests\Support\FakeBackend;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class SectionTest extends TestCase
 {
-    private static function view(\Papercut\Node|\Papercut\Component $n): View
+    private static function view(\Quoin\Node|\Quoin\Component $n): View
     {
         self::assertInstanceOf(View::class, $n);
         return $n;
     }
 
-    private static function text(\Papercut\Node|\Papercut\Component $n): Text
+    private static function text(\Quoin\Node|\Quoin\Component $n): Text
     {
         self::assertInstanceOf(Text::class, $n);
         return $n;
@@ -147,8 +147,8 @@ final class SectionTest extends TestCase
         ));
 
         $b = new FakeBackend();
-        $ctx = new \Papercut\Layout\LayoutContext(\Papercut\Text\FontRegistry::withDefaults($b), Theme::default(), $b, \Papercut\OverflowMode::Throw, static function (string $w): void {});
-        $pages = Painter::paint((new \Papercut\Layout\Paginator(new \Papercut\Layout\LayoutEngine($ctx), $ctx))->paginate($doc));
+        $ctx = new \Quoin\Layout\LayoutContext(\Quoin\Text\FontRegistry::withDefaults($b), Theme::default(), $b, \Quoin\OverflowMode::Throw, static function (string $w): void {});
+        $pages = Painter::paint((new \Quoin\Layout\Paginator(new \Quoin\Layout\LayoutEngine($ctx), $ctx))->paginate($doc));
 
         $where = [];
         foreach ($pages as $i => $p) {

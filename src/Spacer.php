@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut;
+namespace Quoin;
 
-use Papercut\Concerns\HasStyle;
-use Papercut\Support\Check;
-use Papercut\Value\Length;
+use Quoin\Concerns\HasStyle;
+use Quoin\Support\Check;
+use Quoin\Value\Length;
 
 final class Spacer implements Styled
 {

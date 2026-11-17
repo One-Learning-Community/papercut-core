@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Decorator;
+namespace Quoin\Decorator;
 
-use Papercut\{Component, Node, Text, View};
-use Papercut\Concerns\{HasStyle, HasVariants};
-use Papercut\Exception\{InvalidStructure, InvalidValue};
-use Papercut\Style\Direction;
-use Papercut\Toc\HeadingText;
+use Quoin\{Component, Node, Text, View};
+use Quoin\Concerns\{HasStyle, HasVariants};
+use Quoin\Exception\{InvalidStructure, InvalidValue};
+use Quoin\Style\Direction;
+use Quoin\Toc\HeadingText;
 
 /**
  * A heading kept with its content, with an optional number and rule.

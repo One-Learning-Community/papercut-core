@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut;
+namespace Quoin;
 
-use Papercut\Backend\{DefaultBackend, PdfPageLoader};
-use Papercut\Exception\InvalidValue;
-use Papercut\Style\{Style, ThemeOverride};
-use Papercut\Value\{Edges, Length};
+use Quoin\Backend\{DefaultBackend, PdfPageLoader};
+use Quoin\Exception\InvalidValue;
+use Quoin\Style\{Style, ThemeOverride};
+use Quoin\Value\{Edges, Length};
 
-use function Papercut\{mm, pt};
+use function Quoin\{mm, pt};
 
 final class Page implements Node
 {
@@ -105,7 +105,7 @@ final class Page implements Node
      * to learn its size.
      *
      * @param PdfPageLoader|null $loader internal, for tests: reads the PDF (null = the default backend)
-     * @throws \Papercut\Exception\PdfUnreadable
+     * @throws \Quoin\Exception\PdfUnreadable
      */
     public static function template(PdfPage $pdf, ?PdfPageLoader $loader = null): self
     {

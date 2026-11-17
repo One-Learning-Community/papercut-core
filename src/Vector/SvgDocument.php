@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Vector;
+namespace Quoin\Vector;
 
-use Papercut\Exception\ImageUnreadable;
-use Papercut\Support\AltText;
+use Quoin\Exception\ImageUnreadable;
+use Quoin\Support\AltText;
 
 /**
  * An SVG source, parsed and checked once: its size, view box and alignment, and the cleaned-up
@@ -82,7 +82,7 @@ final readonly class SvgDocument
         }
         if ($dom->doctype !== null) {
             if ($dom->doctype->entities->length > 0 || trim((string) $dom->doctype->internalSubset) !== '') {
-                throw new ImageUnreadable('Cannot read SVG: it declares entities in its DOCTYPE, which Papercut refuses for safety');
+                throw new ImageUnreadable('Cannot read SVG: it declares entities in its DOCTYPE, which is refused for safety');
             }
             $dom->removeChild($dom->doctype);
         }

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Html;
+namespace Quoin\Tests\Html;
 
-use Papercut\Html\Css;
-use Papercut\Text\{FontClass, FontSet};
-use Papercut\Style\{Align, BorderStyle, ComputedStyle, Direction, Justify, Style, TextAlign, Theme};
-use Papercut\Value\{Auto, Color, Edges, Length, Percent};
+use Quoin\Html\Css;
+use Quoin\Text\{FontClass, FontSet};
+use Quoin\Style\{Align, BorderStyle, ComputedStyle, Direction, Justify, Style, TextAlign, Theme};
+use Quoin\Value\{Auto, Color, Edges, Length, Percent};
 use PHPUnit\Framework\TestCase;
 
 final class CssTest extends TestCase

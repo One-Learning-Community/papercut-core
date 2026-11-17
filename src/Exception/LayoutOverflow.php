@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Exception;
+namespace Quoin\Exception;
 
-use Papercut\PapercutException;
+use Quoin\QuoinException;
 
-final class LayoutOverflow extends PapercutException
+final class LayoutOverflow extends QuoinException
 {
     public function __construct(
         public readonly string $path,

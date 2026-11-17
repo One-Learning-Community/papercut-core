@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Text;
+namespace Quoin\Text;
 
 /**
  * A bounds-checked reader of a TrueType/OpenType file's table directory. Malformed or unreadable
  * files give null and missing tables give null; nothing here warns or throws.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class TrueTypeTables
 {

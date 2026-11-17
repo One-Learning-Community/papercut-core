@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Feature;
+namespace Quoin\Tests\Feature;
 
-use Papercut\{Column, Document, Page, PageNumber, Row, Spacer, Table, Text};
-use Papercut\Backend\PhpPdf\PhpPdfBackend;
-use Papercut\Export\PdfOptions;
-use Papercut\Style\Theme;
-use Papercut\Tests\Support\PdfInspector;
+use Quoin\{Column, Document, Page, PageNumber, Row, Spacer, Table, Text};
+use Quoin\Backend\PhpPdf\PhpPdfBackend;
+use Quoin\Export\PdfOptions;
+use Quoin\Style\Theme;
+use Quoin\Tests\Support\PdfInspector;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\{mm, pt};
+use function Quoin\{mm, pt};
 
 final class EndToEndTest extends TestCase
 {
@@ -53,7 +53,7 @@ final class EndToEndTest extends TestCase
 
     public function test_save(): void
     {
-        $path = sys_get_temp_dir() . '/papercut-e2e-' . getmypid() . '.pdf';
+        $path = sys_get_temp_dir() . '/quoin-e2e-' . getmypid() . '.pdf';
         try {
             $this->transcript(5)->toPdf()->save($path);
             self::assertFileExists($path);
@@ -67,7 +67,7 @@ final class EndToEndTest extends TestCase
     {
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Directory does not exist');
-        $this->transcript(1)->toPdf()->save(sys_get_temp_dir() . '/papercut-no-such-dir-' . getmypid() . '/x.pdf');
+        $this->transcript(1)->toPdf()->save(sys_get_temp_dir() . '/quoin-no-such-dir-' . getmypid() . '/x.pdf');
     }
 
     public function test_stream_writes_output_and_returns_byte_count(): void

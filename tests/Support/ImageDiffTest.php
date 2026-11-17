@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Support;
+namespace Quoin\Tests\Support;
 
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\TestCase;

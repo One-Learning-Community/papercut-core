@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Layout;
+namespace Quoin\Tests\Layout;
 
-use Papercut\{Document, ListItem, ListNode, Page, Table, TableCell, Text, Toc};
-use Papercut\Export\PdfOptions;
-use Papercut\Layout\{Fragment, LayoutContext, LayoutEngine, Paginator, PlacedPage};
-use Papercut\OverflowMode;
-use Papercut\Style\{PageThemes, Style, TextAlign, Theme};
-use Papercut\Text\FontRegistry;
-use Papercut\Toc\TocIndex;
+use Quoin\{Document, ListItem, ListNode, Page, Table, TableCell, Text, Toc};
+use Quoin\Export\PdfOptions;
+use Quoin\Layout\{Fragment, LayoutContext, LayoutEngine, Paginator, PlacedPage};
+use Quoin\OverflowMode;
+use Quoin\Style\{PageThemes, Style, TextAlign, Theme};
+use Quoin\Text\FontRegistry;
+use Quoin\Toc\TocIndex;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

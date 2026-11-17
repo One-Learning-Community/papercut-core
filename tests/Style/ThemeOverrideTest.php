@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Style;
+namespace Quoin\Tests\Style;
 
-use Papercut\Decorator\DefaultStyles;
-use Papercut\Exception\InvalidValue;
-use Papercut\Text;
-use Papercut\Style\{Style, StyleResolver, Theme, ThemeOverride};
-use Papercut\Value\{Color, Length};
+use Quoin\Decorator\DefaultStyles;
+use Quoin\Exception\InvalidValue;
+use Quoin\Text;
+use Quoin\Style\{Style, StyleResolver, Theme, ThemeOverride};
+use Quoin\Value\{Color, Length};
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class ThemeOverrideTest extends TestCase
 {
@@ -39,7 +39,7 @@ final class ThemeOverrideTest extends TestCase
 
     public function test_later_overrides_win_and_styles_merge_per_name(): void
     {
-        $o = (new ThemeOverride(fontSize: pt(11), styles: ['card' => Style::make(padding: \Papercut\Value\Edges::all(pt(4)))]))
+        $o = (new ThemeOverride(fontSize: pt(11), styles: ['card' => Style::make(padding: \Quoin\Value\Edges::all(pt(4)))]))
             ->merge(new ThemeOverride(fontSize: pt(12), styles: ['card' => Style::make(background: Color::parse('slate-50'))]));
         $theme = Theme::default()->withOverride($o);
         $card = $theme->named('card');

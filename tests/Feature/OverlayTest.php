@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Feature;
+namespace Quoin\Tests\Feature;
 
-use Papercut\{Column, Document, Page, PageNumber, PdfPage, Place, QrCode, Text, View};
-use Papercut\Style\Anchor;
-use Papercut\Exception\InvalidValue;
-use Papercut\Export\{FidelityReport, HtmlOptions};
-use Papercut\Tests\Support\{PdfInspector, Raster};
-use Papercut\Value\Percent;
+use Quoin\{Column, Document, Page, PageNumber, PdfPage, Place, QrCode, Text, View};
+use Quoin\Style\Anchor;
+use Quoin\Exception\InvalidValue;
+use Quoin\Export\{FidelityReport, HtmlOptions};
+use Quoin\Tests\Support\{PdfInspector, Raster};
+use Quoin\Value\Percent;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use function Papercut\{mm, pt};
+use function Quoin\{mm, pt};
 
 /**
  * Page::overlay(): content placed at a point on the page, over everything else. The page is
@@ -157,7 +157,7 @@ final class OverlayTest extends TestCase
 
     public function test_a_place_outside_an_overlay_is_refused(): void
     {
-        $this->expectException(\Papercut\Exception\InvalidStructure::class);
+        $this->expectException(\Quoin\Exception\InvalidStructure::class);
         $this->expectExceptionMessage('A place only works in a page overlay');
 
         Document::make(self::page()->body(Place::at('0', '0', 'x')))->toPdf();
@@ -165,7 +165,7 @@ final class OverlayTest extends TestCase
 
     public function test_html_refuses_a_place_outside_an_overlay_too(): void
     {
-        $this->expectException(\Papercut\Exception\InvalidStructure::class);
+        $this->expectException(\Quoin\Exception\InvalidStructure::class);
         $this->expectExceptionMessage('A place only works in a page overlay; add it with Page::overlay(), not inside other content (at page > overlay > place[0] > place[0])');
 
         Document::make(self::page()->overlay(Place::at('0', '0', Place::at('0', '0', 'x'))))->toHtml();

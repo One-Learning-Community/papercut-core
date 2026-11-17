@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
-use Papercut\Node;
-use Papercut\Style\ComputedStyle;
+use Quoin\Node;
+use Quoin\Style\ComputedStyle;
 
 /**
  * A place is laid out by the paginator, in the page overlay; anywhere else it is a mistake.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class PlaceLayouter implements Layouter
 {

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Backend\PhpPdf;
+namespace Quoin\Backend\PhpPdf;
 
 use Dskripchenko\PhpPdf\Pdf\Reader\ReaderDocument;
-use Papercut\Backend\PdfPageHandle;
+use Quoin\Backend\PdfPageHandle;
 
-/** @internal Part of Papercut's PDF writer. Custom backends aren't supported, and it may change in any release. */
+/** @internal Part of the PDF writer. Custom backends aren't supported, and it may change in any release. */
 final class PhpPdfPage implements PdfPageHandle
 {
     /** @param int $index counting from 0 */

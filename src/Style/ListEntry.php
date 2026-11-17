@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Style;
+namespace Quoin\Style;
 
 /**
  * Marks a node as a list item (the ListItem itself, or the layout's paired

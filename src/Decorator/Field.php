@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Decorator;
+namespace Quoin\Decorator;
 
 use InvalidArgumentException;
-use Papercut\{Component, Node, Text, View};
-use Papercut\Concerns\{HasStyle, HasVariants};
-use Papercut\Value\Length;
+use Quoin\{Component, Node, Text, View};
+use Quoin\Concerns\{HasStyle, HasVariants};
+use Quoin\Value\Length;
 
 
 /**

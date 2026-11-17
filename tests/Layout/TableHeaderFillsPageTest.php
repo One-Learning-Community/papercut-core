@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Layout;
+namespace Quoin\Tests\Layout;
 
-use Papercut\{Document, Image, Page, QrCode, Table};
-use Papercut\Export\PdfOptions;
-use Papercut\Markup\{Markup, MarkupOptions, StyleMode};
-use Papercut\Tests\Support\FailsOnDiagnostics;
+use Quoin\{Document, Image, Page, QrCode, Table};
+use Quoin\Export\PdfOptions;
+use Quoin\Markup\{Markup, MarkupOptions, StyleMode};
+use Quoin\Tests\Support\FailsOnDiagnostics;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

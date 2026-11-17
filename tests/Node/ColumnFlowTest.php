@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Node;
+namespace Quoin\Tests\Node;
 
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Papercut\{ColumnBreak, ColumnFlow, View};
-use Papercut\Exception\InvalidValue;
-use Papercut\Value\{Color, ColumnSpec};
+use Quoin\{ColumnBreak, ColumnFlow, View};
+use Quoin\Exception\InvalidValue;
+use Quoin\Value\{Color, ColumnSpec};
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class ColumnFlowTest extends TestCase
 {
@@ -138,7 +138,7 @@ final class ColumnFlowTest extends TestCase
             static fn () => ColumnFlow::make('a')->columnRule(pt(-1)),
             static fn () => ColumnFlow::make('a')->columnRule(pt(0)),
             static fn () => new ColumnSpec(2, null, [-5.0]),
-            static fn () => new ColumnSpec(2, null, [5.0], new \Papercut\Value\ColumnRule(0.0, Color::black())),
+            static fn () => new ColumnSpec(2, null, [5.0], new \Quoin\Value\ColumnRule(0.0, Color::black())),
         ] as $make) {
             try {
                 $make();
@@ -195,9 +195,9 @@ final class ColumnFlowTest extends TestCase
     #[Test]
     public function invalid_gaps_throw_on_entering_the_view_even_when_it_is_only_measured(): void
     {
-        $h = new \Papercut\Tests\Support\LayoutHarness();
+        $h = new \Quoin\Tests\Support\LayoutHarness();
         $this->expectException(InvalidValue::class);
         $this->expectExceptionMessage('expected 1 gap');
-        $h->engine->styleOf(ColumnFlow::make('a')->columnGap(pt(1), pt(2)), \Papercut\Style\ComputedStyle::root(\Papercut\Style\Theme::default()));
+        $h->engine->styleOf(ColumnFlow::make('a')->columnGap(pt(1), pt(2)), \Quoin\Style\ComputedStyle::root(\Quoin\Style\Theme::default()));
     }
 }

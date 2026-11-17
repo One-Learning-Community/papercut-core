@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
-use Papercut\{Node, Text};
-use Papercut\Paint\{Line as LineOp, Link as LinkOp, Rect, TextRun};
-use Papercut\Style\{ComputedStyle, TextAlign, WhiteSpace};
-use Papercut\Text\{FontStyle, InlineItem, Line, LineBreaker};
-use Papercut\Value\Length;
+use Quoin\{Node, Text};
+use Quoin\Paint\{Line as LineOp, Link as LinkOp, Rect, TextRun};
+use Quoin\Style\{ComputedStyle, TextAlign, WhiteSpace};
+use Quoin\Text\{FontStyle, InlineItem, Line, LineBreaker};
+use Quoin\Value\Length;
 
 /**
  * Lays out a Text node as a stack of line boxes and fragments it between
@@ -16,11 +16,11 @@ use Papercut\Value\Length;
  * (width, padding, border, background, opacity) apply via BoxGeometry with
  * sliced semantics; margins are the parent's job.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class TextLayouter implements Layouter
 {
-    /** @var \SplObjectStorage<Node, array<string, array{style: ComputedStyle, theme: \Papercut\Style\Theme, lines: list<Line>, boxes: list<array{baseline: float, height: float}>}>> */
+    /** @var \SplObjectStorage<Node, array<string, array{style: ComputedStyle, theme: \Quoin\Style\Theme, lines: list<Line>, boxes: list<array{baseline: float, height: float}>}>> */
     private \SplObjectStorage $lineCache;
     /** The engine's LayoutContext::$measureOnly, read at each layout() call. */
     private bool $measureOnly = false;

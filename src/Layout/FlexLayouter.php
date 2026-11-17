@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
-use Papercut\{ColumnBreak, Node, PageBreak, Spacer, View};
-use Papercut\Tree\{ColumnFlows, NodePath};
-use Papercut\Style\{Align, ComputedStyle};
-use Papercut\Value\{Auto, Length};
+use Quoin\{ColumnBreak, Node, PageBreak, Spacer, View};
+use Quoin\Tree\{ColumnFlows, NodePath};
+use Quoin\Style\{Align, ComputedStyle};
+use Quoin\Value\{Auto, Length};
 
 /**
  * Row-direction Views: CSS flexbox (simplified) along the x axis, with
@@ -18,7 +18,7 @@ use Papercut\Value\{Auto, Length};
  * parallel. The token then holds one entry per item (null = finished); on
  * resume finished items keep their slot but draw nothing.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class FlexLayouter implements Layouter
 {
@@ -520,7 +520,7 @@ final class FlexLayouter implements Layouter
         };
     }
 
-    /** @return list<\Papercut\Node|\Papercut\Component> */
+    /** @return list<\Quoin\Node|\Quoin\Component> */
     private static function children(Node $node): array
     {
         if ($node instanceof View) {

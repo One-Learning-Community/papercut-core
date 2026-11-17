@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Support;
+namespace Quoin\Support;
 
-use Papercut\Exception\InvalidValue;
+use Quoin\Exception\InvalidValue;
 
 /**
  * Turns an option given as its string value into the enum case, for the fluent setters and the

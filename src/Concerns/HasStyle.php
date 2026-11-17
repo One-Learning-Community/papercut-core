@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Concerns;
+namespace Quoin\Concerns;
 
-use Papercut\Exception\InvalidValue;
-use Papercut\Style\{Align, BorderStyle, Style, TextAlign};
-use Papercut\Support\{Check, EnumValue};
-use Papercut\Value\{Auto, Color, Edges, Length, Percent};
+use Quoin\Exception\InvalidValue;
+use Quoin\Style\{Align, BorderStyle, Style, TextAlign};
+use Quoin\Support\{Check, EnumValue};
+use Quoin\Value\{Auto, Color, Edges, Length, Percent};
 
 /**
  * Immutable style modifiers: each returns a modified clone.
@@ -116,7 +116,7 @@ trait HasStyle
         return Edges::of(...$lengths);
     }
 
-    /** @throws \Papercut\Exception\InvalidValue for a $style string that is not a border style */
+    /** @throws \Quoin\Exception\InvalidValue for a $style string that is not a border style */
     public function border(Length $width, Color|string|null $color = null, BorderStyle|string|null $style = null): static
     {
         $style = $style === null ? null : EnumValue::from(BorderStyle::class, $style, self::setterName('border'));
@@ -170,7 +170,7 @@ trait HasStyle
         return $this->withStyle(new Style(basis: $v));
     }
 
-    /** @throws \Papercut\Exception\InvalidValue for a string that is not an alignment */
+    /** @throws \Quoin\Exception\InvalidValue for a string that is not an alignment */
     public function alignSelf(Align|string $v): static
     {
         $v = EnumValue::from(Align::class, $v, self::setterName('alignSelf'));
@@ -219,7 +219,7 @@ trait HasStyle
         return $this->withStyle(new Style(letterSpacing: $v));
     }
 
-    /** @throws \Papercut\Exception\InvalidValue for a string that is not a text alignment */
+    /** @throws \Quoin\Exception\InvalidValue for a string that is not a text alignment */
     public function textAlign(TextAlign|string $v): static
     {
         $v = EnumValue::from(TextAlign::class, $v, self::setterName('textAlign'));
@@ -270,7 +270,7 @@ trait HasStyle
     public function bookmark(string|false $title, ?int $level = null): static
     {
         if ($level !== null && $level < 1) {
-            throw \Papercut\Exception\InvalidValue::for('bookmark level', (string) $level)->because('levels start at 1');
+            throw \Quoin\Exception\InvalidValue::for('bookmark level', (string) $level)->because('levels start at 1');
         }
         return $this->withStyle(new Style(bookmark: $title === false ? '' : $title, bookmarkLevel: $level));
     }

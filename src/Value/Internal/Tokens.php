@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Value\Internal;
+namespace Quoin\Value\Internal;
 
-use Papercut\Exception\InvalidValue;
+use Quoin\Exception\InvalidValue;
 
 /** @internal */
 final class Tokens

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Html;
+namespace Quoin\Tests\Html;
 
-use Papercut\Document;
-use Papercut\Export\HtmlOptions;
+use Quoin\Document;
+use Quoin\Export\HtmlOptions;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

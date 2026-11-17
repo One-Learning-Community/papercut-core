@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Validation;
+namespace Quoin\Tests\Validation;
 
-use Papercut\Exception\{FontNotFound, InvalidStructure, InvalidValue};
-use Papercut\Export\{FontMode, HtmlOptions};
-use Papercut\Style\{Style, ThemeOverride};
-use Papercut\Text\{FontFace, FontSet};
-use Papercut\{Column, Document, Image, ListItem, ListNode, Page, Place, QrCode, Table, TableCell, TableRow, Text, View};
+use Quoin\Exception\{FontNotFound, InvalidStructure, InvalidValue};
+use Quoin\Export\{FontMode, HtmlOptions};
+use Quoin\Style\{Style, ThemeOverride};
+use Quoin\Text\{FontFace, FontSet};
+use Quoin\{Column, Document, Image, ListItem, ListNode, Page, Place, QrCode, Table, TableCell, TableRow, Text, View};
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
-/** Developer mistakes raise Papercut exceptions that name the call, the value and what is allowed (D1, D10). */
+/** Developer mistakes raise the library's exceptions that name the call, the value and what is allowed (D1, D10). */
 final class ExceptionMessagesTest extends TestCase
 {
     protected function setUp(): void
@@ -244,7 +244,7 @@ final class ExceptionMessagesTest extends TestCase
 
     public function test_an_unregistered_custom_node_reads_as_such(): void
     {
-        $node = new class implements \Papercut\Node {
+        $node = new class implements \Quoin\Node {
             public function debugName(): string
             {
                 return 'x';
@@ -255,7 +255,7 @@ final class ExceptionMessagesTest extends TestCase
                 return new Style();
             }
         };
-        $e = \Papercut\Layout\LayoutEngine::misplaced($node, 'page > body > x[0]');
+        $e = \Quoin\Layout\LayoutEngine::misplaced($node, 'page > body > x[0]');
         self::assertStringContainsString('no layouter is registered', $e->getMessage());
     }
 

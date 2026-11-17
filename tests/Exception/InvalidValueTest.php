@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Exception;
+namespace Quoin\Tests\Exception;
 
-use Papercut\Exception\{FontNotFound, ImageUnreadable, InvalidValue};
-use Papercut\PapercutException;
+use Quoin\Exception\{FontNotFound, ImageUnreadable, InvalidValue};
+use Quoin\QuoinException;
 use PHPUnit\Framework\TestCase;
 
 final class InvalidValueTest extends TestCase
 {
     public function test_other_exceptions_are_library_exceptions(): void
     {
-        self::assertInstanceOf(PapercutException::class, new FontNotFound('x'));
-        self::assertInstanceOf(PapercutException::class, new ImageUnreadable('x'));
+        self::assertInstanceOf(QuoinException::class, new FontNotFound('x'));
+        self::assertInstanceOf(QuoinException::class, new ImageUnreadable('x'));
     }
 
     public function test_message_without_suggestion(): void
     {
         $e = InvalidValue::for('length', '20px!');
-        self::assertInstanceOf(PapercutException::class, $e);
+        self::assertInstanceOf(QuoinException::class, $e);
         self::assertSame('Invalid length "20px!".', $e->getMessage());
     }
 

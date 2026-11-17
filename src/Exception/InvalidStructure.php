@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Exception;
+namespace Quoin\Exception;
 
-use Papercut\PapercutException;
+use Quoin\QuoinException;
 
 /** The document's shape is wrong, such as a node placed where it cannot work. */
-class InvalidStructure extends PapercutException
+class InvalidStructure extends QuoinException
 {
 }

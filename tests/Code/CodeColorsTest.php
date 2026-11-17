@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Code;
+namespace Quoin\Tests\Code;
 
-use Papercut\Code\CodeColors;
-use Papercut\Value\Color;
+use Quoin\Code\CodeColors;
+use Quoin\Value\Color;
 use PHPUnit\Framework\TestCase;
 
 final class CodeColorsTest extends TestCase

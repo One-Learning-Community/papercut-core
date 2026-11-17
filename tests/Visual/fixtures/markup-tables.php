@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use Papercut\Markup\Markup;
-use Papercut\{Column, Document, Page};
+use Quoin\Markup\Markup;
+use Quoin\{Column, Document, Page};
 
-use function Papercut\{mm, pt};
+use function Quoin\{mm, pt};
 
 // Generic, made-up content: a long statistics table (two header rows, one with colspan, a footnote row) that
 // splits across pages and repeats its header, a rule, and a rubric grid with a rowspan and cell lists.

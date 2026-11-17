@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Value;
+namespace Quoin\Tests\Value;
 
-use Papercut\{Page, Spacer, Table};
-use Papercut\Decorator\KeyValueList;
-use Papercut\Exception\InvalidValue;
-use Papercut\Value\{Edges, Length, TrackList};
+use Quoin\{Page, Spacer, Table};
+use Quoin\Decorator\KeyValueList;
+use Quoin\Exception\InvalidValue;
+use Quoin\Value\{Edges, Length, TrackList};
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 /** em and lh only mean something in styles; everything that needs points up front rejects them. */
 final class AbsoluteLengthGuardTest extends TestCase

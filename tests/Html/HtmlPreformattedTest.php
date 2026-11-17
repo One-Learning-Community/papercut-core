@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Html;
+namespace Quoin\Tests\Html;
 
-use Papercut\{Document, Page, Text, View};
-use Papercut\Export\HtmlOptions;
-use Papercut\Style\{Style, Theme, WhiteSpace};
-use Papercut\Markup\Markup;
+use Quoin\{Document, Page, Text, View};
+use Quoin\Export\HtmlOptions;
+use Quoin\Style\{Style, Theme, WhiteSpace};
+use Quoin\Markup\Markup;
 use PHPUnit\Framework\TestCase;
 
 final class HtmlPreformattedTest extends TestCase

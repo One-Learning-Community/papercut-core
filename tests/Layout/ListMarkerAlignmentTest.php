@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Layout;
+namespace Quoin\Tests\Layout;
 
-use Papercut\{ListNode, Text};
-use Papercut\Layout\Fragment;
-use Papercut\Paint\TextRun;
-use Papercut\Tests\Support\LayoutHarness;
+use Quoin\{ListNode, Text};
+use Quoin\Layout\Fragment;
+use Quoin\Paint\TextRun;
+use Quoin\Tests\Support\LayoutHarness;
 use PHPUnit\Framework\TestCase;
 
 final class ListMarkerAlignmentTest extends TestCase

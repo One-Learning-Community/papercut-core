@@ -10,9 +10,9 @@ declare(strict_types=1);
  * Returns the Document. Deterministic: no clock, no randomness.
  */
 
-use Papercut\{Column, Document, Page, PageNumber, Row, Spacer, Table, Text};
+use Quoin\{Column, Document, Page, PageNumber, Row, Spacer, Table, Text};
 
-use function Papercut\{mm, pt};
+use function Quoin\{mm, pt};
 
 $autoload = __DIR__ . '/../vendor/autoload.php';
 if (!class_exists(Document::class) && is_file($autoload)) {
@@ -26,7 +26,7 @@ $courses = array_map(
 
 return Document::make(
     Page::a4()->margin(mm(10))
-        ->header(Row::make(Text::make('Official Transcript')->bold()->size(pt(16)), Spacer::flex(), Text::make('Papercut')))
+        ->header(Row::make(Text::make('Official Transcript')->bold()->size(pt(16)), Spacer::flex(), Text::make('Quoin')))
         ->body(Column::make(
             Text::h2('Student: Ada Lovelace'),
             Table::make()->columns('3fr 25mm 20mm')->head('Course', 'Credits', 'Grade')

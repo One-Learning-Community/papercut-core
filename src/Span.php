@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut;
+namespace Quoin;
 
-use Papercut\Concerns\NameRules;
-use Papercut\Decorator\Badge;
-use Papercut\Math\Math;
-use Papercut\Math\Node\Node as MathNode;
-use Papercut\Paint\Link as PaintLink;
-use Papercut\Style\Style;
+use Quoin\Concerns\NameRules;
+use Quoin\Decorator\Badge;
+use Quoin\Math\Math;
+use Quoin\Math\Node\Node as MathNode;
+use Quoin\Paint\Link as PaintLink;
+use Quoin\Style\Style;
 
 final readonly class Span
 {

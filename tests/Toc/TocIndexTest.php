@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Toc;
+namespace Quoin\Tests\Toc;
 
-use Papercut\{Column, Document, ListItem, ListNode, Page, Row, Table, TableCell, TableRow, Text, Toc};
-use Papercut\Style\{StyleResolver, Theme};
-use Papercut\Toc\{TocEntry, TocIndex};
+use Quoin\{Column, Document, ListItem, ListNode, Page, Row, Table, TableCell, TableRow, Text, Toc};
+use Quoin\Style\{StyleResolver, Theme};
+use Quoin\Toc\{TocEntry, TocIndex};
 use PHPUnit\Framework\TestCase;
 
 final class TocIndexTest extends TestCase
@@ -27,8 +27,8 @@ final class TocIndexTest extends TestCase
         $index = self::collect(Document::make(Page::a4()->body(Toc::make(), Text::h1('A'), Text::h2('B'), Text::h3('C'))));
         self::assertTrue($index->hasToc());
         self::assertSame([['page > body > text[1]', 1, 'A'], ['page > body > text[2]', 2, 'B']], self::triples($index, 1, 2));
-        self::assertSame('papercut-toc-0', $index->forKey('page > body > text[1]')?->destination);
-        self::assertSame('papercut-toc-1', $index->forKey('page > body > text[2]')?->destination);
+        self::assertSame('quoin-toc-0', $index->forKey('page > body > text[1]')?->destination);
+        self::assertSame('quoin-toc-1', $index->forKey('page > body > text[2]')?->destination);
         self::assertNull($index->forKey('page > body > text[3]'));
     }
 
@@ -70,9 +70,9 @@ final class TocIndexTest extends TestCase
         $doc = Document::make(Page::a4()->body(
             Toc::make()->levels(1, 4),
             Text::h1('Unit 1'),
-            \Papercut\Markup\Markup::html($html, new \Papercut\Markup\MarkupOptions(toc: false)),
+            \Quoin\Markup\Markup::html($html, new \Quoin\Markup\MarkupOptions(toc: false)),
             Text::h1('Unit 2'),
-            \Papercut\Markup\Markup::html($html),
+            \Quoin\Markup\Markup::html($html),
         ));
         self::assertSame(['Unit 1', 'Unit 2', 'Warm-up', 'In a cell'], array_map(static fn (array $t): string => $t[2], self::triples(self::collect($doc), 1, 4)));
     }

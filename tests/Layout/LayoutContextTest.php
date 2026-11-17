@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Layout;
+namespace Quoin\Tests\Layout;
 
-use Papercut\{OverflowMode, Text};
-use Papercut\Layout\LayoutContext;
-use Papercut\Style\{Style, Theme};
-use Papercut\Text\FontRegistry;
-use Papercut\Tests\Support\FakeBackend;
+use Quoin\{OverflowMode, Text};
+use Quoin\Layout\LayoutContext;
+use Quoin\Style\{Style, Theme};
+use Quoin\Text\FontRegistry;
+use Quoin\Tests\Support\FakeBackend;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class LayoutContextTest extends TestCase
 {

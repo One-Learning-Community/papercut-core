@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Style;
+namespace Quoin\Tests\Style;
 
-use Papercut\Style\StyleName;
+use Quoin\Style\StyleName;
 use PHPUnit\Framework\TestCase;
 
 final class StyleNameTest extends TestCase

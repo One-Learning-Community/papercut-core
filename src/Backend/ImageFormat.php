@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Backend;
+namespace Quoin\Backend;
 
 /**
  * Tells raster formats apart by their leading bytes. PNG and JPEG embed in
@@ -22,7 +22,7 @@ final class ImageFormat
         'image/avif' => 'AVIF',
     ];
 
-    /** The MIME type of $bytes, or null for a format Papercut does not read. */
+    /** The MIME type of $bytes, or null for a format that is not read. */
     public static function sniff(string $bytes): ?string
     {
         return match (true) {
@@ -37,7 +37,7 @@ final class ImageFormat
     }
 
     /**
-     * Whether $bytes is a whole image of a format Papercut reads, judged by structure
+     * Whether $bytes is a whole image of a readable format, judged by structure
      * (not just the magic number): PNG chunks up to IEND, JPEG markers to a scan, a
      * sane GIF or WebP header. GIF, WebP, BMP and AVIF are also decoded with GD under
      * a quiet handler, because GD is what reads them. Truncated or garbage bytes fail
@@ -81,7 +81,7 @@ final class ImageFormat
         return $bit !== null && function_exists('imagecreatefromstring') && (imagetypes() & $bit) !== 0;
     }
 
-    /** Whether GD (formats Papercut converts with it) decodes and re-encodes $bytes; true when GD is absent (the loader reports that). */
+    /** Whether GD (formats converted with it) decodes and re-encodes $bytes; true when GD is absent (the loader reports that). */
     private static function decodes(string $bytes, string $mime): bool
     {
         if (!self::gdReads($mime)) {

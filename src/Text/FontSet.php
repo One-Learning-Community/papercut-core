@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Text;
+namespace Quoin\Text;
 
-use Papercut\Exception\FontNotFound;
-use Papercut\Math\Math;
+use Quoin\Exception\FontNotFound;
+use Quoin\Math\Math;
 
 /** Format-neutral font configuration: extra faces on top of the bundled Inter and Cousine, and glyph fallback families. */
 final readonly class FontSet
 {
     /** The family the math face is registered under, for PDF text runs. */
-    public const string MATH_FAMILY = 'Papercut Math';
+    public const string MATH_FAMILY = 'Quoin Math';
     /** The bundled STIX Two Math, kept to draw U+FFFD when no other font has it. */
-    public const string REPLACEMENT_FAMILY = 'Papercut Replacement';
+    public const string REPLACEMENT_FAMILY = 'Quoin Replacement';
 
     /** @var array<string, string> the name Word should use for a family, by lowercased family */
     private array $wordNames;
@@ -94,7 +94,7 @@ final readonly class FontSet
     /**
      * True when a font other than the bundled one was chosen.
      *
-     * @internal Part of Papercut's engine, not its public API. It may change in any release.
+     * @internal Engine detail, not public API. It may change in any release.
      */
     public function hasCustomMathFont(): bool
     {
@@ -121,7 +121,7 @@ final readonly class FontSet
     /**
      * What the family's regular face (400, normal; else its first face) says about its kind, or null for an unknown family.
      *
-     * @throws \Papercut\Exception\FontNotFound when that face's file is missing, as the PDF export reports it
+     * @throws \Quoin\Exception\FontNotFound when that face's file is missing, as the PDF export reports it
      */
     public function info(string $family): ?FontInfo
     {

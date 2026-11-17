@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Markup;
+namespace Quoin\Tests\Markup;
 
-use Papercut\Document;
-use Papercut\Export\HtmlOptions;
-use Papercut\Export\PdfOptions;
-use Papercut\Markup\Markup;
-use Papercut\Markup\MarkupOptions;
-use Papercut\Markup\StyleMode;
-use Papercut\Page;
-use Papercut\Tests\Support\TestImages;
-use Papercut\Tests\Support\TrapStreamWrapper;
+use Quoin\Document;
+use Quoin\Export\HtmlOptions;
+use Quoin\Export\PdfOptions;
+use Quoin\Markup\Markup;
+use Quoin\Markup\MarkupOptions;
+use Quoin\Markup\StyleMode;
+use Quoin\Page;
+use Quoin\Tests\Support\TestImages;
+use Quoin\Tests\Support\TrapStreamWrapper;
 use PHPUnit\Framework\TestCase;
 
 /** Spec §8 Security: converting and exporting markup never opens a URL, whatever its src or href says. */
@@ -47,7 +47,7 @@ final class NoNetworkTest extends TestCase
     }
 
     /**
-     * Where Papercut may legitimately read and write while it exports: the
+     * Where an export may legitimately read and write: the
      * monorepo (autoloader, bundled fonts) and the temporary directory.
      *
      * @return list<string>

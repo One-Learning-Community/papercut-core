@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Text;
+namespace Quoin\Tests\Text;
 
-use Papercut\Export\PdfOptions;
-use Papercut\Text\{FontRegistry, FontStyle};
+use Quoin\Export\PdfOptions;
+use Quoin\Text\{FontRegistry, FontStyle};
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

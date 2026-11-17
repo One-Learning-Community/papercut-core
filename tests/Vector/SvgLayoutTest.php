@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Vector;
+namespace Quoin\Tests\Vector;
 
-use Papercut\{Row, Svg};
-use Papercut\Exception\ImageUnreadable;
-use Papercut\Layout\{Fragment, Status};
-use Papercut\Paint\{Clip, DrawSvg};
-use Papercut\Tests\Support\LayoutHarness;
+use Quoin\{Row, Svg};
+use Quoin\Exception\ImageUnreadable;
+use Quoin\Layout\{Fragment, Status};
+use Quoin\Paint\{Clip, DrawSvg};
+use Quoin\Tests\Support\LayoutHarness;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class SvgLayoutTest extends TestCase
 {

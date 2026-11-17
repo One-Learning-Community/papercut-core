@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Backend;
+namespace Quoin\Tests\Backend;
 
-use Papercut\Backend\PhpPdf\PhpPdfBackend;
-use Papercut\Exception\ImageUnreadable;
-use Papercut\Tests\Support\TestImages;
+use Quoin\Backend\PhpPdf\PhpPdfBackend;
+use Quoin\Exception\ImageUnreadable;
+use Quoin\Tests\Support\TestImages;
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\TestCase;
 

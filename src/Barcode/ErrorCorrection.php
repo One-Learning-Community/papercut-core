@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Barcode;
+namespace Quoin\Barcode;
 
 /** How much of a QR code can be damaged or covered and still scan. Higher levels hold less data. */
 enum ErrorCorrection: string

@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Export;
+namespace Quoin\Export;
 
-use Papercut\Backend\DefaultBackend;
-use Papercut\Document;
-use Papercut\Html\{Css, FontFaces, FontRequests, FontStack, HtmlWriter, Stylesheet};
-use Papercut\Style\PageThemes;
-use Papercut\Toc\TocIndex;
-use Papercut\Tree\TreeWalker;
+use Quoin\Backend\DefaultBackend;
+use Quoin\Document;
+use Quoin\Html\{Css, FontFaces, FontRequests, FontStack, HtmlWriter, Stylesheet};
+use Quoin\Style\PageThemes;
+use Quoin\Toc\TocIndex;
+use Quoin\Tree\TreeWalker;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
+/** @internal Engine detail, not public API. It may change in any release. */
 final class HtmlExporter implements Exporter
 {
     public function export(Document $doc, ExportOptions $options): Output
@@ -46,7 +46,7 @@ final class HtmlExporter implements Exporter
         }
         $css = Stylesheet::css($doc, $options, $fontCss, $writer->hasEquation());
         $lang = $meta->lang !== null ? ' lang="' . HtmlWriter::esc($meta->lang) . '"' : '';
-        $rootDiv = '<div class="papercut"' . $lang . ' style="' . HtmlWriter::esc(Css::attr(Css::text($root, null, $options->fonts()->fallbacks, $options->fonts()))) . '">' . $writer->html() . '</div>';
+        $rootDiv = '<div class="quoin"' . $lang . ' style="' . HtmlWriter::esc(Css::attr(Css::text($root, null, $options->fonts()->fallbacks, $options->fonts()))) . '">' . $writer->html() . '</div>';
         $style = '<style>' . $css . '</style>';
 
         if (!$options->fullPage()) {

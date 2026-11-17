@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Layout;
+namespace Quoin\Tests\Layout;
 
-use Papercut\Image;
-use Papercut\Layout\Status;
-use Papercut\Paint\{Clip, DrawImage};
-use Papercut\Style\ImageFit;
-use Papercut\Tests\Support\LayoutHarness;
+use Quoin\Image;
+use Quoin\Layout\Status;
+use Quoin\Paint\{Clip, DrawImage};
+use Quoin\Style\ImageFit;
+use Quoin\Tests\Support\LayoutHarness;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class ImageLayouterTest extends TestCase
 {
     // FakeBackend images are 100x50 px => 75x37.5 pt intrinsic
-    private function draw(?\Papercut\Layout\Fragment $f): DrawImage
+    private function draw(?\Quoin\Layout\Fragment $f): DrawImage
     {
         foreach ($f?->ops() ?? [] as $op) {
             if ($op instanceof DrawImage) { return $op; }
@@ -95,7 +95,7 @@ final class ImageLayouterTest extends TestCase
     public function test_intrinsic_widths(): void
     {
         $h = new LayoutHarness();
-        $root = \Papercut\Style\ComputedStyle::root(\Papercut\Style\Theme::default());
+        $root = \Quoin\Style\ComputedStyle::root(\Quoin\Style\Theme::default());
         self::assertSame(['min' => 75.0, 'max' => 75.0], $h->engine->intrinsic(Image::bytes('x'), $root));
         self::assertSame(['min' => 40.0, 'max' => 40.0], $h->engine->intrinsic(Image::bytes('x')->width(pt(40)), $root));
     }
@@ -142,14 +142,14 @@ final class ImageLayouterTest extends TestCase
 
     public function test_percent_height_without_a_definite_height_is_auto(): void
     {
-        $f = (new LayoutHarness())->layout(Image::bytes('x')->height(\Papercut\percent(50)), 500)->fragment;
+        $f = (new LayoutHarness())->layout(Image::bytes('x')->height(\Quoin\percent(50)), 500)->fragment;
         self::assertSame([75.0, 37.5], [$f?->width, $f?->height]);
     }
 
     public function test_intrinsic_includes_padding_and_border(): void
     {
         $h = new LayoutHarness();
-        $root = \Papercut\Style\ComputedStyle::root(\Papercut\Style\Theme::default());
+        $root = \Quoin\Style\ComputedStyle::root(\Quoin\Style\Theme::default());
         $s = $h->engine->intrinsic(Image::bytes('x')->padding(pt(5))->border(pt(1)), $root);
         self::assertSame(['min' => 87.0, 'max' => 87.0], $s);
     }

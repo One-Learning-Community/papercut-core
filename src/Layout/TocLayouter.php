@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
-use Papercut\{Column, Node, Text, Toc};
-use Papercut\Paint\{TextRun, TocSlot};
-use Papercut\Style\ComputedStyle;
-use Papercut\Text\{CachedFont, FontStyle};
-use Papercut\Toc\TocLine;
-use Papercut\View;
+use Quoin\{Column, Node, Text, Toc};
+use Quoin\Paint\{TextRun, TocSlot};
+use Quoin\Style\ComputedStyle;
+use Quoin\Text\{CachedFont, FontStyle};
+use Quoin\Toc\TocLine;
+use Quoin\View;
 
 /**
  * A table of contents: the title, then one line per listed heading, stacked by
  * the block layouter. Each line keeps room for a page number and carries a
  * TocSlot the Painter fills in once the heading's page is known.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class TocLayouter implements Layouter
 {

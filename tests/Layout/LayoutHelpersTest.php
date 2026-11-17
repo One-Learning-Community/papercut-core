@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Layout;
+namespace Quoin\Tests\Layout;
 
-use Papercut\{PageNumber, Spacer, Text, View};
-use Papercut\Layout\{BoxGeometry, BreakToken, Constraints, ExactWidth, Fragment, LayoutResult, ParallelSplit, Status};
-use Papercut\Style\{ComputedStyle, Justify, Style, Theme};
-use Papercut\Tests\Support\LayoutHarness;
+use Quoin\{PageNumber, Spacer, Text, View};
+use Quoin\Layout\{BoxGeometry, BreakToken, Constraints, ExactWidth, Fragment, LayoutResult, ParallelSplit, Status};
+use Quoin\Style\{ComputedStyle, Justify, Style, Theme};
+use Quoin\Tests\Support\LayoutHarness;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\{percent, pt};
+use function Quoin\{percent, pt};
 
 final class LayoutHelpersTest extends TestCase
 {

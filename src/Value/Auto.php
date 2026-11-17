@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Value;
+namespace Quoin\Value;
 
 /**
  * Not readonly: PHP forbids static properties in readonly classes, and the

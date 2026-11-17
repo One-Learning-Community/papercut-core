@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Feature;
+namespace Quoin\Tests\Feature;
 
-use Papercut\{Document, Page, Text, Toc};
-use Papercut\Decorator\{Card, Section};
-use Papercut\Exception\{InvalidStructure, InvalidValue};
-use Papercut\Style\{StyleResolver, Theme};
-use Papercut\Toc\{TocEntry, TocIndex};
+use Quoin\{Document, Page, Text, Toc};
+use Quoin\Decorator\{Card, Section};
+use Quoin\Exception\{InvalidStructure, InvalidValue};
+use Quoin\Style\{StyleResolver, Theme};
+use Quoin\Toc\{TocEntry, TocIndex};
 use PHPUnit\Framework\TestCase;
 
 final class DecoratorHeadingsTest extends TestCase
@@ -64,7 +64,7 @@ final class DecoratorHeadingsTest extends TestCase
     {
         $this->expectException(InvalidStructure::class);
         $this->expectExceptionMessage('A card title can only be a heading when it is text');
-        Card::make('Body')->title(\Papercut\View::make(Text::make('Boxed')))->heading(1)->render();
+        Card::make('Body')->title(\Quoin\View::make(Text::make('Boxed')))->heading(1)->render();
     }
 
     public function test_as_heading_marks_text_without_a_preset(): void

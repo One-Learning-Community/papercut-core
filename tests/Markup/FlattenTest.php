@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Markup;
+namespace Quoin\Tests\Markup;
 
-use Papercut\Export\FidelityLevel;
-use Papercut\Image;
-use Papercut\ListItem;
-use Papercut\ListNode;
-use Papercut\Markup\Markup;
-use Papercut\Markup\Note;
-use Papercut\Span;
-use Papercut\Text;
-use Papercut\Style\Style;
-use Papercut\Value\Color;
-use Papercut\View;
+use Quoin\Export\FidelityLevel;
+use Quoin\Image;
+use Quoin\ListItem;
+use Quoin\ListNode;
+use Quoin\Markup\Markup;
+use Quoin\Markup\Note;
+use Quoin\Span;
+use Quoin\Text;
+use Quoin\Style\Style;
+use Quoin\Value\Color;
+use Quoin\View;
 use PHPUnit\Framework\TestCase;
 
 final class FlattenTest extends TestCase

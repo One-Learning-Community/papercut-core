@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Html;
+namespace Quoin\Tests\Html;
 
-use Papercut\{ColumnBreak, ColumnFlow, Document, Page, Spacer, Table, TableCell, Text, View};
-use Papercut\Exception\InvalidStructure;
-use Papercut\Export\HtmlOptions;
-use Papercut\Value\{Color, ColumnSpec};
+use Quoin\{ColumnBreak, ColumnFlow, Document, Page, Spacer, Table, TableCell, Text, View};
+use Quoin\Exception\InvalidStructure;
+use Quoin\Export\HtmlOptions;
+use Quoin\Value\{Color, ColumnSpec};
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class HtmlColumnFlowTest extends TestCase
 {
     /** @param list<string> $messages */
-    private function html(\Papercut\Node|\Papercut\Component $node, array &$messages = []): string
+    private function html(\Quoin\Node|\Quoin\Component $node, array &$messages = []): string
     {
         $doc = Document::make(Page::a4()->body($node));
         return $doc->toHtml(new HtmlOptions(onWarning: function (string $m) use (&$messages): void {
@@ -43,7 +43,7 @@ final class HtmlColumnFlowTest extends TestCase
     {
         $html = $this->html(ColumnFlow::make(Text::make('a'), ColumnBreak::make(), Text::make('b')));
         self::assertStringContainsString('<div class="pc-column-break"></div>', $html);
-        self::assertStringContainsString('.papercut .pc-column-break{break-before:column}', $html);
+        self::assertStringContainsString('.quoin .pc-column-break{break-before:column}', $html);
     }
 
     public function test_unequal_widths_are_approximated(): void

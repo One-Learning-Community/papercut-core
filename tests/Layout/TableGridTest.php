@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Layout;
+namespace Quoin\Tests\Layout;
 
-use Papercut\{Table, TableCell};
-use Papercut\Layout\TableGrid;
+use Quoin\{Table, TableCell};
+use Quoin\Layout\TableGrid;
 use PHPUnit\Framework\TestCase;
 
 final class TableGridTest extends TestCase

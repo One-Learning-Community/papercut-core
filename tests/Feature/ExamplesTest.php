@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Feature;
+namespace Quoin\Tests\Feature;
 
-use Papercut\Document;
-use Papercut\Export\PdfOptions;
-use Papercut\Tests\Support\PdfInspector;
+use Quoin\Document;
+use Quoin\Export\PdfOptions;
+use Quoin\Tests\Support\PdfInspector;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

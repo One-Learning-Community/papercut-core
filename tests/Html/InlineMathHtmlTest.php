@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Html;
+namespace Quoin\Tests\Html;
 
-use Papercut\{Document, Page, Span, Table, Text};
-use Papercut\Math\Math;
+use Quoin\{Document, Page, Span, Table, Text};
+use Quoin\Math\Math;
 use PHPUnit\Framework\TestCase;
 
 final class InlineMathHtmlTest extends TestCase
 {
-    private function html(\Papercut\Node $n): string
+    private function html(\Quoin\Node $n): string
     {
         return Document::make(Page::a4()->body($n))->toHtml()->bytes();
     }
@@ -20,8 +20,8 @@ final class InlineMathHtmlTest extends TestCase
         $html = $this->html(Text::spans(Span::text('before '), Span::math(Math::frac('a', 'b')), Span::text(' after')));
         self::assertMatchesRegularExpression('~<p[^>]*>before <math [^>]*display="inline"[^>]*>.*</math> after</p>~s', $html);
         self::assertStringNotContainsString('display="block"', $html);
-        self::assertStringContainsString('.papercut math{', $html);
-        self::assertStringContainsString('Papercut Math', $html);
+        self::assertStringContainsString('.quoin math{', $html);
+        self::assertStringContainsString('Quoin Math', $html);
     }
 
     public function test_inline_math_escapes_specials(): void
@@ -38,7 +38,7 @@ final class InlineMathHtmlTest extends TestCase
 
     public function test_math_wrapper_has_only_color_size_and_background(): void
     {
-        $style = \Papercut\Style\Style::make(underline: true, strike: true, italic: true, fontWeight: 700, letterSpacing: \Papercut\px(2), color: \Papercut\Value\Color::hex('#cc0000'), background: \Papercut\Value\Color::hex('#eeeeee'));
+        $style = \Quoin\Style\Style::make(underline: true, strike: true, italic: true, fontWeight: 700, letterSpacing: \Quoin\px(2), color: \Quoin\Value\Color::hex('#cc0000'), background: \Quoin\Value\Color::hex('#eeeeee'));
         $html = $this->html(Text::spans(new Span('', $style, math: Math::frac('a', 'b'))));
         self::assertStringContainsString('color:', $html);
         self::assertDoesNotMatchRegularExpression('~<span style="[^"]*(font-style|font-weight|text-decoration|letter-spacing)[^"]*"><math~', $html);
@@ -48,6 +48,6 @@ final class InlineMathHtmlTest extends TestCase
 
     public function test_no_math_no_font_rule(): void
     {
-        self::assertStringNotContainsString('Papercut Math', $this->html(Text::make('plain')));
+        self::assertStringNotContainsString('Quoin Math', $this->html(Text::make('plain')));
     }
 }

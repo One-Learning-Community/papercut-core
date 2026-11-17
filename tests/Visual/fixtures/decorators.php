@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use Papercut\{Column, Document, Page, Text};
-use Papercut\Decorator\{Badge, Blockquote, Callout, Card, ChoiceList, Field, KeyValueList, Section};
+use Quoin\{Column, Document, Page, Text};
+use Quoin\Decorator\{Badge, Blockquote, Callout, Card, ChoiceList, Field, KeyValueList, Section};
 
-use function Papercut\mm;
+use function Quoin\mm;
 
 return Document::make(
     Page::a4()->margin(mm(15))->body(

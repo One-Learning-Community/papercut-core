@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Exception;
+namespace Quoin\Exception;
 
-use Papercut\PapercutException;
+use Quoin\QuoinException;
 
-final class MissingExporter extends PapercutException
+final class MissingExporter extends QuoinException
 {
     public static function for(string $format, string $package): self
     {

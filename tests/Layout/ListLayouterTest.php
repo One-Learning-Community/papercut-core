@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Layout;
+namespace Quoin\Tests\Layout;
 
-use Papercut\{Image, ListItem, ListNode, Text};
-use Papercut\Layout\{BreakToken, Fragment, Status};
-use Papercut\Paint\TextRun;
-use Papercut\Style\ListMarker;
-use Papercut\Tests\Support\LayoutHarness;
+use Quoin\{Image, ListItem, ListNode, Text};
+use Quoin\Layout\{BreakToken, Fragment, Status};
+use Quoin\Paint\TextRun;
+use Quoin\Style\ListMarker;
+use Quoin\Tests\Support\LayoutHarness;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class ListLayouterTest extends TestCase
 {

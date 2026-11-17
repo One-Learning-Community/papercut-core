@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Decorator;
+namespace Quoin\Decorator;
 
-use Papercut\{Component, Node, Text};
+use Quoin\{Component, Node, Text};
 
 /** One entry of a ChoiceList: its label and whether it is marked. */
 final readonly class ChoiceOption

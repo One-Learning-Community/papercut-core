@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Node;
+namespace Quoin\Tests\Node;
 
-use Papercut\Barcode\{ErrorCorrection, QrEyes, QrGradient, QrShape};
-use Papercut\Exception\InvalidValue;
-use Papercut\{Column, Image, ListNode, Place, QrCode, Row, TableCell, Text, View};
-use Papercut\Style\{Align, Anchor, BorderStyle, Direction, ImageFit, Justify, ListMarker, TextAlign};
-use Papercut\Value\Length;
+use Quoin\Barcode\{ErrorCorrection, QrEyes, QrGradient, QrShape};
+use Quoin\Exception\InvalidValue;
+use Quoin\{Column, Image, ListNode, Place, QrCode, Row, TableCell, Text, View};
+use Quoin\Style\{Align, Anchor, BorderStyle, Direction, ImageFit, Justify, ListMarker, TextAlign};
+use Quoin\Value\Length;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\mm;
+use function Quoin\mm;
 
 /** Setters that take an option also take its string value, as the Blade attributes do. */
 final class StringSettersTest extends TestCase
@@ -57,7 +57,7 @@ final class StringSettersTest extends TestCase
 
     public function test_a_module_grid_keeps_its_structure_error_before_string_parsing(): void
     {
-        $this->expectException(\Papercut\Exception\InvalidStructure::class);
+        $this->expectException(\Quoin\Exception\InvalidStructure::class);
         QrCode::fromModules([[1, 0], [0, 1]])->errorCorrection('nonsense');
     }
 

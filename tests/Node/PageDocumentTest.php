@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Node;
+namespace Quoin\Tests\Node;
 
-use Papercut\{Document, Page, Text};
-use Papercut\Exception\InvalidValue;
+use Quoin\{Document, Page, Text};
+use Quoin\Exception\InvalidValue;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\{mm, pt};
+use function Quoin\{mm, pt};
 
 final class PageDocumentTest extends TestCase
 {

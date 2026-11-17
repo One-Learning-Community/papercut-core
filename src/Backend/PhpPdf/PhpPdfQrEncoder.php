@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Backend\PhpPdf;
+namespace Quoin\Backend\PhpPdf;
 
 use Dskripchenko\PhpPdf\Barcode\{QrEccLevel, QrEncoder as PhpPdfEncoder};
-use Papercut\Barcode\{ErrorCorrection, QrEncoder};
-use Papercut\Exception\InvalidValue;
+use Quoin\Barcode\{ErrorCorrection, QrEncoder};
+use Quoin\Exception\InvalidValue;
 
 /**
  * php-pdf's encoder: QR versions 1 to 10, so up to 213 bytes at Medium.
  *
- * @internal Part of Papercut's PDF writer. Custom backends aren't supported, and it may change in any release.
+ * @internal Part of the PDF writer. Custom backends aren't supported, and it may change in any release.
  */
 final class PhpPdfQrEncoder implements QrEncoder
 {

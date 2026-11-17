@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Toc;
+namespace Quoin\Toc;
 
-use Papercut\{Span, Text};
-use Papercut\Math\Render\TextWriter;
+use Quoin\{Span, Text};
+use Quoin\Math\Render\TextWriter;
 
 /**
  * What a heading says and how deep it sits. Shared by bookmarks and the table of contents.

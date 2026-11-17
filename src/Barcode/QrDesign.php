@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Barcode;
+namespace Quoin\Barcode;
 
-use Papercut\Value\Color;
+use Quoin\Value\Color;
 
 /**
  * How a styled QR code looks. The modules use the text color unless a gradient is set, and the

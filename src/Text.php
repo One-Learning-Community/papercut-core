@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut;
+namespace Quoin;
 
-use Papercut\Concerns\{HasNotes, HasStyle};
-use Papercut\Style\Style;
-use Papercut\Support\Utf8;
+use Quoin\Concerns\{HasNotes, HasStyle};
+use Quoin\Style\Style;
+use Quoin\Support\Utf8;
 
 final class Text implements Styled, Annotated
 {
@@ -111,7 +111,7 @@ final class Text implements Styled, Annotated
     public function asHeading(int $level): self
     {
         if ($level < 1 || $level > 4) {
-            throw \Papercut\Exception\InvalidValue::for('heading level', (string) $level)->because('levels are 1 to 4');
+            throw \Quoin\Exception\InvalidValue::for('heading level', (string) $level)->because('levels are 1 to 4');
         }
         $clone = clone $this;
         $clone->headingLevel = $level;

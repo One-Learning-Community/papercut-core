@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut;
+namespace Quoin;
 
-use Papercut\Style\Theme;
+use Quoin\Style\Theme;
 
 /**
  * A Component whose rendering depends on the theme of the page it lands on; render() renders without one.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 interface ThemedComponent extends Component
 {

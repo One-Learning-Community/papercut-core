@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut;
+namespace Quoin;
 
-use Papercut\Style\Style;
+use Quoin\Style\Style;
 
 /**
  * A node with the HasStyle modifiers: its own style, an optional theme style

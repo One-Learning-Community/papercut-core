@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Text;
+namespace Quoin\Tests\Text;
 
-use Papercut\Backend\PhpPdf\PhpPdfBackend;
-use Papercut\Exception\FontNotFound;
-use Papercut\Text\{FontRegistry, FontStyle};
+use Quoin\Backend\PhpPdf\PhpPdfBackend;
+use Quoin\Exception\FontNotFound;
+use Quoin\Text\{FontRegistry, FontStyle};
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -124,25 +124,25 @@ final class FontRegistryTest extends TestCase
     {
         $r = new FontRegistry(new PhpPdfBackend());
         self::assertTrue($r->register('X', self::DIR . '/Inter-Regular.ttf', 1000)->has('X'));
-        $this->expectException(\Papercut\Exception\InvalidValue::class);
+        $this->expectException(\Quoin\Exception\InvalidValue::class);
         $r->register('Y', self::DIR . '/Inter-Regular.ttf', 1001);
     }
 
     public function test_register_rejects_bad_weight(): void
     {
-        $this->expectException(\Papercut\Exception\InvalidValue::class);
+        $this->expectException(\Quoin\Exception\InvalidValue::class);
         (new FontRegistry(new PhpPdfBackend()))->register('X', self::DIR . '/Inter-Regular.ttf', 0);
     }
 
     public function test_registry_matches_effective_faces(): void
     {
         $dir = self::DIR;
-        $set = (new \Papercut\Text\FontSet())->with(
-            new \Papercut\Text\FontFace('Brand', "$dir/Inter-Italic.ttf", 400, FontStyle::Italic),
-            new \Papercut\Text\FontFace('inter', "$dir/Inter-Regular.ttf", 700),
+        $set = (new \Quoin\Text\FontSet())->with(
+            new \Quoin\Text\FontFace('Brand', "$dir/Inter-Italic.ttf", 400, FontStyle::Italic),
+            new \Quoin\Text\FontFace('inter', "$dir/Inter-Regular.ttf", 700),
         );
         $map = static fn (array $rows): array => array_map(static fn (array $r): string => strtolower($r['family']) . '|' . $r['weight'] . '|' . $r['style']->value . '|' . $r['path'], $rows);
-        $expected = $map(array_map(static fn (\Papercut\Text\FontFace $f): array => [
+        $expected = $map(array_map(static fn (\Quoin\Text\FontFace $f): array => [
             'family' => $f->family, 'weight' => $f->weight, 'style' => $f->style, 'path' => realpath($f->path) ?: $f->path,
         ], $set->effectiveFaces()));
         $actual = $map(FontRegistry::fromSet($set, new PhpPdfBackend())->faces());
@@ -150,11 +150,11 @@ final class FontRegistryTest extends TestCase
         sort($actual);
         $this->assertSame($expected, $actual);
 
-        $doc = \Papercut\Document::make(\Papercut\Page::a4()->body(
-            \Papercut\Text::make('Plain bold italic')->weight(700),
-            \Papercut\Text::make('Brand italic')->font('Brand')->italic(),
+        $doc = \Quoin\Document::make(\Quoin\Page::a4()->body(
+            \Quoin\Text::make('Plain bold italic')->weight(700),
+            \Quoin\Text::make('Brand italic')->font('Brand')->italic(),
         ))->createdAt(new \DateTimeImmutable('2026-01-01T00:00:00Z'));
-        $bytes = $doc->toPdf(new \Papercut\Export\PdfOptions(fonts: $set))->bytes();
-        $this->assertSame('b8a8f53d9ae21c5f8cb35a1b3bf644a583b48901', sha1($bytes));
+        $bytes = $doc->toPdf(new \Quoin\Export\PdfOptions(fonts: $set))->bytes();
+        $this->assertSame('286f934e84c57a09219368f029e03d8a2753aac2', sha1($bytes));
     }
 }

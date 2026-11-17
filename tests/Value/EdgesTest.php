@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Value;
+namespace Quoin\Tests\Value;
 
-use Papercut\Exception\InvalidValue;
-use Papercut\Value\Edges;
+use Quoin\Exception\InvalidValue;
+use Quoin\Value\Edges;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class EdgesTest extends TestCase
 {

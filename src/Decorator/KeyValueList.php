@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Decorator;
+namespace Quoin\Decorator;
 
 use InvalidArgumentException;
-use Papercut\{Component, Node, Table, TableCell, View};
-use Papercut\Concerns\{HasStyle, HasVariants};
-use Papercut\Support\Check;
-use Papercut\Value\{Auto, Fr, Length, Percent};
+use Quoin\{Component, Node, Table, TableCell, View};
+use Quoin\Concerns\{HasStyle, HasVariants};
+use Quoin\Support\Check;
+use Quoin\Value\{Auto, Fr, Length, Percent};
 
 /**
  * Aligned "label: value" rows, rendered as a borderless two-column Table.

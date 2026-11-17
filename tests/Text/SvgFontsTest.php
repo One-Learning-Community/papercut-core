@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Text;
+namespace Quoin\Tests\Text;
 
-use Papercut\Tests\Support\FakeBackend;
-use Papercut\Text\{FontRegistry, SvgFonts};
+use Quoin\Tests\Support\FakeBackend;
+use Quoin\Text\{FontRegistry, SvgFonts};
 use PHPUnit\Framework\TestCase;
 
 final class SvgFontsTest extends TestCase

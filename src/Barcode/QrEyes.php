@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Barcode;
+namespace Quoin\Barcode;
 
 /** How a styled QR code draws its three corner eyes (the finder patterns). */
 enum QrEyes: string

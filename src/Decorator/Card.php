@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Decorator;
+namespace Quoin\Decorator;
 
-use Papercut\{Component, Node, Text, View};
-use Papercut\Concerns\{HasStyle, HasVariants};
-use Papercut\Exception\{InvalidStructure, InvalidValue};
+use Quoin\{Component, Node, Text, View};
+use Quoin\Concerns\{HasStyle, HasVariants};
+use Quoin\Exception\{InvalidStructure, InvalidValue};
 
 /**
  * A bordered, padded box with an optional title strip across the top.

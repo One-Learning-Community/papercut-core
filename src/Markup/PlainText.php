@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Markup;
+namespace Quoin\Markup;
 
-use Papercut\Span;
-use Papercut\Text;
-use Papercut\View;
+use Quoin\Span;
+use Quoin\Text;
+use Quoin\View;
 
 /** @internal */
 final class PlainText

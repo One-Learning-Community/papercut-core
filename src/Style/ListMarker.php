@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Style;
+namespace Quoin\Style;
 
 /**
  * A list item marker: numbered styles or a bullet glyph.

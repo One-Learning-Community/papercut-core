@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
-use Papercut\{OverflowMode, Page, Table, View};
-use Papercut\Backend\DefaultBackend;
-use Papercut\Export\ExportOptions;
-use Papercut\Text\FontRegistry;
-use Papercut\Style\{ComputedStyle, PageThemes};
-use Papercut\Toc\TocIndex;
+use Quoin\{OverflowMode, Page, Table, View};
+use Quoin\Backend\DefaultBackend;
+use Quoin\Export\ExportOptions;
+use Quoin\Text\FontRegistry;
+use Quoin\Style\{ComputedStyle, PageThemes};
+use Quoin\Toc\TocIndex;
 
 /**
  * Horizontal sizes from the layout engine's own flex and table calculations,
  * without pagination, so layout-free exporters match the PDF horizontally.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class WidthResolver
 {
@@ -85,7 +85,7 @@ final class WidthResolver
     /**
      * One track per column as the PDF layout counts them.
      *
-     * @return list<\Papercut\Value\Length|\Papercut\Value\Percent|\Papercut\Value\Fr|\Papercut\Value\Auto>
+     * @return list<\Quoin\Value\Length|\Quoin\Value\Percent|\Quoin\Value\Fr|\Quoin\Value\Auto>
      */
     public static function tracks(Table $table): array
     {

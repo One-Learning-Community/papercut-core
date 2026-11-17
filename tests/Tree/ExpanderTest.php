@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Tree;
+namespace Quoin\Tests\Tree;
 
-use Papercut\{Component, Node, Text};
-use Papercut\Tree\Expander;
+use Quoin\{Component, Node, Text};
+use Quoin\Tree\Expander;
 use PHPUnit\Framework\TestCase;
 
 final class ExpanderTest extends TestCase

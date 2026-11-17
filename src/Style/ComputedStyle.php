@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Style;
+namespace Quoin\Style;
 
-use Papercut\Exception\InvalidValue;
-use Papercut\Value\{Auto, Color, Edges, Length, Percent};
+use Quoin\Exception\InvalidValue;
+use Quoin\Value\{Auto, Color, Edges, Length, Percent};
 
 /**
  * Fully resolved style for one node. Text properties and minLines inherit
  * from the parent; everything else resets per node.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final readonly class ComputedStyle
 {

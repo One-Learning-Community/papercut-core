@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut;
+namespace Quoin;
 
-use Papercut\Concerns\HasStyle;
-use Papercut\Style\ListEntry;
+use Quoin\Concerns\HasStyle;
+use Quoin\Style\ListEntry;
 
 /**
  * One item of a ListNode; its children lay out like a column View beside the marker.

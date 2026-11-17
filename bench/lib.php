@@ -12,7 +12,7 @@ declare(strict_types=1);
  * @param \Closure(): T $export
  * @return array{median_ms: float, runs_ms: list<float>, peak_mb: float, result: T}
  */
-function papercut_bench(\Closure $export, int $runs): array
+function quoin_bench(\Closure $export, int $runs): array
 {
     $result = $export();
     $times = [];
@@ -40,7 +40,7 @@ function papercut_bench(\Closure $export, int $runs): array
 }
 
 /** The page count of a PDF's bytes. */
-function papercut_bench_pages(string $pdf): int
+function quoin_bench_pages(string $pdf): int
 {
     return preg_match_all('#/Type\s*/Page[^s]#', $pdf);
 }

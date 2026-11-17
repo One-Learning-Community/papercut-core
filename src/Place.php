@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut;
+namespace Quoin;
 
-use Papercut\Style\{Anchor, Style};
-use Papercut\Support\{Check, EnumValue};
-use Papercut\Value\{Length, Percent};
+use Quoin\Style\{Anchor, Style};
+use Quoin\Support\{Check, EnumValue};
+use Quoin\Value\{Length, Percent};
 
 /**
  * Content placed at a point on the page, for Page::overlay(). x and y are lengths from the page's
@@ -27,13 +27,13 @@ final class Place implements Node
     ) {
     }
 
-    /** @throws \Papercut\Exception\InvalidValue for a length that is not one, such as "12" without a unit */
+    /** @throws \Quoin\Exception\InvalidValue for a length that is not one, such as "12" without a unit */
     public static function at(Length|Percent|string $x, Length|Percent|string $y, Node|Component|string ...$nodes): self
     {
         return new self(self::parse($x), self::parse($y), View::normalize($nodes));
     }
 
-    /** @throws \Papercut\Exception\InvalidValue for a string that is not an anchor */
+    /** @throws \Quoin\Exception\InvalidValue for a string that is not an anchor */
     public function anchor(Anchor|string $anchor): self
     {
         $anchor = EnumValue::from(Anchor::class, $anchor, 'Place::anchor()');

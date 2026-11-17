@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Backend\PhpPdf;
+namespace Quoin\Backend\PhpPdf;
 
 use Dskripchenko\PhpPdf\Font\Ttf\TtfFile;
 
@@ -33,7 +33,7 @@ final class FontStateCache
     public const string PHP = 'php';
 
     private const int FORMAT = 1;
-    private const string MARKER = 'papercut-font';
+    private const string MARKER = 'quoin-font';
     private const int MAX_AGE = 30 * 86400;
     /** An entry read this long after its last touch is touched again, to keep it clear of pruning. */
     private const int TOUCH_AFTER = 86400;
@@ -56,7 +56,7 @@ final class FontStateCache
     public static function defaultDir(): string
     {
         // per user, so one account's cache never blocks or feeds another's
-        return sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'papercut-cache' . (function_exists('posix_geteuid') ? '-' . posix_geteuid() : '');
+        return sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'quoin-cache' . (function_exists('posix_geteuid') ? '-' . posix_geteuid() : '');
     }
 
     /** Forgets the fonts loaded in this process (for long-lived workers and tests); the files stay. */

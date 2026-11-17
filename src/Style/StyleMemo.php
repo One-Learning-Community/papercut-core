@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Style;
+namespace Quoin\Style;
 
-use Papercut\Node;
+use Quoin\Node;
 
 /**
  * Computed styles remembered per node and parent style, both by identity.
@@ -13,7 +13,7 @@ use Papercut\Node;
  * Flat maps cost about a fifth of a map per node, and a long table has tens
  * of thousands of nodes.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class StyleMemo
 {

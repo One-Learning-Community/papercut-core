@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Paint;
+namespace Quoin\Paint;
 
-use Papercut\Export\Encryption;
+use Quoin\Export\Encryption;
 
 /** @internal Part of the display list between layout and the PDF writer. It may change in any release. */
 final readonly class DocumentMeta

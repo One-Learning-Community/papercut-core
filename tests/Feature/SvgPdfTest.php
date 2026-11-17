@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Feature;
+namespace Quoin\Tests\Feature;
 
-use Papercut\{Document, Page, Svg, Text};
-use Papercut\Export\PdfOptions;
-use Papercut\Tests\Support\PdfInspector;
+use Quoin\{Document, Page, Svg, Text};
+use Quoin\Export\PdfOptions;
+use Quoin\Tests\Support\PdfInspector;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use function Papercut\pt;
+use function Quoin\pt;
 
 /**
  * SVG drawn into real PDFs and rasterized with pdftoppm. Every fixture has a 100 x 100 view box
@@ -39,7 +39,7 @@ final class SvgPdfTest extends TestCase
 
     private static function raster(string $pdf): \GdImage
     {
-        $dir = sys_get_temp_dir() . '/papercut-svg-' . bin2hex(random_bytes(4));
+        $dir = sys_get_temp_dir() . '/quoin-svg-' . bin2hex(random_bytes(4));
         mkdir($dir);
         try {
             file_put_contents("$dir/doc.pdf", $pdf);
@@ -139,7 +139,7 @@ final class SvgPdfTest extends TestCase
     {
         $svg = Svg::fromString('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text x="5" y="30" font-family="\'Brand Sans\', serif">Brand</text></svg>');
         $inter = __DIR__ . '/../../resources/fonts/Inter/Inter-Bold.ttf';
-        $pdf = self::pdf($svg, new PdfOptions(fonts: (new \Papercut\Text\FontSet())->with(new \Papercut\Text\FontFace('Brand Sans', $inter, 400))));
+        $pdf = self::pdf($svg, new PdfOptions(fonts: (new \Quoin\Text\FontSet())->with(new \Quoin\Text\FontFace('Brand Sans', $inter, 400))));
 
         $names = array_column(self::fonts($pdf), 'name');
         self::assertCount(1, $names);

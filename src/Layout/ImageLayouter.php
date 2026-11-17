@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
-use Papercut\{Image, Node};
-use Papercut\Paint\{Clip, DrawImage};
-use Papercut\Style\{ComputedStyle, ImageFit};
-use Papercut\Value\Length;
+use Quoin\{Image, Node};
+use Quoin\Paint\{Clip, DrawImage};
+use Quoin\Style\{ComputedStyle, ImageFit};
+use Quoin\Value\Length;
 
 /**
  * Images are monolithic: taller than the space left means DoesNotFit, even
  * on a fresh page (the paginator owns the overflow policy).
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class ImageLayouter implements Layouter
 {

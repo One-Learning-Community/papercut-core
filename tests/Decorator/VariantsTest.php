@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Decorator;
+namespace Quoin\Tests\Decorator;
 
 use InvalidArgumentException;
-use Papercut\{Node, Text, View};
-use Papercut\Decorator\{Badge, Blockquote, Callout, Card, ChoiceList, Decorator, Field, KeyValueList, KeyValuePair, Section};
-use Papercut\Style\{ComputedStyle, Style, StyleResolver, Theme};
-use Papercut\Value\Color;
+use Quoin\{Node, Text, View};
+use Quoin\Decorator\{Badge, Blockquote, Callout, Card, ChoiceList, Decorator, Field, KeyValueList, KeyValuePair, Section};
+use Quoin\Style\{ComputedStyle, Style, StyleResolver, Theme};
+use Quoin\Value\Color;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class VariantsTest extends TestCase
 {
@@ -78,7 +78,7 @@ final class VariantsTest extends TestCase
         $outer = Callout::make('Body')->tone('warning')->title('T')->variant('large')->render();
 
         $title = $this->child($outer, 0);
-        self::assertInstanceOf(\Papercut\Text::class, $title);
+        self::assertInstanceOf(\Quoin\Text::class, $title);
         self::assertSame('callout.title callout.title.warning callout.title.large?', $title->styleName());
         self::assertSame(255, $this->computed($theme, $this->child($outer, 0))->color->b);
         self::assertSame(0, $this->computed($theme, $this->child($outer, 0))->color->r);
@@ -89,7 +89,7 @@ final class VariantsTest extends TestCase
         $theme = Theme::default();
         self::assertEquals($theme->named('section'), $theme->named('section nothing.here?'));
         self::assertEquals(new Style(), $theme->named('nothing.here?'));
-        $this->expectException(\Papercut\Exception\UnknownAttribute::class);
+        $this->expectException(\Quoin\Exception\UnknownAttribute::class);
         $theme->named('nothing.here');
     }
 
@@ -198,7 +198,7 @@ final class VariantsTest extends TestCase
             }
             return;
         }
-        if (!is_object($x) || !str_starts_with($x::class, 'Papercut\\') || in_array(spl_object_id($x), $seen, true)) {
+        if (!is_object($x) || !str_starts_with($x::class, 'Quoin\\') || in_array(spl_object_id($x), $seen, true)) {
             return;
         }
         $seen[] = spl_object_id($x);
@@ -227,7 +227,7 @@ final class VariantsTest extends TestCase
     #[DataProvider('collidingVariants')]
     public function test_a_variant_equal_to_a_part_name_segment_is_rejected(Decorator $decorator, string $word): void
     {
-        $this->expectException(\Papercut\Exception\InvalidVariant::class);
+        $this->expectException(\Quoin\Exception\InvalidVariant::class);
         $this->expectExceptionMessage("'$word' collides");
         $decorator->variant($word);
     }
@@ -244,7 +244,7 @@ final class VariantsTest extends TestCase
     #[DataProvider('toneVariants')]
     public function test_a_variant_equal_to_a_built_in_tone_is_rejected(Decorator $decorator, string $word): void
     {
-        $this->expectException(\Papercut\Exception\InvalidVariant::class);
+        $this->expectException(\Quoin\Exception\InvalidVariant::class);
         $this->expectExceptionMessage("'$word' is one of this decorator's built-in tones");
         $decorator->variant($word);
     }

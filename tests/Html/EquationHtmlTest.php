@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Html;
+namespace Quoin\Tests\Html;
 
-use Papercut\{Document, Equation, Page, Text};
-use Papercut\Export\{FontMode, HtmlOptions};
-use Papercut\Html\LocalFonts;
-use Papercut\Math\Math;
-use Papercut\Value\{Color, Length};
+use Quoin\{Document, Equation, Page, Text};
+use Quoin\Export\{FontMode, HtmlOptions};
+use Quoin\Html\LocalFonts;
+use Quoin\Math\Math;
+use Quoin\Value\{Color, Length};
 use PHPUnit\Framework\TestCase;
 
 final class EquationHtmlTest extends TestCase
 {
-    private const RULE = '.papercut math{font-family:"Papercut Math",math}';
+    private const RULE = '.quoin math{font-family:"Quoin Math",math}';
 
     private function html(Equation $e, ?HtmlOptions $o = null): string
     {
@@ -40,11 +40,11 @@ final class EquationHtmlTest extends TestCase
     public function test_math_font_rule(): void
     {
         $embed = $this->html(Equation::of('x'), new HtmlOptions(fontMode: FontMode::Embed));
-        self::assertStringContainsString('@font-face{font-family:"Papercut Math";src:url(data:font/ttf;base64,', $embed);
+        self::assertStringContainsString('@font-face{font-family:"Quoin Math";src:url(data:font/ttf;base64,', $embed);
         self::assertStringContainsString(self::RULE, $embed);
 
         $link = $this->html(Equation::of('x'), new HtmlOptions(fontMode: FontMode::Link, fontUrl: fn ($f) => '/fonts/' . basename($f->path)));
-        self::assertStringContainsString('@font-face{font-family:"Papercut Math";src:url("/fonts/', $link);
+        self::assertStringContainsString('@font-face{font-family:"Quoin Math";src:url("/fonts/', $link);
         self::assertStringContainsString(self::RULE, $link);
 
         $none = $this->html(Equation::of('x'));
@@ -56,14 +56,14 @@ final class EquationHtmlTest extends TestCase
     {
         $o = new HtmlOptions(fontMode: FontMode::Sources, fontSources: [LocalFonts::link(fn ($f) => '/f.ttf')]);
         $html = $this->html(Equation::of('x'), $o);
-        self::assertStringContainsString('@font-face{font-family:"Papercut Math";src:url(data:font/ttf;base64,', $html);
+        self::assertStringContainsString('@font-face{font-family:"Quoin Math";src:url(data:font/ttf;base64,', $html);
         self::assertStringContainsString(self::RULE, $html);
     }
 
     public function test_block_math_is_shrunk_and_placed_by_margins(): void
     {
         // A browser centers the content of a full-width display:block math; a fit-content box placed by margins follows the alignment.
-        $rule = '.papercut math[display=block]{width:fit-content;max-width:100%}';
+        $rule = '.quoin math[display=block]{width:fit-content;max-width:100%}';
         $default = $this->html(Equation::of('x'));
         self::assertStringContainsString($rule, $default);
         self::assertStringContainsString('<math xmlns=', $default);
@@ -79,7 +79,7 @@ final class EquationHtmlTest extends TestCase
     public function test_no_equation_no_math_output(): void
     {
         $html = Document::make(Page::a4()->body(Text::make('Hi')))->toHtml(new HtmlOptions(fontMode: FontMode::Embed))->bytes();
-        self::assertStringNotContainsString('Papercut Math', $html);
+        self::assertStringNotContainsString('Quoin Math', $html);
         self::assertStringNotContainsString('<math', $html);
     }
 

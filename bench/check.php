@@ -5,14 +5,14 @@ declare(strict_types=1);
 /**
  * CI benchmark gate. Reads bench/run.php's JSON (file argument or stdin) and
  * compares its median with the committed baseline for this machine class
- * (env PAPERCUT_BENCH_MACHINE, default "local") in bench/baseline.json.
+ * (env QUOIN_BENCH_MACHINE, default "local") in bench/baseline.json.
  *
  * Every other timing in the result (html_median_ms, article_median_ms, a Word
  * benchmark's toc_off_median_ms) and every memory peak (peak_mb, article_peak_mb)
  * is gated the same way against the entry's value of the same name; an entry
  * without one gets it written from this run.
  *
- * With env PAPERCUT_BENCH_TIMINGS=warn (set in CI), a slow timing is a warning
+ * With env QUOIN_BENCH_TIMINGS=warn (set in CI), a slow timing is a warning
  * and only memory peaks and page counts fail.
  *
  * Exit 1 when a figure exceeds 1.2x its baseline or a benchmark document's page
@@ -21,7 +21,7 @@ declare(strict_types=1);
  * machine class with no baseline yet gets one written from this run (commit
  * it to arm the gate).
  *
- * The baseline file is bench/baseline.json unless env PAPERCUT_BASELINE names
+ * The baseline file is bench/baseline.json unless env QUOIN_BASELINE names
  * another. Exit codes: 0 pass, 1 gate failed, 2 unreadable input.
  *
  *   php -d xdebug.mode=off -d opcache.enable_cli=1 bench/run.php | php bench/check.php
@@ -39,15 +39,15 @@ if (!is_array($result) || !is_numeric($result['median_ms'] ?? null)) {
     exit(2);
 }
 $median = (float) $result['median_ms'];
-$machine = getenv('PAPERCUT_BENCH_MACHINE') ?: 'local';
-$path = getenv('PAPERCUT_BASELINE') ?: __DIR__ . '/baseline.json';
+$machine = getenv('QUOIN_BENCH_MACHINE') ?: 'local';
+$path = getenv('QUOIN_BASELINE') ?: __DIR__ . '/baseline.json';
 $baseline = is_file($path) ? json_decode((string) file_get_contents($path), true) : null;
 $baseline = is_array($baseline) ? $baseline : ['machines' => []];
 
 $failures = [];
-// PAPERCUT_BENCH_TIMINGS=warn reports slow timings without failing: shared CI runners differ in speed from run to
+// QUOIN_BENCH_TIMINGS=warn reports slow timings without failing: shared CI runners differ in speed from run to
 // run, while memory peaks and page counts don't, so CI fails on those alone.
-$timingsWarn = getenv('PAPERCUT_BENCH_TIMINGS') === 'warn';
+$timingsWarn = getenv('QUOIN_BENCH_TIMINGS') === 'warn';
 $slow = static function (string $message) use (&$failures, $timingsWarn): void {
     if ($timingsWarn) {
         fwrite(STDERR, "check: WARN: $message\n");

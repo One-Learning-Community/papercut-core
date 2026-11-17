@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut;
+namespace Quoin;
 
-use Papercut\Concerns\HasStyle;
+use Quoin\Concerns\HasStyle;
 
 final class PageBreak implements Styled
 {

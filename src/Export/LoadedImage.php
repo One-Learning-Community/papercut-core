@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Export;
+namespace Quoin\Export;
 
-use Papercut\Backend\Backend;
-use Papercut\Backend\ImageFormat;
-use Papercut\Exception\ImageUnreadable;
-use Papercut\Image;
+use Quoin\Backend\Backend;
+use Quoin\Backend\ImageFormat;
+use Quoin\Exception\ImageUnreadable;
+use Quoin\Image;
 
 /**
  * An image the backend accepted, with the bytes and facts HTML needs.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final readonly class LoadedImage
 {

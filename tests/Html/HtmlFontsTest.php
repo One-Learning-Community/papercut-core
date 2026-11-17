@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Html;
+namespace Quoin\Tests\Html;
 
-use Papercut\{Document, Page, Span, Text};
-use Papercut\Exception\FontNotFound;
-use Papercut\Export\{FontMode, HtmlOptions};
-use Papercut\Style\Style;
-use Papercut\Text\{FontFace, FontSet, FontStyle};
+use Quoin\{Document, Page, Span, Text};
+use Quoin\Exception\FontNotFound;
+use Quoin\Export\{FontMode, HtmlOptions};
+use Quoin\Style\Style;
+use Quoin\Text\{FontFace, FontSet, FontStyle};
 use PHPUnit\Framework\TestCase;
 
 final class HtmlFontsTest extends TestCase
@@ -42,7 +42,7 @@ final class HtmlFontsTest extends TestCase
         self::assertStringNotContainsString('"Other"', $html);
         self::assertStringContainsString('@font-face{font-family:"Inter";src:url(data:font/ttf;base64,', $html);
         self::assertStringContainsString('format("truetype");font-weight:700;font-style:italic}', $html);
-        self::assertLessThan(strpos($html, '.papercut{'), strpos($html, '@font-face'));
+        self::assertLessThan(strpos($html, '.quoin{'), strpos($html, '@font-face'));
     }
 
     public function test_embed_includes_a_used_custom_family_and_last_registration_wins(): void

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Barcode\Bacon;
+namespace Quoin\Barcode\Bacon;
 
 use BaconQrCode\Encoder\Encoder;
 use BaconQrCode\Exception\ExceptionInterface;
-use Papercut\Barcode\{ErrorCorrection, QrEncoder};
-use Papercut\Exception\{InvalidValue, MissingPackage};
+use Quoin\Barcode\{ErrorCorrection, QrEncoder};
+use Quoin\Exception\{InvalidValue, MissingPackage};
 
 /**
  * BaconQrCode's encoder, from the optional bacon/bacon-qr-code package. It holds every QR size,

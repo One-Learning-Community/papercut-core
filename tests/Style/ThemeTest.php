@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Style;
+namespace Quoin\Tests\Style;
 
-use Papercut\Exception\UnknownAttribute;
-use Papercut\Decorator\DefaultStyles;
-use Papercut\Style\{ComputedStyle, Style, Theme};
+use Quoin\Exception\UnknownAttribute;
+use Quoin\Decorator\DefaultStyles;
+use Quoin\Style\{ComputedStyle, Style, Theme};
 
-use function Papercut\pt;
-use Papercut\Value\Color;
+use function Quoin\pt;
+use Quoin\Value\Color;
 use PHPUnit\Framework\TestCase;
 
 final class ThemeTest extends TestCase
@@ -71,7 +71,7 @@ final class ThemeTest extends TestCase
     public function test_named_falls_back_to_decorator_defaults(): void
     {
         self::assertEquals(DefaultStyles::get('callout.warning'), Theme::default()->named('callout.warning'));
-        $custom = new Theme('X', 10.0, 400, Color::black(), 1.4, \Papercut\Value\Edges::zero(), 2);
+        $custom = new Theme('X', 10.0, 400, Color::black(), 1.4, \Quoin\Value\Edges::zero(), 2);
         self::assertEquals(DefaultStyles::get('callout.warning'), $custom->named('callout.warning'));
     }
 

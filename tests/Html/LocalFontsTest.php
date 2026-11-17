@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Html;
+namespace Quoin\Tests\Html;
 
-use Papercut\Exception\FontNotFound;
-use Papercut\Html\{FontRequest, FontVariant, LocalFonts};
-use Papercut\Text\{FontFace, FontSet, FontStyle};
+use Quoin\Exception\FontNotFound;
+use Quoin\Html\{FontRequest, FontVariant, LocalFonts};
+use Quoin\Text\{FontFace, FontSet, FontStyle};
 use PHPUnit\Framework\TestCase;
 
 final class LocalFontsTest extends TestCase

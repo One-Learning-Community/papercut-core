@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Html;
+namespace Quoin\Tests\Html;
 
-use Papercut\{Document, Page, Text};
-use Papercut\Export\{FidelityLevel, FidelityReport, FontMode, HtmlOptions};
-use Papercut\Html\{FontAnswer, FontFaceSrc, FontRequest, GoogleFonts, LocalFonts};
-use Papercut\Text\{FontFace, FontSet, FontStyle};
+use Quoin\{Document, Page, Text};
+use Quoin\Export\{FidelityLevel, FidelityReport, FontMode, HtmlOptions};
+use Quoin\Html\{FontAnswer, FontFaceSrc, FontRequest, GoogleFonts, LocalFonts};
+use Quoin\Text\{FontFace, FontSet, FontStyle};
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -45,9 +45,9 @@ final class HtmlFontSourcesTest extends TestCase
         self::assertStringStartsWith('<style>@import url("https://fonts.googleapis.com/css2?family=Inter', $html);
         self::assertStringNotContainsString('<link', $html);
         $lastImport = strrpos($html, '@import');
-        self::assertLessThan(strpos($html, '.papercut{'), $lastImport);
+        self::assertLessThan(strpos($html, '.quoin{'), $lastImport);
         self::assertSame(2, substr_count($html, '@import'));
-        $imports = substr($html, 0, (int) strpos($html, '.papercut{'));
+        $imports = substr($html, 0, (int) strpos($html, '.quoin{'));
         self::assertDoesNotMatchRegularExpression('/\}\s*@import/', $imports);
     }
 
@@ -57,7 +57,7 @@ final class HtmlFontSourcesTest extends TestCase
         $html = $this->html($this->doc('Acme', 'Roboto'), [LocalFonts::embed(['Acme']), new GoogleFonts()], false, null, false, $fonts);
 
         self::assertLessThan(strpos($html, '@font-face'), strrpos($html, '@import'));
-        self::assertLessThan(strpos($html, '.papercut{'), strpos($html, '@font-face'));
+        self::assertLessThan(strpos($html, '.quoin{'), strpos($html, '@font-face'));
     }
 
     public function test_first_accepting_source_wins_and_later_sources_are_not_called(): void
@@ -182,8 +182,8 @@ final class HtmlFontSourcesTest extends TestCase
         $invoice = (require __DIR__ . '/../../../../examples/core/documents/invoice.php')->createdAt(new \DateTimeImmutable('2026-01-01T00:00:00Z'));
         $link = static fn (FontFace $f): string => 'fonts/' . basename($f->path);
 
-        self::assertSame('b2b7d198b97c93226b80b45d29893375', md5($invoice->toHtml(new HtmlOptions(fullPage: true))->bytes()));
-        self::assertSame('c80b44db3d11a57f731b6cc2fcff1a13', md5($invoice->toHtml(new HtmlOptions(fullPage: true, fontMode: FontMode::Embed))->bytes()));
-        self::assertSame('2039a561bc6f895c5e504ebb8b526a1e', md5($invoice->toHtml(new HtmlOptions(fullPage: true, fontMode: FontMode::Link, fontUrl: $link))->bytes()));
+        self::assertSame('8ba0779e763ab83373fbc1714a736950', md5($invoice->toHtml(new HtmlOptions(fullPage: true))->bytes()));
+        self::assertSame('d48549c79b2b715f404d171237cb9637', md5($invoice->toHtml(new HtmlOptions(fullPage: true, fontMode: FontMode::Embed))->bytes()));
+        self::assertSame('2c39894a1b71093e163b91c63a274f65', md5($invoice->toHtml(new HtmlOptions(fullPage: true, fontMode: FontMode::Link, fontUrl: $link))->bytes()));
     }
 }

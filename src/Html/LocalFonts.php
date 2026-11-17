@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Html;
+namespace Quoin\Html;
 
-use Papercut\Text\FontFace;
+use Quoin\Text\FontFace;
 
 /** Serves the font files registered in the export's FontSet, either embedded as data URIs or linked by URL. */
 final readonly class LocalFonts implements FontSource

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Exception;
+namespace Quoin\Tests\Exception;
 
-use Papercut\Exception\UnknownAttribute;
+use Quoin\Exception\UnknownAttribute;
 use PHPUnit\Framework\TestCase;
 
 final class UnknownAttributeTest extends TestCase

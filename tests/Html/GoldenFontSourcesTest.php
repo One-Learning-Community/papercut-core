@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Html;
+namespace Quoin\Tests\Html;
 
-use Papercut\{Document, Page, Text};
-use Papercut\Export\{FontMode, HtmlOptions};
-use Papercut\Html\{GoogleFonts, LocalFonts};
-use Papercut\Text\FontFace;
+use Quoin\{Document, Page, Text};
+use Quoin\Export\{FontMode, HtmlOptions};
+use Quoin\Html\{GoogleFonts, LocalFonts};
+use Quoin\Text\FontFace;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

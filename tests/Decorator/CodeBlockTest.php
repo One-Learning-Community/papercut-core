@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Decorator;
+namespace Quoin\Tests\Decorator;
 
-use Papercut\{Document, Page, Text, View};
-use Papercut\Code\{CodeHighlighting, CodeToken, HighlightedCode, Highlighter, UnknownLanguage, UnknownTheme};
-use Papercut\Decorator\CodeBlock;
-use Papercut\Exception\InvalidVariant;
-use Papercut\Exception\UnsupportedFeature;
-use Papercut\Export\{FidelityLevel, PdfExporter, PdfOptions};
-use Papercut\Markup\Note;
-use Papercut\Tests\Support\LayoutHarness;
-use Papercut\Value\Color;
+use Quoin\{Document, Page, Text, View};
+use Quoin\Code\{CodeHighlighting, CodeToken, HighlightedCode, Highlighter, UnknownLanguage, UnknownTheme};
+use Quoin\Decorator\CodeBlock;
+use Quoin\Exception\InvalidVariant;
+use Quoin\Exception\UnsupportedFeature;
+use Quoin\Export\{FidelityLevel, PdfExporter, PdfOptions};
+use Quoin\Markup\Note;
+use Quoin\Tests\Support\LayoutHarness;
+use Quoin\Value\Color;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class CodeBlockTest extends TestCase
 {
@@ -50,13 +50,13 @@ final class CodeBlockTest extends TestCase
         return $text->spanList()[0]->text;
     }
 
-    /** @return list<\Papercut\Paint\PageDisplayList> */
+    /** @return list<\Quoin\Paint\PageDisplayList> */
     private static function paginate(CodeBlock $block, float $w = 300, float $h = 220): array
     {
         $page = Page::size(pt($w), pt($h))->margin(pt(10))->headerGap(pt(0))->footerGap(pt(0));
-        $b = new \Papercut\Tests\Support\FakeBackend();
-        $ctx = new \Papercut\Layout\LayoutContext(\Papercut\Text\FontRegistry::withDefaults($b), \Papercut\Style\Theme::default(), $b, \Papercut\OverflowMode::Throw, static function (string $w): void {});
-        return \Papercut\Paint\Painter::paint((new \Papercut\Layout\Paginator(new \Papercut\Layout\LayoutEngine($ctx), $ctx))->paginate(Document::make($page->body($block))));
+        $b = new \Quoin\Tests\Support\FakeBackend();
+        $ctx = new \Quoin\Layout\LayoutContext(\Quoin\Text\FontRegistry::withDefaults($b), \Quoin\Style\Theme::default(), $b, \Quoin\OverflowMode::Throw, static function (string $w): void {});
+        return \Quoin\Paint\Painter::paint((new \Quoin\Layout\Paginator(new \Quoin\Layout\LayoutEngine($ctx), $ctx))->paginate(Document::make($page->body($block))));
     }
 
     private static function dropped(string $feature): Note
@@ -65,15 +65,15 @@ final class CodeBlockTest extends TestCase
     }
 
     /** @return array<string, string> run text => font id */
-    private static function fontIds(\Papercut\Node|\Papercut\Component $node): array
+    private static function fontIds(\Quoin\Node|\Quoin\Component $node): array
     {
         $page = Page::size(pt(300), pt(220))->margin(pt(10))->headerGap(pt(0))->footerGap(pt(0));
-        $b = new \Papercut\Tests\Support\FakeBackend();
-        $ctx = new \Papercut\Layout\LayoutContext(\Papercut\Text\FontRegistry::withDefaults($b), \Papercut\Style\Theme::default(), $b, \Papercut\OverflowMode::Throw, static function (string $w): void {});
-        $pages = \Papercut\Paint\Painter::paint((new \Papercut\Layout\Paginator(new \Papercut\Layout\LayoutEngine($ctx), $ctx))->paginate(Document::make($page->body($node))));
+        $b = new \Quoin\Tests\Support\FakeBackend();
+        $ctx = new \Quoin\Layout\LayoutContext(\Quoin\Text\FontRegistry::withDefaults($b), \Quoin\Style\Theme::default(), $b, \Quoin\OverflowMode::Throw, static function (string $w): void {});
+        $pages = \Quoin\Paint\Painter::paint((new \Quoin\Layout\Paginator(new \Quoin\Layout\LayoutEngine($ctx), $ctx))->paginate(Document::make($page->body($node))));
         $ids = [];
         foreach ($pages[0]->ops as $o) {
-            if ($o instanceof \Papercut\Paint\TextRun) {
+            if ($o instanceof \Quoin\Paint\TextRun) {
                 $ids[trim($o->text)] = $o->font->id();
             }
         }
@@ -84,7 +84,7 @@ final class CodeBlockTest extends TestCase
     {
         $block = CodeBlock::make("<?php\n// hi\necho 1;")->language('php');
         $plain = self::fontIds($block);
-        $quoted = self::fontIds(\Papercut\Decorator\Blockquote::make($block));
+        $quoted = self::fontIds(\Quoin\Decorator\Blockquote::make($block));
         self::assertArrayHasKey('echo', $quoted);
         self::assertSame($plain['echo'], $quoted['echo']);
         self::assertSame($plain['// hi'], $quoted['// hi']);
@@ -97,7 +97,7 @@ final class CodeBlockTest extends TestCase
             foreach (['php', 'text'] as $language) {
                 $view = CodeBlock::make($code)->language($language)->render();
                 $text = self::textAt($view, count($view->children()) - 1);
-                $breaks = count(array_filter($text->spanList(), static fn (\Papercut\Span $s): bool => $s->lineBreak));
+                $breaks = count(array_filter($text->spanList(), static fn (\Quoin\Span $s): bool => $s->lineBreak));
                 self::assertSame($lines - 1, $breaks, json_encode($code) . " as $language");
             }
         }
@@ -214,9 +214,9 @@ final class CodeBlockTest extends TestCase
         self::assertSame('#f1f5f9', (string) $bar->style()->background);
         self::assertInstanceOf(Text::class, $bar->children()[0]);
         self::assertSame('PHP', self::words(self::textAt($bar, 0)));
-        self::assertSame(\Papercut\Style\TextAlign::Left, \Papercut\Decorator\DefaultStyles::get('code-block.label.strip')?->textAlign);
+        self::assertSame(\Quoin\Style\TextAlign::Left, \Quoin\Decorator\DefaultStyles::get('code-block.label.strip')?->textAlign);
         $ops = self::paginate(CodeBlock::make('x')->language('php')->variant('strip'))[0]->ops;
-        $label = array_values(array_filter($ops, static fn ($o) => $o instanceof \Papercut\Paint\TextRun && $o->text === 'PHP'));
+        $label = array_values(array_filter($ops, static fn ($o) => $o instanceof \Quoin\Paint\TextRun && $o->text === 'PHP'));
         self::assertCount(1, $label);
         self::assertLessThan(30.0, $label[0]->x, 'left-aligned in the bar');
     }
@@ -229,7 +229,7 @@ final class CodeBlockTest extends TestCase
         self::assertInstanceOf(View::class, $box);
         self::assertSame('#94a3b8', (string) $label->style()->color);
 
-        $lines = array_values(array_filter(self::paginate(CodeBlock::make("a\nb")->language('php')->variant('caption'))[0]->ops, static fn ($o) => $o instanceof \Papercut\Paint\Line));
+        $lines = array_values(array_filter(self::paginate(CodeBlock::make("a\nb")->language('php')->variant('caption'))[0]->ops, static fn ($o) => $o instanceof \Quoin\Paint\Line));
         self::assertCount(1, $lines, 'the 2pt left rule');
         self::assertSame('#cbd5e1', (string) $lines[0]->color);
         self::assertSame(2.0, $lines[0]->width);
@@ -246,7 +246,7 @@ final class CodeBlockTest extends TestCase
         $h = new CodeHighlighting(variant: 'caption');
         $captioned = CodeBlock::make('x')->language('php')->highlighting($h)->render();
         self::assertInstanceOf(Text::class, $captioned->children()[0]);
-        $lines = array_values(array_filter(self::paginate(CodeBlock::make('x')->language('php')->highlighting($h))[0]->ops, static fn ($o) => $o instanceof \Papercut\Paint\Line));
+        $lines = array_values(array_filter(self::paginate(CodeBlock::make('x')->language('php')->highlighting($h))[0]->ops, static fn ($o) => $o instanceof \Quoin\Paint\Line));
         self::assertSame('#cbd5e1', (string) $lines[0]->color);
 
         $strip = CodeBlock::make('x')->language('php')->highlighting($h)->variant('strip')->render();
@@ -268,9 +268,9 @@ final class CodeBlockTest extends TestCase
         $block = CodeBlock::make('')->language('php');
         self::assertSame('PHP', self::words(self::textAt($block->render(), 0)));
         $ops = self::paginate($block)[0]->ops;
-        $runs = array_values(array_filter($ops, static fn ($o) => $o instanceof \Papercut\Paint\TextRun));
+        $runs = array_values(array_filter($ops, static fn ($o) => $o instanceof \Quoin\Paint\TextRun));
         self::assertSame(['PHP'], array_map(static fn ($r) => $r->text, $runs));
-        $rects = array_values(array_filter($ops, static fn ($o) => $o instanceof \Papercut\Paint\Rect));
+        $rects = array_values(array_filter($ops, static fn ($o) => $o instanceof \Quoin\Paint\Rect));
         self::assertNotSame([], $rects);
         self::assertGreaterThan(10.0, $rects[0]->height, 'label plus padding');
         self::assertLessThan(40.0, $rects[0]->height);
@@ -291,12 +291,12 @@ final class CodeBlockTest extends TestCase
         $pages = self::paginate(CodeBlock::make($code)->language('php'));
 
         self::assertGreaterThanOrEqual(2, count($pages));
-        $texts = array_map(static fn ($p) => array_values(array_map(static fn ($o) => $o->text, array_filter($p->ops, static fn ($o) => $o instanceof \Papercut\Paint\TextRun))), $pages);
+        $texts = array_map(static fn ($p) => array_values(array_map(static fn ($o) => $o->text, array_filter($p->ops, static fn ($o) => $o instanceof \Quoin\Paint\TextRun))), $pages);
         self::assertContains('PHP', $texts[0]);
         self::assertNotContains('PHP', $texts[1]);
         foreach ($pages as $p) {
             foreach ($p->ops as $o) {
-                if ($o instanceof \Papercut\Paint\TextRun) {
+                if ($o instanceof \Quoin\Paint\TextRun) {
                     self::assertGreaterThanOrEqual(10.0, $o->x);
                     self::assertLessThanOrEqual(290.0, $o->x + strlen($o->text) * 4.5);
                 }

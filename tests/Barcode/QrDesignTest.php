@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Barcode;
+namespace Quoin\Tests\Barcode;
 
-use Papercut\Barcode\{ErrorCorrection, QrEyes, QrGradient, QrShape};
-use Papercut\{Document, Page, QrCode};
-use Papercut\Exception\InvalidValue;
-use Papercut\Export\HtmlOptions;
-use Papercut\Paint\{DrawSvg, Rect};
-use Papercut\Tests\Support\{LayoutHarness, PdfInspector};
-use Papercut\Value\Color;
+use Quoin\Barcode\{ErrorCorrection, QrEyes, QrGradient, QrShape};
+use Quoin\{Document, Page, QrCode};
+use Quoin\Exception\InvalidValue;
+use Quoin\Export\HtmlOptions;
+use Quoin\Paint\{DrawSvg, Rect};
+use Quoin\Tests\Support\{LayoutHarness, PdfInspector};
+use Quoin\Value\Color;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use function Papercut\pt;
+use function Quoin\pt;
 
 /**
- * Styled QR codes: Papercut encodes the grid, and BaconQrCode draws it as an SVG with the
+ * Styled QR codes: the core encodes the grid, and BaconQrCode draws it as an SVG with the
  * chosen module shape, eyes and colors. A plain code still draws as rectangles.
  */
 final class QrDesignTest extends TestCase
@@ -253,15 +253,15 @@ final class QrDesignTest extends TestCase
                     $loader->loadClass($class);
                 }
             });
-            echo Papercut\QrCode::make('x')->modules() !== [] ? "plain ok\n" : '';
+            echo Quoin\QrCode::make('x')->modules() !== [] ? "plain ok\n" : '';
             try {
-                Papercut\QrCode::make('x')->shape(Papercut\Barcode\QrShape::Dots);
-            } catch (Papercut\Exception\MissingPackage $e) {
+                Quoin\QrCode::make('x')->shape(Quoin\Barcode\QrShape::Dots);
+            } catch (Quoin\Exception\MissingPackage $e) {
                 echo $e->getMessage(), "\n";
             }
             try {
-                new Papercut\Barcode\Bacon\BaconQrEncoder();
-            } catch (Papercut\Exception\MissingPackage $e) {
+                new Quoin\Barcode\Bacon\BaconQrEncoder();
+            } catch (Quoin\Exception\MissingPackage $e) {
                 echo $e->getMessage();
             }
             PHP, var_export(dirname(__DIR__, 2) . '/vendor/autoload.php', true));
@@ -295,7 +295,7 @@ final class QrDesignTest extends TestCase
         }
         $side = pt($qr->span() * $px);
         $pdf = Document::make(Page::size($side, $side)->margin(pt(0))->body($qr->width($side)))->toPdf()->bytes();
-        $dir = sys_get_temp_dir() . '/papercut-qr-' . bin2hex(random_bytes(4));
+        $dir = sys_get_temp_dir() . '/quoin-qr-' . bin2hex(random_bytes(4));
         mkdir($dir);
         try {
             file_put_contents("$dir/doc.pdf", $pdf);

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Markup;
+namespace Quoin\Tests\Markup;
 
-use Papercut\{Annotated, Document, Node, Page, View};
-use Papercut\Export\{FidelityLevel, HtmlOptions, PdfOptions};
-use Papercut\Markup\{InlineCss, Markup, MarkupOptions, StyleMode};
-use Papercut\Tests\Support\{PdfInspector, TestImages};
-use function Papercut\px;
-use Papercut\Value\Length;
+use Quoin\{Annotated, Document, Node, Page, View};
+use Quoin\Export\{FidelityLevel, HtmlOptions, PdfOptions};
+use Quoin\Markup\{InlineCss, Markup, MarkupOptions, StyleMode};
+use Quoin\Tests\Support\{PdfInspector, TestImages};
+use function Quoin\px;
+use Quoin\Value\Length;
 use PHPUnit\Framework\TestCase;
 
 /** Pasted CSS is untrusted: sizes are clamped, heights never cut content off, columns never overflow. */
@@ -127,7 +127,7 @@ final class CssClampTest extends TestCase
         ));
         self::assertInstanceOf(View::class, $v);
         $image = $v->children()[0];
-        self::assertInstanceOf(\Papercut\Image::class, $image);
+        self::assertInstanceOf(\Quoin\Image::class, $image);
         self::assertEquals(px(70), $image->style()->height);
         self::assertSame([], array_filter(self::notes($v), static fn (string $n): bool => str_contains($n, 'minimum height')));
         $r = InlineCss::parse('height:70px', inline: false);
@@ -253,12 +253,12 @@ final class CssClampTest extends TestCase
     public function test_a_fixed_height_box_still_contains_its_overflow_despite_a_negative_margin(): void
     {
         $words = implode(' ', array_fill(0, 400, 'word'));
-        $doc = fn (\Papercut\OverflowMode $m) => Document::make(Page::a4()->body(
-            \Papercut\Column::make(\Papercut\Text::make('first')->margin(\Papercut\pt(-1), \Papercut\pt(0), \Papercut\pt(0), \Papercut\pt(0)), \Papercut\Text::make($words))->height(\Papercut\pt(50)),
+        $doc = fn (\Quoin\OverflowMode $m) => Document::make(Page::a4()->body(
+            \Quoin\Column::make(\Quoin\Text::make('first')->margin(\Quoin\pt(-1), \Quoin\pt(0), \Quoin\pt(0), \Quoin\pt(0)), \Quoin\Text::make($words))->height(\Quoin\pt(50)),
         ))->toPdf(new PdfOptions(overflow: $m, onWarning: static function (string $m): void {}, cacheDir: false));
-        self::assertStringStartsWith('%PDF', $doc(\Papercut\OverflowMode::Clip)->bytes());
-        $this->expectException(\Papercut\Exception\LayoutOverflow::class);
-        $doc(\Papercut\OverflowMode::Throw);
+        self::assertStringStartsWith('%PDF', $doc(\Quoin\OverflowMode::Clip)->bytes());
+        $this->expectException(\Quoin\Exception\LayoutOverflow::class);
+        $doc(\Quoin\OverflowMode::Throw);
     }
 
     public function test_a_narrow_column_next_to_an_overflowing_one_keeps_its_width_and_gets_no_fitted_note(): void

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Export;
+namespace Quoin\Export;
 
-use Papercut\Backend\Backend;
-use Papercut\Backend\DefaultBackend;
-use Papercut\OverflowMode;
-use Papercut\Style\Theme;
-use Papercut\Text\FontSet;
+use Quoin\Backend\Backend;
+use Quoin\Backend\DefaultBackend;
+use Quoin\OverflowMode;
+use Quoin\Style\Theme;
+use Quoin\Text\FontSet;
 
 final readonly class PdfOptions extends ExportOptions
 {
@@ -18,7 +18,7 @@ final readonly class PdfOptions extends ExportOptions
      * @param (\Closure(string, ?FidelityReport=): void)|null $onWarning
      * @param Backend|null $backend a configured PhpPdfBackend; other Backend implementations aren't supported
      * @param string|false|null $cacheDir directory for the default backend's font cache
-     *        (null = sys_get_temp_dir()/papercut-cache-<uid>, false = no disk cache); ignored when $backend is given
+     *        (null = sys_get_temp_dir()/quoin-cache-<uid>, false = no disk cache); ignored when $backend is given
      * @param bool $bookmarks false leaves the PDF without a bookmarks panel, even for headings
      * @param Encryption|null $encryption password protection and permissions; null writes an unencrypted PDF
      */

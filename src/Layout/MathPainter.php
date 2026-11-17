@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
-use Papercut\Math\Font\TrueTypeFont;
-use Papercut\Math\Layout\{Box, DisplayItem, Glyph, Rule};
-use Papercut\Math\Render\SvgRenderer;
-use Papercut\Paint\{DrawSvg, Rect, TextRun};
-use Papercut\Style\ComputedStyle;
-use Papercut\Text\CachedFont;
-use Papercut\Value\Color;
-use Papercut\Vector\SvgDocument;
+use Quoin\Math\Font\TrueTypeFont;
+use Quoin\Math\Layout\{Box, DisplayItem, Glyph, Rule};
+use Quoin\Math\Render\SvgRenderer;
+use Quoin\Paint\{DrawSvg, Rect, TextRun};
+use Quoin\Style\ComputedStyle;
+use Quoin\Text\CachedFont;
+use Quoin\Value\Color;
+use Quoin\Vector\SvgDocument;
 
 /**
  * Paints a laid-out formula into a fragment. A glyph that stands for one character the math font draws as that
@@ -19,7 +19,7 @@ use Papercut\Vector\SvgDocument;
  * would use (a fallback family when one has it). Every other glyph (stretched fences, radical signs, assembly
  * pieces, variants with no code point of their own) is drawn as a path, all in one SVG; rules are rectangles.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class MathPainter
 {

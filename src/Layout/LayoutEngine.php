@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
-use Papercut\{ColumnBreak, Component, Equation, Image, Link, ListItem, ListNode, Node, OverflowMode, Page, PageBreak, PageNumber, PdfPage, Place, QrCode, Spacer, Svg, Table, TableCell, TableRow, Text, Toc, View};
-use Papercut\Exception\{InvalidStructure, InvalidValue, UnknownAttribute};
-use Papercut\Paint\{Anchor, Bookmark};
-use Papercut\Style\{ComputedStyle, Direction};
-use Papercut\Toc\{HeadingText, TocLine};
-use Papercut\Tree\{Expander, NodePath};
-use Papercut\Value\Auto;
+use Quoin\{ColumnBreak, Component, Equation, Image, Link, ListItem, ListNode, Node, OverflowMode, Page, PageBreak, PageNumber, PdfPage, Place, QrCode, Spacer, Svg, Table, TableCell, TableRow, Text, Toc, View};
+use Quoin\Exception\{InvalidStructure, InvalidValue, UnknownAttribute};
+use Quoin\Paint\{Anchor, Bookmark};
+use Quoin\Style\{ComputedStyle, Direction};
+use Quoin\Toc\{HeadingText, TocLine};
+use Quoin\Tree\{Expander, NodePath};
+use Quoin\Value\Auto;
 
 /**
  * Dispatches nodes to their layouters. Expands Components, resolves the
  * node's computed style and maintains the context's node path.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class LayoutEngine
 {
@@ -359,7 +359,7 @@ final class LayoutEngine
                 $node instanceof ListItem => 'a list item belongs inside ListNode::ordered() or ListNode::unordered()',
                 $node instanceof TableRow, $node instanceof TableCell => 'table rows and cells belong inside a Table',
                 $node instanceof Page => 'a page belongs directly inside Document::make()',
-                !$reflection->isAnonymous() && str_starts_with($node::class, 'Papercut\\') => 'it cannot be laid out inside other content',
+                !$reflection->isAnonymous() && str_starts_with($node::class, 'Quoin\\') => 'it cannot be laid out inside other content',
                 default => 'no layouter is registered for ' . (strstr($node::class, "\0", true) ?: $node::class),
             },
         ));

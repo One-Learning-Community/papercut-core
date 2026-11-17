@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Layout;
+namespace Quoin\Tests\Layout;
 
-use Papercut\{Equation, Text, View};
-use Papercut\Layout\{Fragment, Status};
-use Papercut\Math\Math;
-use Papercut\Paint\{DrawSvg, Op, Rect, TextRun};
-use Papercut\Style\{Theme, TextAlign};
-use Papercut\Tests\Support\{FakeBackend, LayoutHarness};
-use Papercut\Text\FontRegistry;
-use Papercut\Value\Color;
+use Quoin\{Equation, Text, View};
+use Quoin\Layout\{Fragment, Status};
+use Quoin\Math\Math;
+use Quoin\Paint\{DrawSvg, Op, Rect, TextRun};
+use Quoin\Style\{Theme, TextAlign};
+use Quoin\Tests\Support\{FakeBackend, LayoutHarness};
+use Quoin\Text\FontRegistry;
+use Quoin\Value\Color;
 use PHPUnit\Framework\TestCase;
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class EquationLayouterTest extends TestCase
 {
@@ -81,7 +81,7 @@ final class EquationLayouterTest extends TestCase
 
         $this->assertEqualsWithDelta(150.0, $h->layout($eq->maxWidth(pt(150)), 400)->fragment?->width, 0.01);
         $this->assertEqualsWithDelta(200.0, $h->layout($eq->minWidth(pt(200))->width(pt(100)), 400)->fragment?->width, 0.01);
-        $this->assertEqualsWithDelta(100.0, $h->layout($eq->maxWidth(\Papercut\Value\Percent::of(25)), 400)->fragment?->width, 0.01);
+        $this->assertEqualsWithDelta(100.0, $h->layout($eq->maxWidth(\Quoin\Value\Percent::of(25)), 400)->fragment?->width, 0.01);
     }
 
     public function test_alignment(): void
@@ -121,7 +121,7 @@ final class EquationLayouterTest extends TestCase
     {
         $h = new LayoutHarness();
         $red = Color::hex('#ff0000');
-        $eq = Equation::of(self::quadratic()->math(), Math::fenced('(', ')', Math::frac('a', 'b')))->color($red)->apply(\Papercut\Style\Style::make(fontSize: pt(20)));
+        $eq = Equation::of(self::quadratic()->math(), Math::fenced('(', ')', Math::frac('a', 'b')))->color($red)->apply(\Quoin\Style\Style::make(fontSize: pt(20)));
         $f = $h->layout($eq, 400)->fragment;
         $this->assertNotNull($f);
         $pieces = 0;
@@ -170,7 +170,7 @@ final class EquationLayouterTest extends TestCase
         $h = new LayoutHarness();
         $eq = self::quadratic()->padding(pt(3));
         $box = Math::layout($eq->math(), Theme::default()->fontSize, true, $h->engine->context()->fonts->mathFont()['font'], false);
-        $this->assertEqualsWithDelta($box->width + 6.0, $h->engine->intrinsic($eq, \Papercut\Style\ComputedStyle::root(Theme::default()))['max'], 1.0);
+        $this->assertEqualsWithDelta($box->width + 6.0, $h->engine->intrinsic($eq, \Quoin\Style\ComputedStyle::root(Theme::default()))['max'], 1.0);
     }
 
     public function test_translucent_color_reaches_path_pieces(): void

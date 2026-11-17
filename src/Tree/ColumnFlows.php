@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tree;
+namespace Quoin\Tree;
 
-use Papercut\{Node, TableCell, View};
-use Papercut\Exception\InvalidStructure;
-use Papercut\Style\{Align, ComputedStyle, Direction};
-use Papercut\Value\Auto;
+use Quoin\{Node, TableCell, View};
+use Quoin\Exception\InvalidStructure;
+use Quoin\Style\{Align, ComputedStyle, Direction};
+use Quoin\Value\Auto;
 
 /**
  * Placement rules for ColumnFlow, shared by layout, the HTML and Word exports and the builder.
@@ -108,7 +108,7 @@ final class ColumnFlows
         return new InvalidStructure(sprintf('A ColumnBreak only works inside a ColumnFlow (at "%s").', $path));
     }
 
-    private static function noEdge(\Papercut\Value\Edges $e): bool
+    private static function noEdge(\Quoin\Value\Edges $e): bool
     {
         return $e->top->points === 0.0 && $e->right->points === 0.0 && $e->bottom->points === 0.0 && $e->left->points === 0.0;
     }

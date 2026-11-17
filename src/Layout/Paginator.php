@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
-use Papercut\{Column, Component, Document, Node, OverflowMode, Page, PageVariant, View};
-use Papercut\Value\{Length, Percent};
-use Papercut\Exception\LayoutOverflow;
-use Papercut\Style\ComputedStyle;
-use Papercut\Tree\Region;
+use Quoin\{Column, Component, Document, Node, OverflowMode, Page, PageVariant, View};
+use Quoin\Value\{Length, Percent};
+use Quoin\Exception\LayoutOverflow;
+use Quoin\Style\ComputedStyle;
+use Quoin\Tree\Region;
 
 /**
  * Flows each Page template's body across physical pages between its header
  * and footer, with its background behind. Header, footer and background
  * fragments are laid out once per template (once per variant) and reused on the pages that use them.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class Paginator
 {
@@ -325,7 +325,7 @@ final class Paginator
      * A header or footer band. Without $report it is laid out quietly, as it may never be rendered;
      * the second value is false when that held back a report or throw, so it is not to be kept.
      *
-     * @param list<\Papercut\Node|\Papercut\Component> $nodes
+     * @param list<\Quoin\Node|\Quoin\Component> $nodes
      * @return array{?Fragment, bool}
      */
     private function bandSlot(array $nodes, ComputedStyle $root, float $width, string $pathName, bool $report): array
@@ -336,7 +336,7 @@ final class Paginator
         return $this->ctx->quietly(fn (): ?Fragment => $this->slot($nodes, $root, $width, $pathName));
     }
 
-    /** @param list<\Papercut\Node|\Papercut\Component> $nodes */
+    /** @param list<\Quoin\Node|\Quoin\Component> $nodes */
     private function slot(array $nodes, ComputedStyle $root, float $width, string $pathName): ?Fragment
     {
         if ($nodes === []) {

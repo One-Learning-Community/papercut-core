@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Decorator;
+namespace Quoin\Decorator;
 
-use Papercut\Code\{CodeColors, CodeToken, CodeHighlighting, CodeTheme, HighlightedCode, Highlighter, UnknownLanguage, UnknownTheme};
-use Papercut\Concerns\{HasStyle, HasVariants};
-use Papercut\Exception\InvalidVariant;
-use Papercut\Export\FidelityLevel;
-use Papercut\Markup\Note;
-use Papercut\{Span, Text, ThemedComponent, View};
-use Papercut\Style\{Style, Theme};
-use Papercut\Support\Utf8;
+use Quoin\Code\{CodeColors, CodeToken, CodeHighlighting, CodeTheme, HighlightedCode, Highlighter, UnknownLanguage, UnknownTheme};
+use Quoin\Concerns\{HasStyle, HasVariants};
+use Quoin\Exception\InvalidVariant;
+use Quoin\Export\FidelityLevel;
+use Quoin\Markup\Note;
+use Quoin\{Span, Text, ThemedComponent, View};
+use Quoin\Style\{Style, Theme};
+use Quoin\Support\Utf8;
 
 /**
  * A block of source code with syntax highlighting, a muted language label and optional

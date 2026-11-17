@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Text;
+namespace Quoin\Text;
 
-use Papercut\Math\Layout\Box;
-use Papercut\Style\ComputedStyle;
+use Quoin\Math\Layout\Box;
+use Quoin\Style\ComputedStyle;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
+/** @internal Engine detail, not public API. It may change in any release. */
 final readonly class InlineItem
 {
     /**

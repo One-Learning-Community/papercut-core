@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Value;
+namespace Quoin\Value;
 
 /** The line drawn between the columns of a ColumnFlow. */
 final readonly class ColumnRule

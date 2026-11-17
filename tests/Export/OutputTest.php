@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Export;
+namespace Quoin\Tests\Export;
 
-use Papercut\Export\Output;
+use Quoin\Export\Output;
 use PHPUnit\Framework\TestCase;
 
 final class OutputTest extends TestCase
@@ -20,14 +20,14 @@ final class OutputTest extends TestCase
     public function test_save_writes_bytes_and_missing_directory_throws(): void
     {
         $out = new Output('%PDF-abc', 'application/pdf', 'pdf');
-        $path = sys_get_temp_dir() . '/papercut-output-' . getmypid() . '.pdf';
+        $path = sys_get_temp_dir() . '/quoin-output-' . getmypid() . '.pdf';
         try {
             $out->save($path);
             self::assertSame('%PDF-abc', file_get_contents($path));
         } finally {
             @unlink($path);
         }
-        $missing = sys_get_temp_dir() . '/papercut-no-such-dir-' . getmypid();
+        $missing = sys_get_temp_dir() . '/quoin-no-such-dir-' . getmypid();
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage("Directory does not exist: $missing");
         $out->save($missing . '/x.pdf');

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Hardening;
+namespace Quoin\Tests\Hardening;
 
-use Papercut\Exception\InvalidValue;
-use Papercut\{Table, Text};
-use Papercut\Tests\Support\FailsOnDiagnostics;
+use Quoin\Exception\InvalidValue;
+use Quoin\{Table, Text};
+use Quoin\Tests\Support\FailsOnDiagnostics;
 use PHPUnit\Framework\TestCase;
 
 final class LeftoversTest extends TestCase

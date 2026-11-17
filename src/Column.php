@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut;
+namespace Quoin;
 
-use Papercut\Style\Direction;
+use Quoin\Style\Direction;
 
 final class Column
 {

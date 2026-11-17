@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Markup;
+namespace Quoin\Tests\Markup;
 
-use Papercut\{Text, View};
-use Papercut\Export\FidelityLevel;
-use Papercut\Markup\{Markup, MarkupOptions, StyleMode};
+use Quoin\{Text, View};
+use Quoin\Export\FidelityLevel;
+use Quoin\Markup\{Markup, MarkupOptions, StyleMode};
 use PHPUnit\Framework\TestCase;
 
 final class MarkupCodeBlockTest extends TestCase
@@ -19,7 +19,7 @@ final class MarkupCodeBlockTest extends TestCase
         }
         $out = [];
         foreach ($node->children() as $child) {
-            $child = $child instanceof \Papercut\Component ? \Papercut\Tree\Expander::expand($child) : $child;
+            $child = $child instanceof \Quoin\Component ? \Quoin\Tree\Expander::expand($child) : $child;
             if (!$child instanceof View && !$child instanceof Text) {
                 continue;
             }
@@ -139,8 +139,8 @@ final class MarkupCodeBlockTest extends TestCase
         self::assertNotEquals($plain, $v);
         self::assertInstanceOf(View::class, $v);
         $block = $v->children()[0];
-        self::assertInstanceOf(\Papercut\Component::class, $block);
-        $block = \Papercut\Tree\Expander::expand($block);
+        self::assertInstanceOf(\Quoin\Component::class, $block);
+        $block = \Quoin\Tree\Expander::expand($block);
         self::assertInstanceOf(View::class, $block);
         self::assertSame(20.0, $block->style()->fontSize?->points);
     }
@@ -187,8 +187,8 @@ final class MarkupCodeBlockTest extends TestCase
         $v = Markup::html('<ul><li>a<pre><code class="language-php">x</code></pre></li></ul>');
         self::assertInstanceOf(View::class, $v);
         $list = $v->children()[0];
-        self::assertInstanceOf(\Papercut\ListNode::class, $list);
-        $style = (new \Papercut\Style\StyleResolver(\Papercut\Style\Theme::default()))->resolve($list, \Papercut\Style\ComputedStyle::root(\Papercut\Style\Theme::default()));
+        self::assertInstanceOf(\Quoin\ListNode::class, $list);
+        $style = (new \Quoin\Style\StyleResolver(\Quoin\Style\Theme::default()))->resolve($list, \Quoin\Style\ComputedStyle::root(\Quoin\Style\Theme::default()));
         self::assertSame(0.0, $style->margin->bottom->points);
     }
 
@@ -197,7 +197,7 @@ final class MarkupCodeBlockTest extends TestCase
         $v = Markup::html('<pre class="language-php" style="font-size:20pt">x</pre>', new MarkupOptions(styles: StyleMode::Original));
         self::assertInstanceOf(View::class, $v);
         $block = $v->children()[0];
-        self::assertInstanceOf(\Papercut\Component::class, $block);
-        self::assertSame(\Papercut\Tree\Expander::expand($block), \Papercut\Tree\Expander::expand($block));
+        self::assertInstanceOf(\Quoin\Component::class, $block);
+        self::assertSame(\Quoin\Tree\Expander::expand($block), \Quoin\Tree\Expander::expand($block));
     }
 }

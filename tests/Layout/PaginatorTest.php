@@ -2,31 +2,31 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Layout;
+namespace Quoin\Tests\Layout;
 
-use Papercut\{Document, Image, ListItem, ListNode, OverflowMode, Page, PageNumber, Text};
-use Papercut\Exception\LayoutOverflow;
-use Papercut\Layout\{LayoutContext, LayoutEngine, Paginator, TextLayouter};
-use Papercut\Paint\Painter;
-use Papercut\Paint\TextRun;
-use Papercut\Style\Theme;
-use Papercut\Tests\Support\FakeBackend;
-use Papercut\Text\FontRegistry;
+use Quoin\{Document, Image, ListItem, ListNode, OverflowMode, Page, PageNumber, Text};
+use Quoin\Exception\LayoutOverflow;
+use Quoin\Layout\{LayoutContext, LayoutEngine, Paginator, TextLayouter};
+use Quoin\Paint\Painter;
+use Quoin\Paint\TextRun;
+use Quoin\Style\Theme;
+use Quoin\Tests\Support\FakeBackend;
+use Quoin\Text\FontRegistry;
 use PHPUnit\Framework\TestCase;
-use Papercut\Layout\{BreakToken, Constraints, Fragment, LayoutResult, Layouter};
-use Papercut\Node;
-use Papercut\Paint\{Clip, DrawImage};
-use Papercut\Style\{ComputedStyle, Style};
+use Quoin\Layout\{BreakToken, Constraints, Fragment, LayoutResult, Layouter};
+use Quoin\Node;
+use Quoin\Paint\{Clip, DrawImage};
+use Quoin\Style\{ComputedStyle, Style};
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class PaginatorTest extends TestCase
 {
     /** @var list<string> */
     private array $warnings = [];
 
-    /** @return list<\Papercut\Paint\PageDisplayList> */
-    private function paginate(Document $doc, OverflowMode $mode = OverflowMode::Throw, ?\Closure $setup = null, ?\Papercut\Backend\Backend $backend = null): array
+    /** @return list<\Quoin\Paint\PageDisplayList> */
+    private function paginate(Document $doc, OverflowMode $mode = OverflowMode::Throw, ?\Closure $setup = null, ?\Quoin\Backend\Backend $backend = null): array
     {
         $b = $backend ?? new FakeBackend();
         $ctx = new LayoutContext(FontRegistry::withDefaults($b), Theme::default(), $b, $mode, function (string $w): void { $this->warnings[] = $w; });
@@ -71,7 +71,7 @@ final class PaginatorTest extends TestCase
     }
 
     /** @return list<string> */
-    private function texts(\Papercut\Paint\PageDisplayList $p): array
+    private function texts(\Quoin\Paint\PageDisplayList $p): array
     {
         return array_values(array_map(fn (TextRun $r) => $r->text, array_filter($p->ops, fn ($o) => $o instanceof TextRun)));
     }
@@ -200,8 +200,8 @@ final class PaginatorTest extends TestCase
 
     public function test_page_number_intrinsic_width_uses_999(): void
     {
-        $h = new \Papercut\Tests\Support\LayoutHarness();
-        $size = $h->engine->intrinsic(PageNumber::make('{page}/{total}'), \Papercut\Style\ComputedStyle::root(Theme::default()));
+        $h = new \Quoin\Tests\Support\LayoutHarness();
+        $size = $h->engine->intrinsic(PageNumber::make('{page}/{total}'), \Quoin\Style\ComputedStyle::root(Theme::default()));
         // "999/999" = 7 glyphs x 5pt (FakeFont, 10pt)
         self::assertEqualsWithDelta(['min' => 35.0, 'max' => 35.0], $size, 1e-9);
     }
@@ -216,7 +216,7 @@ final class PaginatorTest extends TestCase
 
     public function test_clip_mode_records_the_failure_path_when_clipping_fails(): void
     {
-        $h = new \Papercut\Tests\Support\LayoutHarness(overflow: OverflowMode::Clip);
+        $h = new \Quoin\Tests\Support\LayoutHarness(overflow: OverflowMode::Clip);
         $h->engine->register(StuckNode::class, new class implements Layouter {
             public function layout(Node $node, ComputedStyle $style, Constraints $c, ?BreakToken $token, LayoutEngine $engine): LayoutResult
             {
@@ -228,7 +228,7 @@ final class PaginatorTest extends TestCase
                 return ['min' => 0.0, 'max' => 0.0];
             }
         });
-        self::assertSame(\Papercut\Layout\Status::DoesNotFit, $h->layout(new StuckNode(), 100, 50)->status);
+        self::assertSame(\Quoin\Layout\Status::DoesNotFit, $h->layout(new StuckNode(), 100, 50)->status);
         self::assertSame('stuck', $h->engine->context()->lastFailurePath);
     }
 
@@ -267,7 +267,7 @@ final class PaginatorTest extends TestCase
 
     public function test_a_table_too_wide_in_a_header_that_is_never_rendered_does_not_throw(): void
     {
-        $wide = \Papercut\Table::make()->columns('400pt 400pt')->row('a', 'b');
+        $wide = \Quoin\Table::make()->columns('400pt 400pt')->row('a', 'b');
         $pages = $this->paginate(Document::make($this->tall()->header('H')->evenHeader($wide)->body('one page')));
         self::assertCount(1, $pages);
         self::assertSame([], $this->warnings);
@@ -275,7 +275,7 @@ final class PaginatorTest extends TestCase
 
     public function test_a_table_too_wide_in_a_header_throws_once_that_header_is_rendered(): void
     {
-        $wide = \Papercut\Table::make()->columns('400pt 400pt')->row('a', 'b');
+        $wide = \Quoin\Table::make()->columns('400pt 400pt')->row('a', 'b');
         $this->expectException(LayoutOverflow::class);
         $this->expectExceptionMessage('even-header');
         $this->paginate(Document::make($this->tall()->header('H')->evenHeader($wide)->body(...self::lines(40))));
@@ -283,7 +283,7 @@ final class PaginatorTest extends TestCase
 
     public function test_a_shrunk_table_in_a_header_is_reported_only_once_that_header_is_rendered(): void
     {
-        $wide = \Papercut\Table::make()->columns('auto auto')->row(str_repeat('a', 40), str_repeat('b', 40));
+        $wide = \Quoin\Table::make()->columns('auto auto')->row(str_repeat('a', 40), str_repeat('b', 40));
         $this->paginate(Document::make($this->tall()->header('H')->evenHeader($wide)->body('one page')));
         self::assertSame([], $this->warnings);
         $this->warnings = [];
@@ -298,7 +298,7 @@ final class PaginatorTest extends TestCase
         return Page::size(pt(200), pt(300))->margin(pt(10))->headerGap(pt(0))->footerGap(pt(0));
     }
 
-    private function runOf(\Papercut\Paint\PageDisplayList $p, string $text): ?TextRun
+    private function runOf(\Quoin\Paint\PageDisplayList $p, string $text): ?TextRun
     {
         foreach ($p->ops as $o) {
             if ($o instanceof TextRun && $o->text === $text) {
@@ -308,7 +308,7 @@ final class PaginatorTest extends TestCase
         return null;
     }
 
-    private function xOf(\Papercut\Paint\PageDisplayList $p, string $text): float
+    private function xOf(\Quoin\Paint\PageDisplayList $p, string $text): float
     {
         $r = $this->runOf($p, $text);
         self::assertNotNull($r, $text);
@@ -332,22 +332,22 @@ final class PaginatorTest extends TestCase
         self::assertNotContains('Letterhead', $this->texts($pages[1]));
     }
 
-    /** @return list<\Papercut\Paint\Rect> */
-    private function rects(\Papercut\Paint\PageDisplayList $p): array
+    /** @return list<\Quoin\Paint\Rect> */
+    private function rects(\Quoin\Paint\PageDisplayList $p): array
     {
-        return array_values(array_filter($p->ops, fn ($o) => $o instanceof \Papercut\Paint\Rect));
+        return array_values(array_filter($p->ops, fn ($o) => $o instanceof \Quoin\Paint\Rect));
     }
 
-    /** @return list<\Papercut\Node|\Papercut\Component> */
+    /** @return list<\Quoin\Node|\Quoin\Component> */
     private static function blocks(int $n): array
     {
-        return array_map(fn (): \Papercut\Node => \Papercut\View::make()->height(pt(5))->background('#000'), range(1, $n));
+        return array_map(fn (): \Quoin\Node => \Quoin\View::make()->height(pt(5))->background('#000'), range(1, $n));
     }
 
     public function test_tall_first_header_shortens_only_the_first_body(): void
     {
-        $first = \Papercut\Column::make(Text::make('Letterhead'))->height(pt(100));
-        $normal = \Papercut\Column::make(Text::make('Running')->size(pt(5)))->height(pt(10));
+        $first = \Quoin\Column::make(Text::make('Letterhead'))->height(pt(100));
+        $normal = \Quoin\Column::make(Text::make('Running')->size(pt(5)))->height(pt(10));
         $doc = Document::make($this->tall()->headerGap(pt(5))->firstHeader($first)->header($normal)->body(...self::blocks(100)));
         $pages = $this->paginate($doc);
         $a = $this->rects($pages[0]);
@@ -416,17 +416,17 @@ final class PaginatorTest extends TestCase
     public function test_mirroring_moves_header_body_and_footer_but_not_layers(): void
     {
         $bytes = Document::make($this->small()->body('T'))->toPdf()->bytes();
-        $page = Page::template(\Papercut\PdfPage::bytes($bytes))->margin(\Papercut\Value\Edges::of(pt(10), pt(10), pt(10), pt(30)))->mirrorMargins()
-            ->background('BG')->overlay(\Papercut\Place::at(pt(50), pt(50), 'Over'))
+        $page = Page::template(\Quoin\PdfPage::bytes($bytes))->margin(\Quoin\Value\Edges::of(pt(10), pt(10), pt(10), pt(30)))->mirrorMargins()
+            ->background('BG')->overlay(\Quoin\Place::at(pt(50), pt(50), 'Over'))
             ->header('Head')->footer('Foot')->body(...self::lines(8));
-        $pages = $this->paginate(Document::make($page), backend: \Papercut\Backend\DefaultBackend::make(false));
+        $pages = $this->paginate(Document::make($page), backend: \Quoin\Backend\DefaultBackend::make(false));
         self::assertGreaterThan(1, count($pages));
         foreach (['Head', 'L1', 'Foot'] as $t) {
             self::assertEqualsWithDelta(30.0, $this->xOf($pages[0], $t), 1e-9, $t);
         }
         self::assertEqualsWithDelta(10.0, $this->xOf($pages[1], 'Head'), 1e-9);
         self::assertEqualsWithDelta(10.0, $this->xOf($pages[1], (string) current(array_filter($this->texts($pages[1]), fn ($t) => $t[0] === 'L'))), 1e-9, 'page 2 body');
-        $drawn = fn ($p) => array_values(array_filter($p->ops, fn ($o) => $o instanceof \Papercut\Paint\DrawPdfPage));
+        $drawn = fn ($p) => array_values(array_filter($p->ops, fn ($o) => $o instanceof \Quoin\Paint\DrawPdfPage));
         self::assertCount(1, $drawn($pages[0]));
         self::assertCount(1, $drawn($pages[1]));
         self::assertEquals([$drawn($pages[0])[0]->x, $drawn($pages[0])[0]->y], [$drawn($pages[1])[0]->x, $drawn($pages[1])[0]->y]);
@@ -443,8 +443,8 @@ final class PaginatorTest extends TestCase
 
     public function test_table_flows_across_pages_of_different_heights(): void
     {
-        $tall = \Papercut\Column::make(Text::make('Letterhead'))->height(pt(120));
-        $table = \Papercut\Table::make()->head('Col');
+        $tall = \Quoin\Column::make(Text::make('Letterhead'))->height(pt(120));
+        $table = \Quoin\Table::make()->head('Col');
         for ($i = 1; $i <= 40; $i++) {
             $table = $table->row("Row$i");
         }
@@ -464,8 +464,8 @@ final class PaginatorTest extends TestCase
 
     public function test_block_too_tall_for_the_first_page_moves_to_the_second(): void
     {
-        $tall = \Papercut\Column::make(Text::make('Letterhead'))->height(pt(100));
-        $block = \Papercut\Column::make(Text::make('Block'))->height(pt(200));
+        $tall = \Quoin\Column::make(Text::make('Letterhead'))->height(pt(100));
+        $block = \Quoin\Column::make(Text::make('Block'))->height(pt(200));
         $doc = Document::make($this->tall()->firstHeader($tall)->header('Running')->footer('Foot')->body($block));
         $pages = $this->paginate($doc);
         self::assertCount(2, $pages);
@@ -484,7 +484,7 @@ final class PaginatorTest extends TestCase
 
     public function test_no_room_check_runs_for_each_combination(): void
     {
-        $huge = \Papercut\Column::make(Text::make('Letterhead'))->height(pt(400));
+        $huge = \Quoin\Column::make(Text::make('Letterhead'))->height(pt(400));
         $page = $this->tall()->firstHeader($huge)->header('Running')->body('X');
         try {
             $this->paginate(Document::make($page));
@@ -511,8 +511,8 @@ final class PaginatorTest extends TestCase
 
     public function test_look_ahead_warns_only_for_pages_that_are_rendered(): void
     {
-        $huge = \Papercut\Column::make(Text::make('Even'))->height(pt(400));
-        $tall = \Papercut\Column::make(Text::make('Letterhead'))->height(pt(100));
+        $huge = \Quoin\Column::make(Text::make('Even'))->height(pt(400));
+        $tall = \Quoin\Column::make(Text::make('Letterhead'))->height(pt(100));
         $pages = $this->paginate(Document::make($this->tall()->firstHeader($tall)->evenHeader($huge)->body('X')), OverflowMode::Clip);
         self::assertCount(1, $pages);
         self::assertSame([], $this->warnings, 'page 2 is never rendered, so its band says nothing');
@@ -520,8 +520,8 @@ final class PaginatorTest extends TestCase
 
     public function test_block_that_fits_on_no_page_does_not_leave_an_empty_first_page(): void
     {
-        $tall = \Papercut\Column::make(Text::make('Letterhead'))->height(pt(100));
-        $block = \Papercut\Column::make(Text::make('Block'))->height(pt(500));
+        $tall = \Quoin\Column::make(Text::make('Letterhead'))->height(pt(100));
+        $block = \Quoin\Column::make(Text::make('Block'))->height(pt(500));
         $doc = Document::make($this->tall()->firstHeader($tall)->header('Running')->body($block));
         try {
             $this->paginate($doc);
@@ -538,9 +538,9 @@ final class PaginatorTest extends TestCase
 
     public function test_block_moves_past_a_short_even_page(): void
     {
-        $even = \Papercut\Column::make(Text::make('Even'))->height(pt(100));
-        $a = \Papercut\Column::make(Text::make('A'))->height(pt(150));
-        $b = \Papercut\Column::make(Text::make('B'))->height(pt(200));
+        $even = \Quoin\Column::make(Text::make('Even'))->height(pt(100));
+        $a = \Quoin\Column::make(Text::make('A'))->height(pt(150));
+        $b = \Quoin\Column::make(Text::make('B'))->height(pt(200));
         $doc = Document::make($this->tall()->header('Odd')->evenHeader($even)->body($a, $b));
         foreach ([OverflowMode::Throw, OverflowMode::Clip] as $mode) {
             $this->warnings = [];
@@ -556,9 +556,9 @@ final class PaginatorTest extends TestCase
     public function test_block_moves_two_pages_on_when_only_the_page_after_next_can_hold_it(): void
     {
         // Page body 280pt: the first page keeps 100pt, even pages 150pt, odd pages 280pt.
-        $first = \Papercut\Column::make(Text::make('First'))->height(pt(180));
-        $even = \Papercut\Column::make(Text::make('Even'))->height(pt(130));
-        $block = \Papercut\Column::make(Text::make('Block'))->height(pt(190));
+        $first = \Quoin\Column::make(Text::make('First'))->height(pt(180));
+        $even = \Quoin\Column::make(Text::make('Even'))->height(pt(130));
+        $block = \Quoin\Column::make(Text::make('Block'))->height(pt(190));
         $doc = Document::make($this->tall()->firstHeader($first)->evenHeader($even)->header('Odd')->body($block));
         foreach ([OverflowMode::Throw, OverflowMode::Clip] as $mode) {
             $this->warnings = [];
@@ -573,8 +573,8 @@ final class PaginatorTest extends TestCase
 
     public function test_layout_warnings_are_not_repeated_when_a_block_is_tried_again(): void
     {
-        $tall = \Papercut\Column::make(Text::make('Letterhead'))->height(pt(100));
-        $table = \Papercut\Table::make()->columns('300pt 300pt 300pt');
+        $tall = \Quoin\Column::make(Text::make('Letterhead'))->height(pt(100));
+        $table = \Quoin\Table::make()->columns('300pt 300pt 300pt');
         for ($i = 0; $i < 60; $i++) {
             $table = $table->row('a', 'b');
         }
@@ -589,8 +589,8 @@ final class PaginatorTest extends TestCase
     {
         // Accepted: splitting the row in place would truncate fixed-height boxes inside it.
         // body 180 x 52: three lines a page; the table's first row is eight lines
-        $tall = \Papercut\View::make(...array_map(static fn (int $i): Text => Text::make("T$i"), range(1, 8)));
-        $table = \Papercut\Table::make()->columns('1fr')->row($tall);
+        $tall = \Quoin\View::make(...array_map(static fn (int $i): Text => Text::make("T$i"), range(1, 8)));
+        $table = \Quoin\Table::make()->columns('1fr')->row($tall);
         $doc = Document::make($this->small()->body(Text::make('Intro'), Text::make('Caption')->keepWithNext(), $table));
         $pages = array_map(fn ($p) => $this->texts($p), $this->paginate($doc, OverflowMode::Throw));
         // The caption is left alone on its own page; the first row starts on the next one and splits there.
@@ -600,7 +600,7 @@ final class PaginatorTest extends TestCase
     public function test_heading_moves_with_a_keep_together_block_that_jumps_a_page(): void
     {
         // body 180 x 110: every heading level fits after the four intro lines, the four-line box does not
-        $box = \Papercut\View::make(...array_map(static fn (int $i): Text => Text::make("B$i"), range(1, 4)))->keepTogether();
+        $box = \Quoin\View::make(...array_map(static fn (int $i): Text => Text::make("B$i"), range(1, 4)))->keepTogether();
         $intro = array_map(static fn (int $i): Text => Text::make("I$i"), range(1, 4));
         foreach (['h1', 'h2', 'h3', 'h4'] as $level) {
             $page = Page::size(pt(200), pt(130))->margin(pt(10))->headerGap(pt(0))->footerGap(pt(0));
@@ -612,7 +612,7 @@ final class PaginatorTest extends TestCase
 
     public function test_a_heading_can_opt_out_of_keeping_with_next(): void
     {
-        $box = \Papercut\View::make(...array_map(static fn (int $i): Text => Text::make("B$i"), range(1, 4)))->keepTogether();
+        $box = \Quoin\View::make(...array_map(static fn (int $i): Text => Text::make("B$i"), range(1, 4)))->keepTogether();
         $doc = Document::make($this->small()->body(Text::make('Intro'), Text::make('Intro 2'), Text::h4('Heading')->keepWithNext(false), $box));
         $pages = array_map(fn ($p) => $this->texts($p), $this->paginate($doc));
         self::assertSame([['Intro', 'Intro 2', 'Heading'], ['B1', 'B2', 'B3', 'B4']], $pages);

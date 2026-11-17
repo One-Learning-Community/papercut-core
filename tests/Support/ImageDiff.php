@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Support;
+namespace Quoin\Tests\Support;
 
 /** Pixel comparison of two PNGs (GD). Test-only. */
 final class ImageDiff

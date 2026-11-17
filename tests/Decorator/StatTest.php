@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Decorator;
+namespace Quoin\Tests\Decorator;
 
-use Papercut\{Text, View};
-use Papercut\Decorator\{Decorator, Stat};
-use Papercut\Style\{ComputedStyle, StyleResolver, Theme};
-use Papercut\Value\Color;
+use Quoin\{Text, View};
+use Quoin\Decorator\{Decorator, Stat};
+use Quoin\Style\{ComputedStyle, StyleResolver, Theme};
+use Quoin\Value\Color;
 use PHPUnit\Framework\TestCase;
 
 final class StatTest extends TestCase
@@ -77,10 +77,10 @@ final class StatTest extends TestCase
         self::assertGreaterThan($panel->fontSize, $value->fontSize);
     }
 
-    private static function node(\Papercut\View $parent, int $i): \Papercut\Text|\Papercut\View
+    private static function node(\Quoin\View $parent, int $i): \Quoin\Text|\Quoin\View
     {
         $child = $parent->children()[$i] ?? null;
-        self::assertTrue($child instanceof \Papercut\Text || $child instanceof \Papercut\View);
+        self::assertTrue($child instanceof \Quoin\Text || $child instanceof \Quoin\View);
         return $child;
     }
 }

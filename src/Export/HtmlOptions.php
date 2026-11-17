@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Export;
+namespace Quoin\Export;
 
-use Papercut\Html\{FontAnswer, FontRequest, FontSource};
-use Papercut\Image;
-use Papercut\Style\Theme;
-use Papercut\Text\{FontFace, FontSet};
+use Quoin\Html\{FontAnswer, FontRequest, FontSource};
+use Quoin\Image;
+use Quoin\Style\Theme;
+use Quoin\Text\{FontFace, FontSet};
 
 final readonly class HtmlOptions extends ExportOptions
 {

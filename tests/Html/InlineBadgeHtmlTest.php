@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Html;
+namespace Quoin\Tests\Html;
 
-use Papercut\{Document, Page, Span, Text};
-use Papercut\Style\Style;
-use Papercut\Value\Color;
+use Quoin\{Document, Page, Span, Text};
+use Quoin\Style\Style;
+use Quoin\Value\Color;
 use PHPUnit\Framework\TestCase;
 
 final class InlineBadgeHtmlTest extends TestCase

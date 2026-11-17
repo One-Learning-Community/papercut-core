@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Export;
+namespace Quoin\Tests\Export;
 
-use Papercut\{Document, Page, PageBreak, Row, Svg, Text};
-use Papercut\Exception\UnsupportedFeature;
-use Papercut\Export\{FidelityReport, HtmlExporter, HtmlOptions, PdfOptions};
+use Quoin\{Document, Page, PageBreak, Row, Svg, Text};
+use Quoin\Exception\UnsupportedFeature;
+use Quoin\Export\{FidelityReport, HtmlExporter, HtmlOptions, PdfOptions};
 use PHPUnit\Framework\TestCase;
 
 /** Each fidelity note appears once, at the node it belongs to, in every format that has it. */
@@ -49,7 +49,7 @@ final class NoteBookkeepingTest extends TestCase
         }));
         self::assertCount(1, $reports);
         self::assertInstanceOf(FidelityReport::class, $reports[0]);
-        self::assertSame(\Papercut\Export\FidelityLevel::Dropped, $reports[0]->level);
+        self::assertSame(\Quoin\Export\FidelityLevel::Dropped, $reports[0]->level);
     }
 
     public function test_the_same_text_in_two_nodes_is_noted_at_each(): void

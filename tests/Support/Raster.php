@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Support;
+namespace Quoin\Tests\Support;
 
 use PHPUnit\Framework\Assert;
 
@@ -21,7 +21,7 @@ final class Raster
 
     public static function of(string $pdf, string $password = '', int $page = 1): \GdImage
     {
-        $dir = sys_get_temp_dir() . '/papercut-raster-' . bin2hex(random_bytes(4));
+        $dir = sys_get_temp_dir() . '/quoin-raster-' . bin2hex(random_bytes(4));
         mkdir($dir);
         try {
             file_put_contents("$dir/doc.pdf", $pdf);

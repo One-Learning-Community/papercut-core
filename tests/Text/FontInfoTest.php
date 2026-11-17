@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Text;
+namespace Quoin\Tests\Text;
 
-use Papercut\Text\{FontClass, FontInfo, FontSet, TrueTypeTables};
+use Quoin\Text\{FontClass, FontInfo, FontSet, TrueTypeTables};
 use PHPUnit\Framework\TestCase;
 
 final class FontInfoTest extends TestCase

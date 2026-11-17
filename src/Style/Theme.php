@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Style;
+namespace Quoin\Style;
 
-use Papercut\Decorator\DefaultStyles;
-use Papercut\Exception\UnknownAttribute;
-use Papercut\Support\Suggest;
-use Papercut\Value\{Color, Edges, Length};
+use Quoin\Decorator\DefaultStyles;
+use Quoin\Exception\UnknownAttribute;
+use Quoin\Support\Suggest;
+use Quoin\Value\{Color, Edges, Length};
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class Theme
 {
@@ -78,7 +78,7 @@ final class Theme
     }
 
     /** The style a span takes: its base (if any), its named style (if any), then its own overrides. */
-    public function spanStyle(\Papercut\Span $span): Style
+    public function spanStyle(\Quoin\Span $span): Style
     {
         if ($span->styleName === null) {
             return $span->style;

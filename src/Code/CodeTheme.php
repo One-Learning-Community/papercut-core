@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Code;
+namespace Quoin\Code;
 
-use Papercut\Value\Color;
+use Quoin\Value\Color;
 
 final class CodeTheme
 {
-    public const string DEFAULT = 'papercut-light';
+    public const string DEFAULT = 'quoin-light';
 
     public static function defaultPath(): string
     {
-        return dirname(__DIR__, 2) . '/resources/code/papercut-light.json';
+        return dirname(__DIR__, 2) . '/resources/code/quoin-light.json';
     }
 
     /**

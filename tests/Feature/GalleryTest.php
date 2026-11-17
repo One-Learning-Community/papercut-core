@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Feature;
+namespace Quoin\Tests\Feature;
 
-use Papercut\Document;
-use Papercut\Site\Gallery;
-use Papercut\Tests\Support\PdfInspector;
+use Quoin\Document;
+use Quoin\Site\Gallery;
+use Quoin\Tests\Support\PdfInspector;
 use PHPUnit\Framework\TestCase;
 
 /** The docs gallery: every manifest entry has a source that renders and an image, and every source is listed. */
@@ -67,7 +67,7 @@ final class GalleryTest extends TestCase
     /** getopt() stops at the first plain argument, so "card.flat --out=/tmp" would quietly overwrite the committed image. */
     public function test_render_script_rejects_options_after_the_id(): void
     {
-        $out = sys_get_temp_dir() . '/papercut-gallery-out-' . bin2hex(random_bytes(4));
+        $out = sys_get_temp_dir() . '/quoin-gallery-out-' . bin2hex(random_bytes(4));
         $image = self::root() . '/site/src/.vuepress/public/gallery/card.png';
         $before = (string) file_get_contents($image);
         $cmd = sprintf('cd %s && %s site/gallery/render.php card --out=%s 2>&1 1>/dev/null', escapeshellarg(self::root()), escapeshellarg(PHP_BINARY), escapeshellarg($out));
@@ -80,7 +80,7 @@ final class GalleryTest extends TestCase
 
     public function test_render_script_reports_a_failing_source(): void
     {
-        $dir = sys_get_temp_dir() . '/papercut-gallery-' . bin2hex(random_bytes(4));
+        $dir = sys_get_temp_dir() . '/quoin-gallery-' . bin2hex(random_bytes(4));
         mkdir($dir . '/sources', 0777, true);
         mkdir($dir . '/out');
         file_put_contents($dir . '/sources/broken.php', "<?php\nthrow new RuntimeException('boom');\n");

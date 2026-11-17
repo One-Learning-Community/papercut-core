@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Html;
+namespace Quoin\Html;
 
-use Papercut\Text\FontStyle;
+use Quoin\Text\FontStyle;
 
 /** One font file a source offers for a weight and style. */
 final readonly class FontFaceSrc

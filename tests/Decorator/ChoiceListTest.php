@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Decorator;
+namespace Quoin\Tests\Decorator;
 
-use Papercut\{Component, Document, Node, Page, Text, View};
-use Papercut\Decorator\{ChoiceList, ChoiceOption, Decorator};
-use Papercut\Layout\Fragment;
-use Papercut\Style\{ComputedStyle, Direction, Style, StyleResolver, Theme};
-use Papercut\Value\Edges;
+use Quoin\{Component, Document, Node, Page, Text, View};
+use Quoin\Decorator\{ChoiceList, ChoiceOption, Decorator};
+use Quoin\Layout\Fragment;
+use Quoin\Style\{ComputedStyle, Direction, Style, StyleResolver, Theme};
+use Quoin\Value\Edges;
 
-use function Papercut\pt;
-use Papercut\Tests\Support\LayoutHarness;
-use Papercut\Value\Length;
+use function Quoin\pt;
+use Quoin\Tests\Support\LayoutHarness;
+use Quoin\Value\Length;
 use PHPUnit\Framework\TestCase;
 
 final class ChoiceListTest extends TestCase

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Html;
+namespace Quoin\Html;
 
 /**
  * Writes SVG markup from a trusted source as an inline element in an HTML page. Every id is prefixed and every reference
  * to it rewritten, and style rules are scoped to the SVG's own root, so two SVGs (or an SVG and the page)
  * cannot touch each other.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class InlineSvg
 {

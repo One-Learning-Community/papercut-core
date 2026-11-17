@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
-use Papercut\OverflowMode;
-use Papercut\Exception\LayoutOverflow;
-use Papercut\Paint\{Line, Rect};
-use Papercut\Style\{BorderStyle, ComputedStyle, Justify};
-use Papercut\Value\{Auto, Length, Percent};
+use Quoin\OverflowMode;
+use Quoin\Exception\LayoutOverflow;
+use Quoin\Paint\{Line, Rect};
+use Quoin\Style\{BorderStyle, ComputedStyle, Justify};
+use Quoin\Value\{Auto, Length, Percent};
 
 /**
  * Box-model helpers. Widths and heights are border-box sizes. Margins are
  * applied by the parent when it positions a child, so $available here is the
  * space left after the parent removed the child's horizontal margins.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class BoxGeometry
 {

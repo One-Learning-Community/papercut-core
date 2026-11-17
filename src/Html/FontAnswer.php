@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Html;
+namespace Quoin\Html;
 
 /** A source's answer: either a stylesheet to import, or font files to declare. */
 final readonly class FontAnswer

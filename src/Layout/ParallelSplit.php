@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
 /**
  * Side-by-side children (a flex line's items, a table row's cells) that
@@ -11,7 +11,7 @@ namespace Papercut\Layout;
  * keeping its own break token (null = finished; on resume finished children
  * draw nothing).
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class ParallelSplit
 {

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Decorator;
+namespace Quoin\Decorator;
 
-use Papercut\{Component, Node, Row, View};
-use Papercut\Concerns\{HasStyle, HasVariants};
-use Papercut\Style\Justify;
-use Papercut\Value\Length;
+use Quoin\{Component, Node, Row, View};
+use Quoin\Concerns\{HasStyle, HasVariants};
+use Quoin\Style\Justify;
+use Quoin\Value\Length;
 
 
 /**

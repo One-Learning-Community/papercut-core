@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 
-use Papercut\{Column, Document, Page, Text};
+use Quoin\{Column, Document, Page, Text};
 
-use function Papercut\{mm, pt};
+use function Quoin\{mm, pt};
 
 $para = 'Layout engines break paragraphs into lines, and justified text stretches the gaps between words so that both edges of the column line up. A final line stays ragged, and a very long word such as supercalifragilisticexpialidocious must still fit somewhere sensible.';
 

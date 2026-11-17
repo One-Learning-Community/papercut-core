@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use Papercut\{Column, Document, Page, Text};
-use Papercut\Decorator\{Callout, Card, Field, Section};
+use Quoin\{Column, Document, Page, Text};
+use Quoin\Decorator\{Callout, Card, Field, Section};
 
-use function Papercut\mm;
+use function Quoin\mm;
 
 $filler = static fn (int $from, int $to): array => array_map(static fn (int $i): Text => Text::make("Filler line $i"), range($from, $to));
 $lines = static fn (string $what, int $n): array => array_map(static fn (int $i): Text => Text::make("$what line $i"), range(1, $n));

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Exception;
+namespace Quoin\Exception;
 
-use Papercut\PapercutException;
+use Quoin\QuoinException;
 
 /** A feature that relies on an optional Composer package which is not installed. */
-final class MissingPackage extends PapercutException
+final class MissingPackage extends QuoinException
 {
     /** @param string $feature what needs the package, as the subject of "needs" (or "need", when $plural) */
     public static function for(string $feature, string $package, bool $plural = false): self

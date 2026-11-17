@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Concerns;
+namespace Quoin\Concerns;
 
 /**
  * Variants for decorators: `variant('large')` makes every part the decorator styles also apply

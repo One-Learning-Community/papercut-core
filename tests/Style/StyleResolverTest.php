@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Style;
+namespace Quoin\Tests\Style;
 
-use Papercut\{Column, ListItem, TableCell, Text};
-use Papercut\Style\{Style, StyleResolver, Theme};
-use Papercut\Value\{Color, Edges};
+use Quoin\{Column, ListItem, TableCell, Text};
+use Quoin\Style\{Style, StyleResolver, Theme};
+use Quoin\Value\{Color, Edges};
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class StyleResolverTest extends TestCase
 {
@@ -110,7 +110,7 @@ final class StyleResolverTest extends TestCase
             ->withStyle('roomy', Style::make(padding: Edges::all(pt(9))))
             ->withStyle('light', Style::make(fontWeight: 300));
         $r = new StyleResolver($theme);
-        $prepare = new \ReflectionMethod(\Papercut\Layout\TableLayouter::class, 'withThemeDefaults');
+        $prepare = new \ReflectionMethod(\Quoin\Layout\TableLayouter::class, 'withThemeDefaults');
         $cells = [
             'td' => TableCell::make('a'),
             'th' => TableCell::th('a'),

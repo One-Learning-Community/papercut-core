@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Text;
+namespace Quoin\Tests\Text;
 
-use Papercut\Text\{FontFace, FontRegistry, FontSet, FontStyle};
-use Papercut\Tests\Support\FakeBackend;
+use Quoin\Text\{FontFace, FontRegistry, FontSet, FontStyle};
+use Quoin\Tests\Support\FakeBackend;
 use PHPUnit\Framework\TestCase;
 
 final class FontSetTest extends TestCase
@@ -75,7 +75,7 @@ final class FontSetTest extends TestCase
 
     public function test_pdf_renders_cousine_without_registration(): void
     {
-        $pdf = \Papercut\Document::make(\Papercut\Page::a4()->body(\Papercut\Text::make('let x = 1;')->font('Cousine')))->toPdf()->bytes();
+        $pdf = \Quoin\Document::make(\Quoin\Page::a4()->body(\Quoin\Text::make('let x = 1;')->font('Cousine')))->toPdf()->bytes();
         self::assertStringStartsWith('%PDF-', $pdf);
         self::assertStringContainsString('Cousine', $pdf);
     }

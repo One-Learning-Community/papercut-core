@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Validation;
+namespace Quoin\Tests\Validation;
 
-use Papercut\Decorator\KeyValueList;
-use Papercut\Exception\InvalidValue;
-use Papercut\Export\{HtmlOptions, PdfOptions};
-use Papercut\{Column, Document, Image, Link, Page, Place, QrCode, Spacer, Table, TableCell, Text, View};
-use Papercut\Support\Check;
-use Papercut\Value\{Edges, Length, Percent};
+use Quoin\Decorator\KeyValueList;
+use Quoin\Exception\InvalidValue;
+use Quoin\Export\{HtmlOptions, PdfOptions};
+use Quoin\{Column, Document, Image, Link, Page, Place, QrCode, Spacer, Table, TableCell, Text, View};
+use Quoin\Support\Check;
+use Quoin\Value\{Edges, Length, Percent};
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\{mm, pt, percent};
+use function Quoin\{mm, pt, percent};
 
 /** Developer values fail at the setter, naming it, the value and what is allowed (D3). */
 final class SetterValidationTest extends TestCase
@@ -115,7 +115,7 @@ final class SetterValidationTest extends TestCase
         yield 'negative margin' => [static fn () => Column::make(Text::make('x'))->margin(pt(0), pt(0), pt(0), pt(-10))];
         yield 'negative margin all' => [static fn () => Column::make(Text::make('x'))->margin(pt(-5))];
         yield 'negative letter spacing' => [static fn () => Column::make(Text::make('x')->letterSpacing(pt(-0.5)))];
-        yield 'zero track' => [static fn () => Table::make()->columns(pt(0), \Papercut\Value\Fr::of(1))->row('a', 'b')];
+        yield 'zero track' => [static fn () => Table::make()->columns(pt(0), \Quoin\Value\Fr::of(1))->row('a', 'b')];
         yield 'zero percent track' => [static fn () => Table::make()->columns(percent(0), pt(20))->row('a', 'b')];
         yield 'quiet zone 0' => [static fn () => QrCode::make('a')->quietZone(0)];
         yield 'quiet zone 100' => [static fn () => QrCode::make('a')->quietZone(100)];
@@ -138,7 +138,7 @@ final class SetterValidationTest extends TestCase
         };
         self::assertStringStartsWith('%PDF', $doc->toPdf(new PdfOptions(cacheDir: false))->bytes());
         $html = $doc->toHtml(new HtmlOptions())->bytes();
-        self::assertStringContainsString('class="papercut"', $html);
+        self::assertStringContainsString('class="quoin"', $html);
         self::assertMatchesRegularExpression('/<(div|table|svg|img|p|span)[ >]/', $html);
     }
 
@@ -217,7 +217,7 @@ final class SetterValidationTest extends TestCase
     {
         $html = '<a href="https://a.test/&#10;x"><img src="data:image/png;base64,AA" width="10"></a>'
             . '<table><tr><td style="width:-10pt">a</td><td width="-5">b</td></tr></table>';
-        $doc = Document::make(Page::a4()->body(\Papercut\Markup\Markup::html($html)));
+        $doc = Document::make(Page::a4()->body(\Quoin\Markup\Markup::html($html)));
         self::assertStringStartsWith('%PDF', $doc->toPdf(new PdfOptions(cacheDir: false))->bytes());
     }
 }

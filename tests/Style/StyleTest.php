@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Style;
+namespace Quoin\Tests\Style;
 
-use Papercut\Exception\{InvalidValue, UnknownAttribute};
-use Papercut\Style\{Align, Direction, Justify, Style, TextAlign};
-use Papercut\Value\{Auto, Color, Edges, Length, Percent};
+use Quoin\Exception\{InvalidValue, UnknownAttribute};
+use Quoin\Style\{Align, Direction, Justify, Style, TextAlign};
+use Quoin\Value\{Auto, Color, Edges, Length, Percent};
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class StyleTest extends TestCase
 {
@@ -26,9 +26,9 @@ final class StyleTest extends TestCase
 
     public function test_white_space_attribute_parses_and_rejects_unknown_values(): void
     {
-        self::assertSame(\Papercut\Style\WhiteSpace::PreWrap, Style::fromAttributes(['white-space' => 'pre-wrap'])->whiteSpace);
-        self::assertSame(\Papercut\Style\WhiteSpace::Normal, Style::fromAttributes(['white-space' => 'normal'])->whiteSpace);
-        $this->expectException(\Papercut\Exception\InvalidValue::class);
+        self::assertSame(\Quoin\Style\WhiteSpace::PreWrap, Style::fromAttributes(['white-space' => 'pre-wrap'])->whiteSpace);
+        self::assertSame(\Quoin\Style\WhiteSpace::Normal, Style::fromAttributes(['white-space' => 'normal'])->whiteSpace);
+        $this->expectException(\Quoin\Exception\InvalidValue::class);
         Style::fromAttributes(['white-space' => 'nowrap']);
     }
 
@@ -162,7 +162,7 @@ final class StyleTest extends TestCase
             try {
                 new Style(fontWeight: $w);
                 self::fail("accepted $w");
-            } catch (\Papercut\Exception\InvalidValue $e) {
+            } catch (\Quoin\Exception\InvalidValue $e) {
                 self::assertSame('font weight', $e->kind);
                 self::assertSame((string) $w, $e->input);
             }

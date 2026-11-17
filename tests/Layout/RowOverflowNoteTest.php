@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Layout;
+namespace Quoin\Tests\Layout;
 
-use Papercut\{Document, Image, Page, Row, Table, Text, View};
-use Papercut\Export\PdfOptions;
-use Papercut\Tests\Support\{FailsOnDiagnostics, LayoutHarness, TestImages};
-use Papercut\Value\Length;
+use Quoin\{Document, Image, Page, Row, Table, Text, View};
+use Quoin\Export\PdfOptions;
+use Quoin\Tests\Support\{FailsOnDiagnostics, LayoutHarness, TestImages};
+use Quoin\Value\Length;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\{mm, pt};
+use function Quoin\{mm, pt};
 
 /** A row item that cannot shrink runs past the row; that is reported once, not silent (R7). */
 final class RowOverflowNoteTest extends TestCase

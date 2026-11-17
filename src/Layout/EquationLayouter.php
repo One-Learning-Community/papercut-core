@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
-use Papercut\{Equation, Node};
-use Papercut\Math\Layout\Box;
-use Papercut\Style\{ComputedStyle, TextAlign};
+use Quoin\{Equation, Node};
+use Quoin\Math\Layout\Box;
+use Quoin\Style\{ComputedStyle, TextAlign};
 
 /**
  * A displayed equation is a monolithic box as tall as its formula, laid out in display style at the text's size
  * and drawn in its color. It never splits, and a formula wider than the space overflows it, as an overlong word does.
  * The math font's script-size alternates are off, because the PDF can only draw glyphs that have a code point.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class EquationLayouter implements Layouter
 {

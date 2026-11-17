@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Tree;
+namespace Quoin\Tests\Tree;
 
-use Papercut\{Component, Document, Node, Page, PageNumber, Row, Table, TableCell, TableRow, Text, Toc};
-use Papercut\Exception\InvalidStructure;
-use Papercut\Export\PdfOptions;
-use Papercut\Style\{ComputedStyle, StyleResolver, Theme};
-use Papercut\Value\Color;
-use Papercut\Tests\Support\FakeBackend;
-use Papercut\Tree\{Region, TreeVisitor, TreeWalker, Visit};
+use Quoin\{Component, Document, Node, Page, PageNumber, Row, Table, TableCell, TableRow, Text, Toc};
+use Quoin\Exception\InvalidStructure;
+use Quoin\Export\PdfOptions;
+use Quoin\Style\{ComputedStyle, StyleResolver, Theme};
+use Quoin\Value\Color;
+use Quoin\Tests\Support\FakeBackend;
+use Quoin\Tree\{Region, TreeVisitor, TreeWalker, Visit};
 use PHPUnit\Framework\TestCase;
 
 final class TreeWalkerTest extends TestCase
@@ -48,7 +48,7 @@ final class TreeWalkerTest extends TestCase
 
     public function test_a_plain_resolver_expands_themed_components_with_its_theme(): void
     {
-        $comp = new class implements \Papercut\ThemedComponent {
+        $comp = new class implements \Quoin\ThemedComponent {
             public function render(): Node|Component
             {
                 return Text::make('none');
@@ -59,7 +59,7 @@ final class TreeWalkerTest extends TestCase
                 return Text::make('code:' . $theme->codeTheme);
             }
         };
-        $theme = Theme::default()->withOverride(new \Papercut\Style\ThemeOverride(codeTheme: 'dark'));
+        $theme = Theme::default()->withOverride(new \Quoin\Style\ThemeOverride(codeTheme: 'dark'));
         $visitor = $this->recorder();
         (new TreeWalker(styles: new StyleResolver($theme)))->walk(Document::make(Page::a4()->body($comp)), $visitor);
 

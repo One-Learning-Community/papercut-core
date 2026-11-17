@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Markup;
+namespace Quoin\Markup;
 
-use Papercut\Decorator\CodeBlock;
-use Papercut\Style\{Style, Theme};
-use Papercut\ThemedComponent;
-use Papercut\View;
+use Quoin\Decorator\CodeBlock;
+use Quoin\Style\{Style, Theme};
+use Quoin\ThemedComponent;
+use Quoin\View;
 
 /**
  * A code block from markup, rendered when it is laid out so the page's code theme reaches it.

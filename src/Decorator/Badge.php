@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Decorator;
+namespace Quoin\Decorator;
 
-use Papercut\{Component, Node, Span, Text, View};
-use Papercut\Concerns\{HasStyle, HasVariants, NameRules};
-use Papercut\Style\Style;
+use Quoin\{Component, Node, Span, Text, View};
+use Quoin\Concerns\{HasStyle, HasVariants, NameRules};
+use Quoin\Style\Style;
 
 /**
  * A small rounded label in a tone; block-level, sized to its text.

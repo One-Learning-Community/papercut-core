@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Images;
+namespace Quoin\Tests\Images;
 
-use Papercut\Backend\ImageFormat;
-use Papercut\Document;
-use Papercut\Exception\ImageUnreadable;
-use Papercut\Export\HtmlOptions;
-use Papercut\Export\PdfOptions;
-use Papercut\Image;
-use Papercut\Markup\Markup;
-use Papercut\Markup\MarkupOptions;
-use Papercut\Page;
-use Papercut\Tests\Support\TestImages;
+use Quoin\Backend\ImageFormat;
+use Quoin\Document;
+use Quoin\Exception\ImageUnreadable;
+use Quoin\Export\HtmlOptions;
+use Quoin\Export\PdfOptions;
+use Quoin\Image;
+use Quoin\Markup\Markup;
+use Quoin\Markup\MarkupOptions;
+use Quoin\Page;
+use Quoin\Tests\Support\TestImages;
 use PHPUnit\Framework\TestCase;
 
 /** Corrupt image bytes are treated like a missing image and never reach a decoder that warns about them. */

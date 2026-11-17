@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Toc;
+namespace Quoin\Toc;
 
-use Papercut\{Styled, Text};
-use Papercut\Style\Style;
+use Quoin\{Styled, Text};
+use Quoin\Style\Style;
 
 /**
  * One entry of a table of contents: the heading's text with room for its page

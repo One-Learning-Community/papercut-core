@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Paint;
+namespace Quoin\Paint;
 
-use Papercut\Backend\FontHandle;
-use Papercut\Value\Color;
+use Quoin\Backend\FontHandle;
+use Quoin\Value\Color;
 
 /** @internal Part of the display list between layout and the PDF writer. It may change in any release. */
 final readonly class TextRun implements Op

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Text;
+namespace Quoin\Tests\Text;
 
-use Papercut\Exception\InvalidValue;
-use Papercut\Text\InlineMarkup;
-use Papercut\Value\Color;
+use Quoin\Exception\InvalidValue;
+use Quoin\Text\InlineMarkup;
+use Quoin\Value\Color;
 use PHPUnit\Framework\TestCase;
 
 final class InlineMarkupTest extends TestCase
@@ -106,7 +106,7 @@ final class InlineMarkupTest extends TestCase
     {
         $s = InlineMarkup::parse('a < b <3');
         self::assertSame('a < b <3', $s[0]->text);
-        $t = \Papercut\Text::markup('x <b>y</b>');
+        $t = \Quoin\Text::markup('x <b>y</b>');
         self::assertCount(2, $t->spanList());
     }
 

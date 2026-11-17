@@ -1,6 +1,6 @@
 {
-  "name": "papercut-light",
-  "displayName": "Papercut Light",
+  "name": "quoin-light",
+  "displayName": "Quoin Light",
   "type": "light",
   "colors": {
     "editor.background": "#f6f8fa",

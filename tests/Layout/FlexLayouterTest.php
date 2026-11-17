@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Layout;
+namespace Quoin\Tests\Layout;
 
-use Papercut\{Column, Row, Spacer, Text, View};
-use Papercut\Layout\{Fragment, Status};
-use Papercut\Paint\Rect;
-use Papercut\Style\{Align, Justify};
-use Papercut\Tests\Support\LayoutHarness;
-use Papercut\Value\Color;
+use Quoin\{Column, Row, Spacer, Text, View};
+use Quoin\Layout\{Fragment, Status};
+use Quoin\Paint\Rect;
+use Quoin\Style\{Align, Justify};
+use Quoin\Tests\Support\LayoutHarness;
+use Quoin\Value\Color;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\{percent, pt};
+use function Quoin\{percent, pt};
 
 final class FlexLayouterTest extends TestCase
 {
@@ -110,7 +110,7 @@ final class FlexLayouterTest extends TestCase
 
     public function test_intrinsic(): void
     {
-        $s = (new LayoutHarness())->engine->intrinsic(Row::make('aa', 'bbbb')->gap(pt(5)), \Papercut\Style\ComputedStyle::root(\Papercut\Style\Theme::default()));
+        $s = (new LayoutHarness())->engine->intrinsic(Row::make('aa', 'bbbb')->gap(pt(5)), \Quoin\Style\ComputedStyle::root(\Quoin\Style\Theme::default()));
         self::assertSame(35.0, $s['max']);
     }
 
@@ -143,7 +143,7 @@ final class FlexLayouterTest extends TestCase
     {
         // the specified width caps the automatic minimum: 30, though the word needs 50
         $row = Row::make(View::make(str_repeat('aaaa ', 12))->grow(1), View::make('wwwwwwwwww')->width(pt(30)));
-        $f = (new LayoutHarness(overflow: \Papercut\OverflowMode::Clip))->layout($row, 100)->fragment;
+        $f = (new LayoutHarness(overflow: \Quoin\OverflowMode::Clip))->layout($row, 100)->fragment;
         $widths = array_map(fn (array $c): float => $c['fragment']->width, $f?->children() ?? []);
         self::assertEqualsWithDelta(30.0, $widths[1], 1e-9);
     }
@@ -184,9 +184,9 @@ final class FlexLayouterTest extends TestCase
     {
         $h = new LayoutHarness();
         $row = Row::make(Column::make('a', 'b', 'c')->minLines(1))->background(Color::white());
-        $filled = $h->engine->layout($row, \Papercut\Style\ComputedStyle::root(\Papercut\Style\Theme::default()), new \Papercut\Layout\Constraints(100, null, true, 60.0));
+        $filled = $h->engine->layout($row, \Quoin\Style\ComputedStyle::root(\Quoin\Style\Theme::default()), new \Quoin\Layout\Constraints(100, null, true, 60.0));
         self::assertSame(60.0, $filled->fragment?->height);
-        $split = $h->engine->layout($row, \Papercut\Style\ComputedStyle::root(\Papercut\Style\Theme::default()), new \Papercut\Layout\Constraints(100, 30, true, 60.0));
+        $split = $h->engine->layout($row, \Quoin\Style\ComputedStyle::root(\Quoin\Style\Theme::default()), new \Quoin\Layout\Constraints(100, 30, true, 60.0));
         self::assertSame(Status::Partial, $split->status);
         self::assertSame(['a', 'b'], array_column(LayoutHarness::runs($split->fragment), 'text'));
         self::assertSame(Status::DoesNotFit, $h->layout($row->height(pt(60)), 100, 30)->status);
@@ -208,7 +208,7 @@ final class FlexLayouterTest extends TestCase
     public function test_page_break_inside_a_row_is_ignored(): void
     {
         $h = new LayoutHarness();
-        $r = $h->layout(Row::make(Text::make('a'), \Papercut\PageBreak::make(), Text::make('b')), 100, 100);
+        $r = $h->layout(Row::make(Text::make('a'), \Quoin\PageBreak::make(), Text::make('b')), 100, 100);
         self::assertSame(Status::Complete, $r->status);
         self::assertSame(['a', 'b'], array_column(LayoutHarness::runs($r->fragment), 'text'));
         self::assertSame([], $h->warnings); // the note comes from NoteReporter

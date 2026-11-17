@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use Papercut\Decorator\CodeBlock;
-use Papercut\{Column, Document, Page, Text};
+use Quoin\Decorator\CodeBlock;
+use Quoin\{Column, Document, Page, Text};
 
-use function Papercut\{mm, pt};
+use function Quoin\{mm, pt};
 
 // Generic, made-up content: one block per look (default, a dark theme, strip, caption), a long block that
 // crosses a page break, and a plain-text block.

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Text;
+namespace Quoin\Tests\Text;
 
-use Papercut\Exception\InvalidValue;
-use Papercut\{Span, Text};
-use Papercut\Tests\Support\LayoutHarness;
-use Papercut\Text\InlineMarkup;
+use Quoin\Exception\InvalidValue;
+use Quoin\{Span, Text};
+use Quoin\Tests\Support\LayoutHarness;
+use Quoin\Text\InlineMarkup;
 use PHPUnit\Framework\TestCase;
 
 final class InlineMarkupBadgeTest extends TestCase

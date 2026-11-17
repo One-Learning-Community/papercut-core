@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Node;
+namespace Quoin\Tests\Node;
 
-use Papercut\{Document, Page, Span, Text};
+use Quoin\{Document, Page, Span, Text};
 use PHPUnit\Framework\TestCase;
 
 final class InlineCodeTest extends TestCase

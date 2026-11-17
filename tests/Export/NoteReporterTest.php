@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Export;
+namespace Quoin\Tests\Export;
 
-use Papercut\{Document, Page, Span, Text, View};
-use Papercut\Exception\UnsupportedFeature;
-use Papercut\Export\{FidelityLevel, HtmlOptions, PdfOptions};
-use Papercut\Markup\Note;
+use Quoin\{Document, Page, Span, Text, View};
+use Quoin\Exception\UnsupportedFeature;
+use Quoin\Export\{FidelityLevel, HtmlOptions, PdfOptions};
+use Quoin\Markup\Note;
 use PHPUnit\Framework\TestCase;
 
 final class NoteReporterTest extends TestCase

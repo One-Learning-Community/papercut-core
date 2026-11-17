@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Value;
+namespace Quoin\Tests\Value;
 
-use Papercut\Exception\InvalidValue;
-use Papercut\Value\{Auto, Fr, Length, Percent, TrackList};
+use Quoin\Exception\InvalidValue;
+use Quoin\Value\{Auto, Fr, Length, Percent, TrackList};
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\{fr, mm};
+use function Quoin\{fr, mm};
 
 final class TrackListTest extends TestCase
 {

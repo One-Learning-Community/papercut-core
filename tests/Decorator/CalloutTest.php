@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Decorator;
+namespace Quoin\Tests\Decorator;
 
 use InvalidArgumentException;
-use Papercut\{Document, Page, Text, View};
-use Papercut\Decorator\{Callout, Decorator};
-use Papercut\Exception\UnknownAttribute;
-use Papercut\Style\{Style, Theme};
-use Papercut\Tests\Support\LayoutHarness;
+use Quoin\{Document, Page, Text, View};
+use Quoin\Decorator\{Callout, Decorator};
+use Quoin\Exception\UnknownAttribute;
+use Quoin\Style\{Style, Theme};
+use Quoin\Tests\Support\LayoutHarness;
 use PHPUnit\Framework\TestCase;
 
 final class CalloutTest extends TestCase

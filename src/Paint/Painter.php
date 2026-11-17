@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Paint;
+namespace Quoin\Paint;
 
-use Papercut\Layout\{Fragment, PlacedPage};
-use Papercut\Style\TextAlign;
+use Quoin\Layout\{Fragment, PlacedPage};
+use Quoin\Style\TextAlign;
 
 /**
  * Flattens placed fragment trees into absolute-coordinate display lists,

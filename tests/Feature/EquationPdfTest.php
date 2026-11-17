@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Feature;
+namespace Quoin\Tests\Feature;
 
-use Papercut\{Document, Equation, Page, Text};
-use Papercut\Math\Math;
-use Papercut\Paint\DrawSvg;
-use Papercut\Tests\Support\{LayoutHarness, PdfInspector};
+use Quoin\{Document, Equation, Page, Text};
+use Quoin\Math\Math;
+use Quoin\Paint\DrawSvg;
+use Quoin\Tests\Support\{LayoutHarness, PdfInspector};
 use PHPUnit\Framework\TestCase;
 
 final class EquationPdfTest extends TestCase

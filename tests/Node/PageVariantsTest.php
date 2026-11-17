@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Node;
+namespace Quoin\Tests\Node;
 
-use Papercut\{Page, PageVariant};
+use Quoin\{Page, PageVariant};
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\mm;
+use function Quoin\mm;
 
 final class PageVariantsTest extends TestCase
 {

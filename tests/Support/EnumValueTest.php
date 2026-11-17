@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Support;
+namespace Quoin\Tests\Support;
 
-use Papercut\Barcode\{ErrorCorrection, QrGradient};
-use Papercut\Exception\InvalidValue;
-use Papercut\Style\{Align, Anchor, Direction};
-use Papercut\Support\EnumValue;
+use Quoin\Barcode\{ErrorCorrection, QrGradient};
+use Quoin\Exception\InvalidValue;
+use Quoin\Style\{Align, Anchor, Direction};
+use Quoin\Support\EnumValue;
 use PHPUnit\Framework\TestCase;
 
 final class EnumValueTest extends TestCase

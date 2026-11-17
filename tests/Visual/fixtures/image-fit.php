@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 
-use Papercut\{Column, View, Document, Image, Page, Row, Text};
-use Papercut\Style\ImageFit;
+use Quoin\{Column, View, Document, Image, Page, Row, Text};
+use Quoin\Style\ImageFit;
 
-use function Papercut\{mm, pt};
+use function Quoin\{mm, pt};
 
 // 60x30 gradient with a white frame so fit behavior is visible; generated, so no binary fixture.
 $im = imagecreatetruecolor(60, 30);

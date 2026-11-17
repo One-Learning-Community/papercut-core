@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Layout;
+namespace Quoin\Tests\Layout;
 
-use Papercut\{Column, PageBreak, Row, Spacer, Table, TableCell, Text};
-use Papercut\Layout\{Fragment, WidthResolver};
-use Papercut\Style\{ComputedStyle, Justify, Theme};
-use Papercut\Tests\Support\LayoutHarness;
+use Quoin\{Column, PageBreak, Row, Spacer, Table, TableCell, Text};
+use Quoin\Layout\{Fragment, WidthResolver};
+use Quoin\Style\{ComputedStyle, Justify, Theme};
+use Quoin\Tests\Support\LayoutHarness;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\{mm, pt};
+use function Quoin\{mm, pt};
 
 final class WidthResolverTest extends TestCase
 {
@@ -142,8 +142,8 @@ final class WidthResolverTest extends TestCase
 
     public function test_tracks_match_layout_for_spans_missing_and_extra_tracks(): void
     {
-        $fr1 = \Papercut\Value\Fr::of(1);
-        $fr2 = \Papercut\Value\Fr::of(2);
+        $fr1 = \Quoin\Value\Fr::of(1);
+        $fr2 = \Quoin\Value\Fr::of(2);
 
         $missing = Table::make()->columns('30mm 2fr')->row('a', 'b', 'c');
         self::assertEquals([mm(30), $fr2, $fr1], WidthResolver::tracks($missing));

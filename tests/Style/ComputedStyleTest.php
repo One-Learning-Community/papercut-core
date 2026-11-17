@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Style;
+namespace Quoin\Tests\Style;
 
-use Papercut\Style\{Align, ComputedStyle, Direction, Style, TextAlign, Theme};
-use Papercut\Value\{Auto, Color, Edges};
+use Quoin\Style\{Align, ComputedStyle, Direction, Style, TextAlign, Theme};
+use Quoin\Value\{Auto, Color, Edges};
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class ComputedStyleTest extends TestCase
 {
@@ -59,10 +59,10 @@ final class ComputedStyleTest extends TestCase
         try {
             $root->child(Style::make(fontSize: pt(0)));
             self::fail('expected');
-        } catch (\Papercut\Exception\InvalidValue $e) {
+        } catch (\Quoin\Exception\InvalidValue $e) {
             self::assertSame('font size', $e->kind);
         }
-        $this->expectException(\Papercut\Exception\InvalidValue::class);
+        $this->expectException(\Quoin\Exception\InvalidValue::class);
         $root->child(Style::make(lineHeight: 0.0));
     }
 

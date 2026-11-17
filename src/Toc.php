@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut;
+namespace Quoin;
 
-use Papercut\Concerns\{HasNotes, HasStyle};
-use Papercut\Support\Utf8;
-use Papercut\Exception\InvalidValue;
+use Quoin\Concerns\{HasNotes, HasStyle};
+use Quoin\Support\Utf8;
+use Quoin\Exception\InvalidValue;
 
 /** A table of contents built from the document's headings. Only works in a page body. */
 final class Toc implements Styled, Annotated

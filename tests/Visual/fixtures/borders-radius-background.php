@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 
-use Papercut\{Column, Document, Page, Row, Text};
-use Papercut\Value\Edges;
+use Quoin\{Column, Document, Page, Row, Text};
+use Quoin\Value\Edges;
 
-use function Papercut\{mm, pt};
+use function Quoin\{mm, pt};
 
 return Document::make(
     Page::a5()->margin(mm(12))->body(

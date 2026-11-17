@@ -2,28 +2,28 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Markup;
+namespace Quoin\Tests\Markup;
 
-use Papercut\Document;
-use Papercut\Export\FidelityLevel;
-use Papercut\Export\PdfOptions;
-use Papercut\Image;
-use Papercut\Link;
-use Papercut\ListNode;
-use Papercut\Markup\Markup;
-use Papercut\Markup\MarkupOptions;
-use Papercut\Markup\Note;
-use Papercut\Markup\StyleMode;
-use Papercut\Page;
-use Papercut\Span;
-use Papercut\Style\ListMarker;
-use Papercut\Value\Color;
-use Papercut\Tests\Support\TestImages;
-use Papercut\Text;
-use Papercut\View;
+use Quoin\Document;
+use Quoin\Export\FidelityLevel;
+use Quoin\Export\PdfOptions;
+use Quoin\Image;
+use Quoin\Link;
+use Quoin\ListNode;
+use Quoin\Markup\Markup;
+use Quoin\Markup\MarkupOptions;
+use Quoin\Markup\Note;
+use Quoin\Markup\StyleMode;
+use Quoin\Page;
+use Quoin\Span;
+use Quoin\Style\ListMarker;
+use Quoin\Value\Color;
+use Quoin\Tests\Support\TestImages;
+use Quoin\Text;
+use Quoin\View;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\px;
+use function Quoin\px;
 
 final class HtmlBlocksTest extends TestCase
 {

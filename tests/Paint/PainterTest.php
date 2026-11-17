@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Paint;
+namespace Quoin\Tests\Paint;
 
-use Papercut\Layout\{Fragment, PlacedPage};
-use Papercut\Paint\{Anchor, Clip, DrawSvg, Link, Opacity, PageNumberSlot, Painter, Rect, TextRun, TocSlot};
-use Papercut\Tests\Support\FakeBackend;
-use Papercut\Text\{FontRegistry, SvgFonts};
-use Papercut\Vector\SvgDocument;
-use Papercut\Style\TextAlign;
-use Papercut\Tests\Support\FakeFont;
-use Papercut\Text\CachedFont;
-use Papercut\Value\Color;
+use Quoin\Layout\{Fragment, PlacedPage};
+use Quoin\Paint\{Anchor, Clip, DrawSvg, Link, Opacity, PageNumberSlot, Painter, Rect, TextRun, TocSlot};
+use Quoin\Tests\Support\FakeBackend;
+use Quoin\Text\{FontRegistry, SvgFonts};
+use Quoin\Vector\SvgDocument;
+use Quoin\Style\TextAlign;
+use Quoin\Tests\Support\FakeFont;
+use Quoin\Text\CachedFont;
+use Quoin\Value\Color;
 use PHPUnit\Framework\TestCase;
 
 final class PainterTest extends TestCase

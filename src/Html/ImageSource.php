@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Html;
+namespace Quoin\Html;
 
-use Papercut\Backend\Backend;
-use Papercut\Export\LoadedImage;
-use Papercut\Image;
-use Papercut\Paint\Link;
+use Quoin\Backend\Backend;
+use Quoin\Export\LoadedImage;
+use Quoin\Image;
+use Quoin\Paint\Link;
 
 /**
  * Decides what goes in an img src: the caller's URL when it is safe, otherwise the image itself as a data URI.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class ImageSource
 {

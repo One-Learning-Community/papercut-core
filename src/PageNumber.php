@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut;
+namespace Quoin;
 
-use Papercut\Concerns\HasStyle;
-use Papercut\Support\Utf8;
+use Quoin\Concerns\HasStyle;
+use Quoin\Support\Utf8;
 
 final class PageNumber implements Styled
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Backend\PhpPdf;
+namespace Quoin\Backend\PhpPdf;
 
 use Dskripchenko\PhpPdf\Image\PdfImage;
 use Dskripchenko\PhpPdf\Pdf\Document as PdfDocument;
@@ -12,20 +12,20 @@ use Dskripchenko\PhpPdf\Pdf\{Encryption as PdfEncryption, EncryptionAlgorithm};
 use Dskripchenko\PhpPdf\Pdf\Page as PdfPage;
 use Dskripchenko\PhpPdf\Pdf\PdfFont;
 use Dskripchenko\PhpPdf\Svg\SvgRenderer;
-use Papercut\Backend\Backend;
-use Papercut\Backend\FontHandle;
-use Papercut\Backend\ImageHandle;
-use Papercut\Backend\ImageFormat;
-use Papercut\Backend\{PdfPageHandle, PdfPageLoader};
-use Papercut\Exception\FontNotFound;
-use Papercut\Exception\ImageUnreadable;
-use Papercut\Exception\PdfUnreadable;
-use Papercut\Paint\{Anchor, Bookmark, Clip, DocumentMeta, DrawImage, DrawPdfPage, DrawSvg, Line, Link, Op, Opacity, PageDisplayList, Rect, TextRun};
-use Papercut\Text\CachedFont;
-use Papercut\Value\Color;
+use Quoin\Backend\Backend;
+use Quoin\Backend\FontHandle;
+use Quoin\Backend\ImageHandle;
+use Quoin\Backend\ImageFormat;
+use Quoin\Backend\{PdfPageHandle, PdfPageLoader};
+use Quoin\Exception\FontNotFound;
+use Quoin\Exception\ImageUnreadable;
+use Quoin\Exception\PdfUnreadable;
+use Quoin\Paint\{Anchor, Bookmark, Clip, DocumentMeta, DrawImage, DrawPdfPage, DrawSvg, Line, Link, Op, Opacity, PageDisplayList, Rect, TextRun};
+use Quoin\Text\CachedFont;
+use Quoin\Value\Color;
 
 /**
- * Papercut's PDF writer, on php-pdf. Making one with its constructor options and passing it to
+ * The PDF writer, on php-pdf. Making one with its constructor options and passing it to
  * `PdfOptions(backend:)` is supported (for example to cache fonts as PHP files for opcache). Its other
  * methods are internal and may change in any release.
  */
@@ -153,8 +153,8 @@ final class PhpPdfBackend implements Backend, PdfPageLoader
             author: $meta->author,
             subject: $meta->subject,
             keywords: $meta->keywords,
-            creator: 'Papercut',
-            producer: 'Papercut',
+            creator: 'Quoin',
+            producer: 'Quoin',
             creationDate: $meta->createdAt ?? new \DateTimeImmutable(),
         );
         if ($meta->lang !== null) {
@@ -216,7 +216,7 @@ final class PhpPdfBackend implements Backend, PdfPageLoader
     }
 
     /** Screen-reader access is always granted; printing allows high resolution too. */
-    private static function permissions(\Papercut\Export\Encryption $e): int
+    private static function permissions(\Quoin\Export\Encryption $e): int
     {
         return PdfEncryption::PERM_ACCESSIBILITY
             | ($e->print ? PdfEncryption::PERM_PRINT | PdfEncryption::PERM_PRINT_HIGH : 0)
@@ -348,7 +348,7 @@ final class PhpPdfBackend implements Backend, PdfPageLoader
     {
         foreach ($properties as $property) {
             if (!property_exists($stream, $property)) {
-                throw new \LogicException('papercut/core: dskripchenko/php-pdf internals changed (ContentStream text-state cache); pin dskripchenko/php-pdf to a compatible 1.x version or upgrade papercut/core.');
+                throw new \LogicException('quoin/core: dskripchenko/php-pdf internals changed (ContentStream text-state cache); pin dskripchenko/php-pdf to a compatible 1.x version or upgrade quoin/core.');
             }
         }
     }

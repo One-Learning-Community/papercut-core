@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 
-use Papercut\{Column, Document, Page, Text};
+use Quoin\{Column, Document, Page, Text};
 
-use function Papercut\{mm, pt};
+use function Quoin\{mm, pt};
 
 $filler = static fn (int $n): array => array_map(static fn (int $i): Text => Text::make("Filler line $i"), range(1, $n));
 

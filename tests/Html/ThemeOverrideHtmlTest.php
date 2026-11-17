@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Html;
+namespace Quoin\Tests\Html;
 
-use Papercut\Value\Color;
-use Papercut\{Document, Page, Text};
-use Papercut\Style\ThemeOverride;
-use Papercut\Export\HtmlOptions;
+use Quoin\Value\Color;
+use Quoin\{Document, Page, Text};
+use Quoin\Style\ThemeOverride;
+use Quoin\Export\HtmlOptions;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class ThemeOverrideHtmlTest extends TestCase
 {
@@ -22,7 +22,7 @@ final class ThemeOverrideHtmlTest extends TestCase
     public function test_document_override_sets_the_root_text_style(): void
     {
         $doc = Document::make(Page::a4()->body(Text::make('Hi')))->theme(new ThemeOverride(fontSize: pt(14)));
-        $root = $this->dom($doc)->querySelector('.papercut');
+        $root = $this->dom($doc)->querySelector('.quoin');
         $this->assertStringContainsString('font-size:14pt', (string) $root?->getAttribute('style'));
     }
 
@@ -50,8 +50,8 @@ final class ThemeOverrideHtmlTest extends TestCase
 
     public function test_a_page_after_an_override_uses_the_document_theme_again(): void
     {
-        $toc = fn() => Page::a4()->body(\Papercut\Toc::make()->title('Contents'), Text::h1('Head'));
-        $over = new ThemeOverride(styles: ['toc.title' => \Papercut\Style\Style::make(color: Color::parse('red-500'))]);
+        $toc = fn() => Page::a4()->body(\Quoin\Toc::make()->title('Contents'), Text::h1('Head'));
+        $over = new ThemeOverride(styles: ['toc.title' => \Quoin\Style\Style::make(color: Color::parse('red-500'))]);
         $doc = Document::make($toc()->theme($over), $toc());
         $html = $doc->toHtml(new HtmlOptions(fullPage: true))->bytes();
         $this->assertSame(1, substr_count($html, 'color:#ef4444'));

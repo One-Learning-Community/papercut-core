@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
 /**
  * Where a Partial layout stopped. $index is the next line for text, or the
@@ -11,7 +11,7 @@ namespace Papercut\Layout;
  * child has finished. $forced is set when the layout stopped on purpose (a
  * page or column break) rather than because space ran out.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final readonly class BreakToken
 {

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Html;
+namespace Quoin\Tests\Html;
 
-use Papercut\Html\{FontAnswer, FontFaceSrc, FontRequest, FontVariant, GoogleFonts};
-use Papercut\Text\{FontSet, FontStyle};
+use Quoin\Html\{FontAnswer, FontFaceSrc, FontRequest, FontVariant, GoogleFonts};
+use Quoin\Text\{FontSet, FontStyle};
 use PHPUnit\Framework\TestCase;
 
 final class GoogleFontsTest extends TestCase

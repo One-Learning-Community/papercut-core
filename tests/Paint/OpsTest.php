@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Paint;
+namespace Quoin\Tests\Paint;
 
-use Papercut\Backend\ImageHandle;
-use Papercut\Paint\{Clip, DocumentMeta, DrawImage, DrawSvg, Line, Link, Opacity, PageDisplayList, Rect, TextRun};
-use Papercut\Text\{FontRegistry, SvgFonts};
-use Papercut\Vector\SvgDocument;
-use Papercut\Tests\Support\{FakeBackend, FakeFont};
-use Papercut\Value\Color;
+use Quoin\Backend\ImageHandle;
+use Quoin\Paint\{Clip, DocumentMeta, DrawImage, DrawSvg, Line, Link, Opacity, PageDisplayList, Rect, TextRun};
+use Quoin\Text\{FontRegistry, SvgFonts};
+use Quoin\Vector\SvgDocument;
+use Quoin\Tests\Support\{FakeBackend, FakeFont};
+use Quoin\Value\Color;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -135,7 +135,7 @@ final class OpsTest extends TestCase
     #[DataProvider('badUris')]
     public function test_link_rejects_disallowed_uri(string $uri): void
     {
-        $this->expectException(\Papercut\Exception\InvalidValue::class);
+        $this->expectException(\Quoin\Exception\InvalidValue::class);
         new Link(0, 0, 1, 1, $uri);
     }
 
@@ -179,7 +179,7 @@ final class OpsTest extends TestCase
         try {
             new Link(0, 0, 1, 1, 'ftp://x.test');
             self::fail('accepted');
-        } catch (\Papercut\Exception\InvalidValue $e) {
+        } catch (\Quoin\Exception\InvalidValue $e) {
             self::assertSame('Invalid link "ftp://x.test": only http, https, mailto, tel and #fragment links are allowed.', $e->getMessage());
         }
     }

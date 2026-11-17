@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Backend\PhpPdf;
+namespace Quoin\Backend\PhpPdf;
 
-use Papercut\Backend\ImageFormat;
+use Quoin\Backend\ImageFormat;
 
 /**
  * Converts formats php-pdf cannot embed (WebP, GIF, BMP, AVIF) to PNG with

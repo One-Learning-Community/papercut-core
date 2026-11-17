@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut;
+namespace Quoin;
 
-use Papercut\Exception\InvalidStructure;
-use Papercut\Support\Utf8;
-use Papercut\Export\{ExportOptions, Exporter, HtmlExporter, HtmlOptions, Output, PdfExporter, PdfOptions};
-use Papercut\Paint\DocumentMeta;
-use Papercut\Style\ThemeOverride;
+use Quoin\Exception\InvalidStructure;
+use Quoin\Support\Utf8;
+use Quoin\Export\{ExportOptions, Exporter, HtmlExporter, HtmlOptions, Output, PdfExporter, PdfOptions};
+use Quoin\Paint\DocumentMeta;
+use Quoin\Style\ThemeOverride;
 
 final class Document
 {

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Html;
+namespace Quoin\Html;
 
-use Papercut\Text\{FontSet, FontStyle};
+use Quoin\Text\{FontSet, FontStyle};
 
 /**
  * Turns what a document used into one FontRequest per family, with the node that first needed it.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class FontRequests
 {

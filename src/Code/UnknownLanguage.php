@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Code;
+namespace Quoin\Code;
 
 final class UnknownLanguage extends \RuntimeException
 {

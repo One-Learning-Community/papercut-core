@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Visual;
+namespace Quoin\Tests\Visual;
 
-use Papercut\Document;
-use Papercut\Tests\Support\ImageDiff;
+use Quoin\Document;
+use Quoin\Tests\Support\ImageDiff;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\TestCase;
@@ -100,7 +100,7 @@ final class SnapshotTest extends TestCase
     /** @return list<string> PNG bytes, one per page */
     private function rasterize(string $pdf): array
     {
-        $dir = sys_get_temp_dir() . '/papercut-visual-' . getmypid() . '-' . bin2hex(random_bytes(4));
+        $dir = sys_get_temp_dir() . '/quoin-visual-' . getmypid() . '-' . bin2hex(random_bytes(4));
         mkdir($dir);
         try {
             file_put_contents("$dir/doc.pdf", $pdf);

@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Decorator;
+namespace Quoin\Tests\Decorator;
 
-use Papercut\Decorator\DefaultStyles;
-use Papercut\Style\Style;
-use Papercut\Value\{Color, Edges};
-use Papercut\Value\Length;
+use Quoin\Decorator\DefaultStyles;
+use Quoin\Style\Style;
+use Quoin\Value\{Color, Edges};
+use Quoin\Value\Length;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class DefaultStylesTest extends TestCase
 {

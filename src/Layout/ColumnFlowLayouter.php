@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
-use Papercut\Exception\{InvalidStructure, LayoutOverflow};
-use Papercut\{Node, OverflowMode};
-use Papercut\Paint\Line;
-use Papercut\Style\ComputedStyle;
-use Papercut\Tree\{ColumnFlowPlacement, ColumnFlows};
-use Papercut\Value\{Auto, ColumnSpec};
-use Papercut\View;
+use Quoin\Exception\{InvalidStructure, LayoutOverflow};
+use Quoin\{Node, OverflowMode};
+use Quoin\Paint\Line;
+use Quoin\Style\ComputedStyle;
+use Quoin\Tree\{ColumnFlowPlacement, ColumnFlows};
+use Quoin\Value\{Auto, ColumnSpec};
+use Quoin\View;
 
 /**
  * A ColumnFlow: its children fill column one, then the next, and carry on in column one of the
  * next page. The flow itself has no box; its children are laid out by BlockLayouter in each
  * column, so a break token is the content's own token and every page restarts at column one.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class ColumnFlowLayouter implements Layouter
 {

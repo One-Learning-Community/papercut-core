@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use Papercut\{Column, Document, Page, Row, Text};
-use Papercut\Decorator\{Badge, Card, Field, Section, Signature, Stat, Totals};
+use Quoin\{Column, Document, Page, Row, Text};
+use Quoin\Decorator\{Badge, Card, Field, Section, Signature, Stat, Totals};
 
-use function Papercut\in;
-use function Papercut\pt;
+use function Quoin\in;
+use function Quoin\pt;
 
 return Document::make(
     Page::letter()->margin(in(0.75))->body(

@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Html;
+namespace Quoin\Html;
 
-use Papercut\Export\Fidelity;
-use Papercut\Text\FontStyle;
+use Quoin\Export\Fidelity;
+use Quoin\Text\FontStyle;
 
 /**
  * The result of asking an ordered stack of font sources about every family a document uses.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final readonly class FontStack
 {

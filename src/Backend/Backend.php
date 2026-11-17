@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Backend;
+namespace Quoin\Backend;
 
-use Papercut\Paint\DocumentMeta;
-use Papercut\Paint\PageDisplayList;
+use Quoin\Paint\DocumentMeta;
+use Quoin\Paint\PageDisplayList;
 
-/** @internal Part of Papercut's PDF writer. Custom backends aren't supported, and it may change in any release. */
+/** @internal Part of the PDF writer. Custom backends aren't supported, and it may change in any release. */
 interface Backend
 {
-    /** @throws \Papercut\Exception\FontNotFound */
+    /** @throws \Quoin\Exception\FontNotFound */
     public function loadFont(string $path): FontHandle;
 
-    /** @throws \Papercut\Exception\ImageUnreadable */
+    /** @throws \Quoin\Exception\ImageUnreadable */
     public function loadImageFile(string $path): ImageHandle;
 
-    /** @throws \Papercut\Exception\ImageUnreadable */
+    /** @throws \Quoin\Exception\ImageUnreadable */
     public function loadImageBytes(string $bytes): ImageHandle;
 
     /**

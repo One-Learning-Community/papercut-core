@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Export;
+namespace Quoin\Export;
 
 final readonly class FidelityReport
 {

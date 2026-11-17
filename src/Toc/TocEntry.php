@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Toc;
+namespace Quoin\Toc;
 
 /** One heading a table of contents can list. $key is the node's layout path. */
 final readonly class TocEntry

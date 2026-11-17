@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Export;
+namespace Quoin\Tests\Export;
 
-use Papercut\{Document, Equation, Link, Page, Span, Table, Text};
-use Papercut\Exception\UnsupportedFeature;
-use Papercut\Export\{HtmlOptions, PdfOptions};
-use Papercut\Markup\Markup;
-use Papercut\Math\Math;
+use Quoin\{Document, Equation, Link, Page, Span, Table, Text};
+use Quoin\Exception\UnsupportedFeature;
+use Quoin\Export\{HtmlOptions, PdfOptions};
+use Quoin\Markup\Markup;
+use Quoin\Math\Math;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

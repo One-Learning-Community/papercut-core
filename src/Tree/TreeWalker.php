@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tree;
+namespace Quoin\Tree;
 
-use Papercut\{Component, Document, Link, ListItem, ListNode, Node, Page, Place, Table, TableCell, TableRow, Toc, View};
-use Papercut\Exception\{InvalidStructure, InvalidValue, UnknownAttribute};
-use Papercut\Style\{ComputedStyle, PageThemes, StyleResolver, Theme};
+use Quoin\{Component, Document, Link, ListItem, ListNode, Node, Page, Place, Table, TableCell, TableRow, Toc, View};
+use Quoin\Exception\{InvalidStructure, InvalidValue, UnknownAttribute};
+use Quoin\Style\{ComputedStyle, PageThemes, StyleResolver, Theme};
 
 /**
  * Walks a Document's expanded node tree without laying it out: pages, then
@@ -14,7 +14,7 @@ use Papercut\Style\{ComputedStyle, PageThemes, StyleResolver, Theme};
  * and paths. Paths match layout's in every region, so errors read the same
  * as from toPdf().
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class TreeWalker
 {

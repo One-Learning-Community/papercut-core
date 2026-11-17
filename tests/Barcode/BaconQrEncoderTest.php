@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Barcode;
+namespace Quoin\Tests\Barcode;
 
-use Papercut\Barcode\Bacon\BaconQrEncoder;
-use Papercut\Barcode\{ErrorCorrection, QrShape};
-use Papercut\Exception\InvalidValue;
-use Papercut\QrCode;
+use Quoin\Barcode\Bacon\BaconQrEncoder;
+use Quoin\Barcode\{ErrorCorrection, QrShape};
+use Quoin\Exception\InvalidValue;
+use Quoin\QrCode;
 use PHPUnit\Framework\TestCase;
 
 /** BaconQrCode's encoder, for text longer than php-pdf's encoder holds. */

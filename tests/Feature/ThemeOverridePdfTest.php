@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Feature;
+namespace Quoin\Tests\Feature;
 
-use Papercut\{Document, OverflowMode, Page, Place, Table, Text, Toc};
-use Papercut\Layout\{LayoutContext, LayoutEngine, Paginator};
-use Papercut\Paint\{PageDisplayList, Painter, TextRun};
-use Papercut\Style\{PageThemes, Style, Theme, ThemeOverride};
-use Papercut\Tests\Support\FakeBackend;
-use Papercut\Text\FontRegistry;
-use Papercut\Toc\TocIndex;
-use Papercut\Value\Color;
+use Quoin\{Document, OverflowMode, Page, Place, Table, Text, Toc};
+use Quoin\Layout\{LayoutContext, LayoutEngine, Paginator};
+use Quoin\Paint\{PageDisplayList, Painter, TextRun};
+use Quoin\Style\{PageThemes, Style, Theme, ThemeOverride};
+use Quoin\Tests\Support\FakeBackend;
+use Quoin\Text\FontRegistry;
+use Quoin\Toc\TocIndex;
+use Quoin\Value\Color;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 /** Theme overrides on a document and its pages, through PDF layout. */
 final class ThemeOverridePdfTest extends TestCase
@@ -96,7 +96,7 @@ final class ThemeOverridePdfTest extends TestCase
         $table = Table::make()->columns('1fr 1fr')->row('A', 'B');
         $doc = Document::make(
             self::page()->body($text, $table),
-            self::page()->theme(new ThemeOverride(fontSize: pt(18), cellPadding: \Papercut\Value\Edges::all(pt(12))))->body($text, $table),
+            self::page()->theme(new ThemeOverride(fontSize: pt(18), cellPadding: \Quoin\Value\Edges::all(pt(12))))->body($text, $table),
         );
         $pages = self::paint($doc);
         $one = self::runs($pages[0]);
@@ -161,7 +161,7 @@ final class ThemeOverridePdfTest extends TestCase
 
     public function test_shared_table_with_padding_only_override_matches_a_fresh_one(): void
     {
-        $pad = new ThemeOverride(cellPadding: \Papercut\Value\Edges::all(pt(15)));
+        $pad = new ThemeOverride(cellPadding: \Quoin\Value\Edges::all(pt(15)));
         $make = static fn (): Table => Table::make()->columns('auto auto')->row('Aaaa', 'B');
         $shared = $make();
         $doc = Document::make(self::page()->body($shared), self::page()->theme($pad)->body($shared));
@@ -175,7 +175,7 @@ final class ThemeOverridePdfTest extends TestCase
     {
         $red = Color::parse('red-500');
         $over = new ThemeOverride(styles: ['code' => Style::make(color: $red)]);
-        $make = static fn (): Text => Text::spans(\Papercut\Span::text('Plain '), \Papercut\Span::code('mono'));
+        $make = static fn (): Text => Text::spans(\Quoin\Span::text('Plain '), \Quoin\Span::code('mono'));
         $shared = $make();
         $doc = Document::make(self::page()->body($shared), self::page()->theme($over)->body($shared));
         $colors = static fn (PageDisplayList $p): array => array_map(static fn (TextRun $r): string => $r->text . (string) json_encode($r->color), self::runs($p));

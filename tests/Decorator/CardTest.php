@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Decorator;
+namespace Quoin\Tests\Decorator;
 
-use Papercut\{Document, Page, Text, View};
-use Papercut\Decorator\{Card, Decorator};
-use Papercut\Style\{ComputedStyle, Style, StyleResolver, Theme};
+use Quoin\{Document, Page, Text, View};
+use Quoin\Decorator\{Card, Decorator};
+use Quoin\Style\{ComputedStyle, Style, StyleResolver, Theme};
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class CardTest extends TestCase
 {

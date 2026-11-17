@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Text;
+namespace Quoin\Tests\Text;
 
-use Papercut\Span;
-use Papercut\Style\{ComputedStyle, Style, Theme, WhiteSpace};
-use Papercut\Tests\Support\{FakeBackend, FakeFont};
-use Papercut\Text\{FontRegistry, Itemizer, Line, LineBreaker};
+use Quoin\Span;
+use Quoin\Style\{ComputedStyle, Style, Theme, WhiteSpace};
+use Quoin\Tests\Support\{FakeBackend, FakeFont};
+use Quoin\Text\{FontRegistry, Itemizer, Line, LineBreaker};
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class LineBreakerTest extends TestCase
 {

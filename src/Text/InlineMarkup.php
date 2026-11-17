@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Text;
+namespace Quoin\Text;
 
-use Papercut\Exception\InvalidValue;
-use Papercut\Paint\Link as LinkOp;
-use Papercut\Span;
-use Papercut\Style\Style;
-use Papercut\Value\Color;
+use Quoin\Exception\InvalidValue;
+use Quoin\Paint\Link as LinkOp;
+use Quoin\Span;
+use Quoin\Style\Style;
+use Quoin\Value\Color;
 
 /**
  * Parses the small inline tag vocabulary into spans. Tags are recognized
  * first; entities are decoded afterwards, only inside text, so escaped
  * markup (&lt;b&gt;) can never become a tag.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class InlineMarkup
 {

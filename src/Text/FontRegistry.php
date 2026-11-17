@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Text;
+namespace Quoin\Text;
 
-use Papercut\Backend\Backend;
-use Papercut\Exception\{FontNotFound, InvalidValue};
-use Papercut\Math\Font\TrueTypeFont;
-use Papercut\Math\Math;
+use Quoin\Backend\Backend;
+use Quoin\Exception\{FontNotFound, InvalidValue};
+use Quoin\Math\Font\TrueTypeFont;
+use Quoin\Math\Math;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
+/** @internal Engine detail, not public API. It may change in any release. */
 final class FontRegistry
 {
     /** @var array<string, array{name: string, faces: array<string, string>}> family key => faces "weight|style" => path */

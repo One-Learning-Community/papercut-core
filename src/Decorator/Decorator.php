@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Decorator;
+namespace Quoin\Decorator;
 
-use Papercut\Component;
-use Papercut\Style\Style;
+use Quoin\Component;
+use Quoin\Style\Style;
 
 /**
  * A Component that renders a themed container from ordinary nodes (View, Text, ...).
@@ -17,7 +17,7 @@ use Papercut\Style\Style;
  *   so precedence runs built-in decorator style < tone < variant < the user's named style < explicit style modifiers.
  * - It uses HasVariants: every built-in name goes through part(), which appends optional `<name>.<variant>?` names.
  *
- * Implementations satisfy the style methods by using Papercut\Concerns\HasStyle.
+ * Implementations satisfy the style methods by using Quoin\Concerns\HasStyle.
  */
 interface Decorator extends Component
 {

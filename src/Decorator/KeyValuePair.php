@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Decorator;
+namespace Quoin\Decorator;
 
-use Papercut\{Component, Node, Text};
+use Quoin\{Component, Node, Text};
 
 /** One row of a KeyValueList or Totals: its label, its value, and whether it is an emphasized total row (Totals only). */
 final readonly class KeyValuePair

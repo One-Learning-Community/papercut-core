@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Style;
+namespace Quoin\Tests\Style;
 
-use Papercut\{Component, ListItem, ListNode, Table, Text, View};
-use Papercut\Markup\Markup;
-use Papercut\Style\Theme;
-use Papercut\Value\Color;
-use Papercut\Tests\Support\LayoutHarness;
+use Quoin\{Component, ListItem, ListNode, Table, Text, View};
+use Quoin\Markup\Markup;
+use Quoin\Style\Theme;
+use Quoin\Value\Color;
+use Quoin\Tests\Support\LayoutHarness;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class ListSpacingTest extends TestCase
 {
     /** Baseline of the run with this text. */
-    private function baseline(\Papercut\Node $root, string $text, ?Theme $theme = null): float
+    private function baseline(\Quoin\Node $root, string $text, ?Theme $theme = null): float
     {
         $res = (new LayoutHarness($theme))->layout($root, 400);
         foreach (LayoutHarness::runs($res->fragment) as $r) {
@@ -27,7 +27,7 @@ final class ListSpacingTest extends TestCase
         self::fail("No run '$text'.");
     }
 
-    private function gap(\Papercut\Node $root, string $from, string $to, ?Theme $theme = null): float
+    private function gap(\Quoin\Node $root, string $from, string $to, ?Theme $theme = null): float
     {
         return $this->baseline($root, $to, $theme) - $this->baseline($root, $from, $theme);
     }
@@ -82,7 +82,7 @@ final class ListSpacingTest extends TestCase
         self::assertEqualsWithDelta($this->lineStep() + 20.0, $gap, 0.001);
     }
 
-    private static function height(\Papercut\Node $n): float
+    private static function height(\Quoin\Node $n): float
     {
         $f = (new LayoutHarness())->layout($n, 400)->fragment;
         self::assertNotNull($f);
@@ -145,14 +145,14 @@ final class ListSpacingTest extends TestCase
 
     public function test_section_ending_in_a_list_keeps_the_space(): void
     {
-        $gap = $this->gap(View::make(\Papercut\Decorator\Section::make(ListNode::unordered('A')), Text::make('After')), 'A', 'After');
+        $gap = $this->gap(View::make(\Quoin\Decorator\Section::make(ListNode::unordered('A')), Text::make('After')), 'A', 'After');
         self::assertEqualsWithDelta($this->lineStep() + 6.0, $gap, 0.001);
     }
 
     public function test_decorator_box_ending_in_a_list_adds_no_space(): void
     {
-        $withList = \Papercut\Decorator\Card::make(Text::make('P'), ListNode::unordered('A'));
-        $plain = \Papercut\Decorator\Card::make(Text::make('P'), Text::make('A'));
+        $withList = \Quoin\Decorator\Card::make(Text::make('P'), ListNode::unordered('A'));
+        $plain = \Quoin\Decorator\Card::make(Text::make('P'), Text::make('A'));
         self::assertEqualsWithDelta(self::height(View::make($plain)), self::height(View::make($withList)), 0.001);
     }
 
@@ -180,7 +180,7 @@ final class ListSpacingTest extends TestCase
             {
             }
 
-            public function render(): \Papercut\Node
+            public function render(): \Quoin\Node
             {
                 $this->renders++;
 

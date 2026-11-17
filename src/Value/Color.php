@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Value;
+namespace Quoin\Value;
 
-use Papercut\Exception\InvalidValue;
-use Papercut\Support\Suggest;
+use Quoin\Exception\InvalidValue;
+use Quoin\Support\Suggest;
 
 final readonly class Color implements \Stringable
 {

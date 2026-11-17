@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Html;
+namespace Quoin\Tests\Html;
 
-use Papercut\{Column, Document, Node, Page, Row, Svg, Text};
-use Papercut\Export\{FontMode, HtmlOptions};
-use Papercut\Vector\SvgDocument;
+use Quoin\{Column, Document, Node, Page, Row, Svg, Text};
+use Quoin\Export\{FontMode, HtmlOptions};
+use Quoin\Vector\SvgDocument;
 use PHPUnit\Framework\TestCase;
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class HtmlSvgTest extends TestCase
 {

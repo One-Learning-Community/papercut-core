@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
-use Papercut\{ListNode, Node, Text, View};
-use Papercut\Style\{ComputedStyle, ListMarker};
+use Quoin\{ListNode, Node, Text, View};
+use Quoin\Style\{ComputedStyle, ListMarker};
 
 /**
  * Lays out a ListNode as a column of MarkedItems: the block layouter does the
@@ -13,7 +13,7 @@ use Papercut\Style\{ComputedStyle, ListMarker};
  * widest marker label (each measured in its item's style) plus half the
  * list's font size.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class ListLayouter implements Layouter
 {

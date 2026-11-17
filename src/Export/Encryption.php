@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Export;
+namespace Quoin\Export;
 
-use Papercut\Exception\InvalidValue;
+use Quoin\Exception\InvalidValue;
 
 /**
  * Password protection and permissions for a PDF, encrypted with AES-256.

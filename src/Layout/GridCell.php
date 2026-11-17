@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
-use Papercut\TableCell;
+use Quoin\TableCell;
 
 /**
  * One cell's resolved position in a table grid. Rows are indexed across the
  * header rows followed by the body rows; $rowspan is already clamped to its section.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final readonly class GridCell
 {

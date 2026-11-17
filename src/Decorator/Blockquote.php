@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Decorator;
+namespace Quoin\Decorator;
 
-use Papercut\{Component, Node, Text, View};
-use Papercut\Concerns\{HasStyle, HasVariants};
-use Papercut\Style\Direction;
+use Quoin\{Component, Node, Text, View};
+use Quoin\Concerns\{HasStyle, HasVariants};
+use Quoin\Style\Direction;
 
 /**
  * A quotation with a leading rule and an optional attribution line.

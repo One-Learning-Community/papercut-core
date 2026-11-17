@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Html;
+namespace Quoin\Tests\Html;
 
-use Papercut\{Document, Image, Page, Text};
-use Papercut\Export\{FontMode, HtmlOptions};
-use Papercut\Html\Css;
-use Papercut\Html\{FontAnswer, FontRequest};
-use Papercut\Tests\Support\TestImages;
+use Quoin\{Document, Image, Page, Text};
+use Quoin\Export\{FontMode, HtmlOptions};
+use Quoin\Html\Css;
+use Quoin\Html\{FontAnswer, FontRequest};
+use Quoin\Tests\Support\TestImages;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\mm;
+use function Quoin\mm;
 
 final class HtmlPageVariantsTest extends TestCase
 {

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut;
+namespace Quoin;
 
-use Papercut\Backend\{PdfPageHandle, PdfPageLoader};
-use Papercut\Concerns\HasStyle;
-use Papercut\Exception\{InvalidValue, PdfUnreadable};
+use Quoin\Backend\{PdfPageHandle, PdfPageLoader};
+use Quoin\Concerns\HasStyle;
+use Quoin\Exception\{InvalidValue, PdfUnreadable};
 
 /**
  * A page of an existing PDF, drawn as it is: vector paths stay paths and its text stays text.

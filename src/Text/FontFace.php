@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Text;
+namespace Quoin\Text;
 
 final readonly class FontFace
 {

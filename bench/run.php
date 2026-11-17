@@ -16,17 +16,17 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/lib.php';
 
 $runs = max(1, (int) ($argv[1] ?? 5));
-$transcript = static fn (): Papercut\Document => require __DIR__ . '/transcript.php';
-$article = static fn (): Papercut\Document => require __DIR__ . '/article.php';
+$transcript = static fn (): Quoin\Document => require __DIR__ . '/transcript.php';
+$article = static fn (): Quoin\Document => require __DIR__ . '/article.php';
 
-$pdf = papercut_bench(static fn (): string => $transcript()->toPdf()->bytes(), $runs);
-$html = papercut_bench(static fn (): string => $transcript()->toHtml()->bytes(), $runs);
-$prose = papercut_bench(static fn (): string => $article()->toPdf()->bytes(), $runs);
+$pdf = quoin_bench(static fn (): string => $transcript()->toPdf()->bytes(), $runs);
+$html = quoin_bench(static fn (): string => $transcript()->toHtml()->bytes(), $runs);
+$prose = quoin_bench(static fn (): string => $article()->toPdf()->bytes(), $runs);
 
 echo json_encode([
     'median_ms' => $pdf['median_ms'],
     'runs_ms' => $pdf['runs_ms'],
-    'pages' => papercut_bench_pages($pdf['result']),
+    'pages' => quoin_bench_pages($pdf['result']),
     'bytes' => strlen($pdf['result']),
     'opcache' => function_exists('opcache_get_status') && (opcache_get_status(false)['opcache_enabled'] ?? false),
     'php' => PHP_VERSION,
@@ -34,5 +34,5 @@ echo json_encode([
     'html_median_ms' => $html['median_ms'],
     'article_median_ms' => $prose['median_ms'],
     'article_peak_mb' => $prose['peak_mb'],
-    'article_pages' => papercut_bench_pages($prose['result']),
+    'article_pages' => quoin_bench_pages($prose['result']),
 ], JSON_PRETTY_PRINT), "\n";

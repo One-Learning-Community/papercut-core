@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Text;
+namespace Quoin\Text;
 
 /** What a font file says about its own kind: a class, its PANOSE classification and whether it is fixed pitch. */
 final readonly class FontInfo

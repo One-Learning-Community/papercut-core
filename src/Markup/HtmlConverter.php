@@ -2,45 +2,45 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Markup;
+namespace Quoin\Markup;
 
-use Papercut\Backend\{Backend, DefaultBackend, ImageFormat};
-use Papercut\Code\CodeHighlighting;
-use Papercut\Component;
-use Papercut\Decorator\{Blockquote, CodeBlock};
-use Papercut\Equation;
-use Papercut\Export\FidelityLevel;
-use Papercut\Image;
-use Papercut\Layout\TableGrid;
-use Papercut\Link;
-use Papercut\Math\Mathml\MathmlReader;
-use Papercut\Math\Mathml\MathmlResult;
-use Papercut\Math\Mathml\SafeXml;
-use Papercut\Math\Node\Row;
-use Papercut\ListItem;
-use Papercut\ListNode;
-use Papercut\Node;
-use Papercut\Paint\Link as LinkPolicy;
-use Papercut\Span;
-use Papercut\Style\ListMarker;
-use Papercut\Style\Style;
-use Papercut\Style\StyleName;
-use Papercut\Styled;
-use Papercut\Support\Utf8;
-use Papercut\Table;
-use Papercut\TableCell;
-use Papercut\TableRow;
-use Papercut\Text;
-use Papercut\Value\Auto;
-use Papercut\Value\Color;
-use Papercut\Value\Length;
-use Papercut\Value\Percent;
-use Papercut\View;
+use Quoin\Backend\{Backend, DefaultBackend, ImageFormat};
+use Quoin\Code\CodeHighlighting;
+use Quoin\Component;
+use Quoin\Decorator\{Blockquote, CodeBlock};
+use Quoin\Equation;
+use Quoin\Export\FidelityLevel;
+use Quoin\Image;
+use Quoin\Layout\TableGrid;
+use Quoin\Link;
+use Quoin\Math\Mathml\MathmlReader;
+use Quoin\Math\Mathml\MathmlResult;
+use Quoin\Math\Mathml\SafeXml;
+use Quoin\Math\Node\Row;
+use Quoin\ListItem;
+use Quoin\ListNode;
+use Quoin\Node;
+use Quoin\Paint\Link as LinkPolicy;
+use Quoin\Span;
+use Quoin\Style\ListMarker;
+use Quoin\Style\Style;
+use Quoin\Style\StyleName;
+use Quoin\Styled;
+use Quoin\Support\Utf8;
+use Quoin\Table;
+use Quoin\TableCell;
+use Quoin\TableRow;
+use Quoin\Text;
+use Quoin\Value\Auto;
+use Quoin\Value\Color;
+use Quoin\Value\Length;
+use Quoin\Value\Percent;
+use Quoin\View;
 
-use function Papercut\px;
+use function Quoin\px;
 
 /**
- * Converts an HTML fragment into Papercut nodes by walking the parsed DOM.
+ * Converts an HTML fragment into nodes by walking the parsed DOM.
  * Block elements end the current inline run and start their own; inline
  * elements add to the style passed down to their text. Lists, list items and
  * figures convert their content in a frame of their own (see collect()). The
@@ -1116,7 +1116,7 @@ final class HtmlConverter
         return $size !== false && $size[0] > 0 && $size[1] > 0 ? $height * $size[0] / $size[1] : null;
     }
 
-    /** The image bytes for $src from the app's resolver (asked once per distinct trimmed src), or null when there are none Papercut can read (or no src). */
+    /** The image bytes for $src from the app's resolver (asked once per distinct trimmed src), or null when there are none that can be read (or no src). */
     private function resolve(string $src): ?string
     {
         $resolver = $this->options->images;

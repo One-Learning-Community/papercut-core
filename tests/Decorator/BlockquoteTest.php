@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Decorator;
+namespace Quoin\Tests\Decorator;
 
-use Papercut\{Document, Page, Text, View};
-use Papercut\Decorator\{Blockquote, Decorator};
-use Papercut\Style\Direction;
+use Quoin\{Document, Page, Text, View};
+use Quoin\Decorator\{Blockquote, Decorator};
+use Quoin\Style\Direction;
 use PHPUnit\Framework\TestCase;
 
 final class BlockquoteTest extends TestCase

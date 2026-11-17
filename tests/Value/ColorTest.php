@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Value;
+namespace Quoin\Tests\Value;
 
-use Papercut\Exception\InvalidValue;
-use Papercut\Value\Color;
+use Quoin\Exception\InvalidValue;
+use Quoin\Value\Color;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Html;
+namespace Quoin\Html;
 
-use Papercut\Text\FontStyle;
+use Quoin\Text\FontStyle;
 
 /**
  * Links a family from Google Fonts (or a compatible host such as Bunny Fonts).

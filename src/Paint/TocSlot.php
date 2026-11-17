@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Paint;
+namespace Quoin\Paint;
 
-use Papercut\Text\CachedFont;
-use Papercut\Value\Color;
+use Quoin\Text\CachedFont;
+use Quoin\Value\Color;
 
 /**
  * A table of contents entry's page number, filled in by the Painter once the

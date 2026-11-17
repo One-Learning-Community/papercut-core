@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
-use Papercut\{Image, Node, OverflowMode, PdfPage};
-use Papercut\Backend\{Backend, ImageHandle, PdfPageHandle, PdfPageLoader};
-use Papercut\Exception\UnsupportedFeature;
-use Papercut\Export\{FidelityLevel, FidelityReport};
-use Papercut\Page;
-use Papercut\Style\{ComputedStyle, PageThemes, StyleResolver, Theme};
-use Papercut\Text\{FontRegistry, Itemizer, SvgFonts};
-use Papercut\Toc\TocIndex;
-use Papercut\Tree\{NodePath, Region};
+use Quoin\{Image, Node, OverflowMode, PdfPage};
+use Quoin\Backend\{Backend, ImageHandle, PdfPageHandle, PdfPageLoader};
+use Quoin\Exception\UnsupportedFeature;
+use Quoin\Export\{FidelityLevel, FidelityReport};
+use Quoin\Page;
+use Quoin\Style\{ComputedStyle, PageThemes, StyleResolver, Theme};
+use Quoin\Text\{FontRegistry, Itemizer, SvgFonts};
+use Quoin\Toc\TocIndex;
+use Quoin\Tree\{NodePath, Region};
 
 /**
  * Shared state for one layout run: fonts, theme, images, warnings, the
  * current node path and the overflow mode.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class LayoutContext
 {
@@ -190,7 +190,7 @@ final class LayoutContext
     /**
      * Characters no font has are left out of the PDF's text. The characters are gathered per node and feature while it
      * is laid out and reported by flushGlyphNotes() as one `dropped` note naming them. D9: only formats that draw with
-     * the fonts Papercut embeds (the PDF) report this; Word and browsers fall back to their own fonts. Strict mode
+     * the embedded fonts (the PDF) report this; Word and browsers fall back to their own fonts. Strict mode
      * throws from the painted pages (PdfExporter) instead.
      */
     public function droppedGlyphs(string $feature, string $chars = '', ?string $path = null): void
@@ -369,7 +369,7 @@ final class LayoutContext
     }
 
     /**
-     * @throws \Papercut\Exception\PdfUnreadable
+     * @throws \Quoin\Exception\PdfUnreadable
      * @throws \LogicException when the backend cannot draw pages of other PDFs
      */
     public function pdfPage(PdfPage $node): PdfPageHandle

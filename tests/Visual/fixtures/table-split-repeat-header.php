@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 
-use Papercut\{Column, Document, Page, Table, Text};
+use Quoin\{Column, Document, Page, Table, Text};
 
-use function Papercut\{mm, pt};
+use function Quoin\{mm, pt};
 
 $rows = array_map(static fn (int $i): array => ["Item $i", (string) ($i * 3 % 7 + 1), 'Note for row ' . $i], range(1, 40));
 

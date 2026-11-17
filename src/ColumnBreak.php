@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut;
+namespace Quoin;
 
-use Papercut\Concerns\HasStyle;
+use Quoin\Concerns\HasStyle;
 
 /** Ends the current column of a ColumnFlow; the next content starts in the next column. */
 final class ColumnBreak implements Styled

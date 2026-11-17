@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Export;
+namespace Quoin\Tests\Export;
 
-use Papercut\{Document, Page, Svg, Text};
-use Papercut\Export\{ExportOptions, Exporter, Output, PdfOptions};
+use Quoin\{Document, Page, Svg, Text};
+use Quoin\Export\{ExportOptions, Exporter, Output, PdfOptions};
 use PHPUnit\Framework\TestCase;
 
 /**

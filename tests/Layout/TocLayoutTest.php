@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Layout;
+namespace Quoin\Tests\Layout;
 
-use Papercut\{Document, Page, PageNumber, Text, Toc};
-use Papercut\Layout\{Fragment, LayoutContext, LayoutEngine, PlacedPage, Paginator};
-use Papercut\OverflowMode;
-use Papercut\Paint\{Anchor, Op, TextRun, TocSlot};
-use Papercut\Style\{Style, Theme};
-use Papercut\Value\Length;
-use Papercut\Tests\Support\FakeBackend;
-use Papercut\Text\FontRegistry;
-use Papercut\Toc\TocIndex;
+use Quoin\{Document, Page, PageNumber, Text, Toc};
+use Quoin\Layout\{Fragment, LayoutContext, LayoutEngine, PlacedPage, Paginator};
+use Quoin\OverflowMode;
+use Quoin\Paint\{Anchor, Op, TextRun, TocSlot};
+use Quoin\Style\{Style, Theme};
+use Quoin\Value\Length;
+use Quoin\Tests\Support\FakeBackend;
+use Quoin\Text\FontRegistry;
+use Quoin\Toc\TocIndex;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class TocLayoutTest extends TestCase
 {
@@ -103,7 +103,7 @@ final class TocLayoutTest extends TestCase
     public function test_anchors_land_only_on_entry_headings(): void
     {
         $doc = Document::make(self::page()->body(Toc::make(), Text::h1('One'), Text::h2('Two'), Text::h3('Three')));
-        self::assertSame(['papercut-toc-0', 'papercut-toc-1'], array_map(static fn (Anchor $a): string => $a->name, self::anchors($this->place($doc))));
+        self::assertSame(['quoin-toc-0', 'quoin-toc-1'], array_map(static fn (Anchor $a): string => $a->name, self::anchors($this->place($doc))));
     }
 
     public function test_no_anchors_without_a_toc(): void
@@ -122,7 +122,7 @@ final class TocLayoutTest extends TestCase
     public function test_a_heading_in_a_header_gets_no_anchor(): void
     {
         $doc = Document::make(self::page()->header(Text::h1('Running head'))->body(Toc::make(), Text::h1('One')));
-        self::assertSame(['papercut-toc-0'], array_map(static fn (Anchor $a): string => $a->name, self::anchors($this->place($doc))));
+        self::assertSame(['quoin-toc-0'], array_map(static fn (Anchor $a): string => $a->name, self::anchors($this->place($doc))));
     }
 
     public function test_one_slot_per_entry_with_the_reserved_number_width(): void
@@ -132,7 +132,7 @@ final class TocLayoutTest extends TestCase
         foreach (self::fragments($this->place($doc)) as $f) {
             array_push($slots, ...self::slots($f));
         }
-        self::assertSame(['papercut-toc-0', 'papercut-toc-1', 'papercut-toc-2'], array_map(static fn (TocSlot $s): string => $s->destination, $slots));
+        self::assertSame(['quoin-toc-0', 'quoin-toc-1', 'quoin-toc-2'], array_map(static fn (TocSlot $s): string => $s->destination, $slots));
         foreach ($slots as $s) {
             self::assertEqualsWithDelta($s->font->advance('999', $s->size, $s->letterSpacing), $s->width, 1e-6);
             self::assertEqualsWithDelta($s->boxWidth, $s->x + $s->width, 1e-6);

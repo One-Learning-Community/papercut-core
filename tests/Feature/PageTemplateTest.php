@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Feature;
+namespace Quoin\Tests\Feature;
 
-use Papercut\{Column, Document, Page, PdfPage, Text};
-use Papercut\Exception\PdfUnreadable;
-use Papercut\Export\{FidelityReport, HtmlOptions};
-use Papercut\Tests\Support\{PdfInspector, Raster};
+use Quoin\{Column, Document, Page, PdfPage, Text};
+use Quoin\Exception\PdfUnreadable;
+use Quoin\Export\{FidelityReport, HtmlOptions};
+use Quoin\Tests\Support\{PdfInspector, Raster};
 use PHPUnit\Framework\TestCase;
-use function Papercut\pt;
+use function Quoin\pt;
 
 /** Page::template(): a page the size of another PDF's page, with that page drawn behind it. */
 final class PageTemplateTest extends TestCase

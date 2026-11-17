@@ -2,37 +2,37 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Markup;
+namespace Quoin\Tests\Markup;
 
-use Papercut\Document;
-use Papercut\Equation;
-use Papercut\Export\PdfOptions;
-use Papercut\Image;
-use Papercut\Link;
-use Papercut\Markup\Markup;
-use Papercut\Markup\MarkupOptions;
-use Papercut\Markup\StyleMode;
-use Papercut\Math\Render\TextWriter;
-use Papercut\Page;
-use Papercut\Style\TextAlign;
-use Papercut\Tests\Support\FakeBackend;
-use Papercut\Tests\Support\TestImages;
-use Papercut\Text;
-use Papercut\View;
+use Quoin\Document;
+use Quoin\Equation;
+use Quoin\Export\PdfOptions;
+use Quoin\Image;
+use Quoin\Link;
+use Quoin\Markup\Markup;
+use Quoin\Markup\MarkupOptions;
+use Quoin\Markup\StyleMode;
+use Quoin\Math\Render\TextWriter;
+use Quoin\Page;
+use Quoin\Style\TextAlign;
+use Quoin\Tests\Support\FakeBackend;
+use Quoin\Tests\Support\TestImages;
+use Quoin\Text;
+use Quoin\View;
 use PHPUnit\Framework\TestCase;
 
 final class HtmlMathTest extends TestCase
 {
     private const string PI = '<math><mi>π</mi><msup><mi>r</mi><mn>2</mn></msup></math>';
 
-    /** @return list<\Papercut\Node|\Papercut\Component> */
+    /** @return list<\Quoin\Node|\Quoin\Component> */
     private static function blocks(string $html): array
     {
         $v = Markup::html($html);
         return $v instanceof View ? $v->children() : [$v];
     }
 
-    /** @return list<\Papercut\Span> */
+    /** @return list<\Quoin\Span> */
     private static function spans(string $html): array
     {
         $first = self::blocks($html)[0];

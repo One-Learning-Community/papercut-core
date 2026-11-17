@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Export;
+namespace Quoin\Tests\Export;
 
-use Papercut\{Document, Image, OverflowMode, Page, Text};
+use Quoin\{Document, Image, OverflowMode, Page, Text};
 use Dskripchenko\PhpPdf\Font\Ttf\TtfFile;
-use Papercut\Backend\PhpPdf\FontStateCache;
-use Papercut\Exception\LayoutOverflow;
-use Papercut\Export\{ExportOptions, PdfExporter, PdfOptions};
-use Papercut\Style\Theme;
-use Papercut\Text\{FontFace, FontSet};
+use Quoin\Backend\PhpPdf\FontStateCache;
+use Quoin\Exception\LayoutOverflow;
+use Quoin\Export\{ExportOptions, PdfExporter, PdfOptions};
+use Quoin\Style\Theme;
+use Quoin\Text\{FontFace, FontSet};
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\{mm, pt};
+use function Quoin\{mm, pt};
 
 final class PdfExporterTest extends TestCase
 {
@@ -65,7 +65,7 @@ final class PdfExporterTest extends TestCase
 
     public function test_cache_dir_controls_where_the_font_cache_is_written(): void
     {
-        $base = (string) realpath(sys_get_temp_dir()) . '/papercut-cachedir-' . getmypid() . '-' . bin2hex(random_bytes(4));
+        $base = (string) realpath(sys_get_temp_dir()) . '/quoin-cachedir-' . getmypid() . '-' . bin2hex(random_bytes(4));
         $fontDir = $base . '-fonts';
         $on = $base . '-on';
         mkdir($fontDir);

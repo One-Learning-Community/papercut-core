@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tree;
+namespace Quoin\Tree;
 
 /**
  * Where a ColumnFlow sits, which decides whether real columns are possible there.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 enum ColumnFlowPlacement
 {

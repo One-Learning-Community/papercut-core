@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
-use Papercut\{Node, Spacer, Styled};
-use Papercut\Style\{ComputedStyle, Style};
+use Quoin\{Node, Spacer, Styled};
+use Quoin\Style\{ComputedStyle, Style};
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 /**
  * Lays a node out at exactly a given border-box width (a flex item's
@@ -15,7 +15,7 @@ use function Papercut\pt;
  * width/min/max would resolve to something else gets them pinned to that
  * width; any node built on HasStyle can be pinned. Spacers only hold space.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class ExactWidth
 {

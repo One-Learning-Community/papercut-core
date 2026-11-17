@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Style;
+namespace Quoin\Style;
 
 /** Helpers for style names, which may be layers separated by spaces (`pre mine`). */
 final class StyleName

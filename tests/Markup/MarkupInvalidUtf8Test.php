@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Markup;
+namespace Quoin\Tests\Markup;
 
-use Papercut\Export\{HtmlOptions, PdfOptions};
-use Papercut\Markup\{Markup, MarkupOptions, StyleMode};
-use Papercut\Tests\Support\FailsOnDiagnostics;
-use Papercut\{Document, Page, Text};
+use Quoin\Export\{HtmlOptions, PdfOptions};
+use Quoin\Markup\{Markup, MarkupOptions, StyleMode};
+use Quoin\Tests\Support\FailsOnDiagnostics;
+use Quoin\{Document, Page, Text};
 use PHPUnit\Framework\TestCase;
 
 /** Pasted markup with invalid UTF-8 is cleaned with one note, like builder text (D2, promise 3). */

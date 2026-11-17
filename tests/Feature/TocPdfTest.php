@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Feature;
+namespace Quoin\Tests\Feature;
 
-use Papercut\{ColumnFlow, Document, Page, Text, Toc};
-use Papercut\Export\PdfOptions;
-use Papercut\Tests\Support\PdfInspector;
+use Quoin\{ColumnFlow, Document, Page, Text, Toc};
+use Quoin\Export\PdfOptions;
+use Quoin\Tests\Support\PdfInspector;
 use PHPUnit\Framework\TestCase;
 
 final class TocPdfTest extends TestCase
@@ -50,10 +50,10 @@ final class TocPdfTest extends TestCase
         self::assertContains('3', array_slice($words, $beta));
 
         $qdf = PdfInspector::qdf($pdf);
-        self::assertStringContainsString('papercut-toc-0', $qdf);
-        self::assertStringContainsString('papercut-toc-1', $qdf);
-        self::assertSame(2, self::destinationPage($qdf, 'papercut-toc-0'));
-        self::assertSame(3, self::destinationPage($qdf, 'papercut-toc-1'));
+        self::assertStringContainsString('quoin-toc-0', $qdf);
+        self::assertStringContainsString('quoin-toc-1', $qdf);
+        self::assertSame(2, self::destinationPage($qdf, 'quoin-toc-0'));
+        self::assertSame(3, self::destinationPage($qdf, 'quoin-toc-1'));
         self::assertSame(2, preg_match_all('~/Subtype /Link~', $qdf));
         self::assertSame(0, preg_match_all('~/URI~', $qdf));
     }

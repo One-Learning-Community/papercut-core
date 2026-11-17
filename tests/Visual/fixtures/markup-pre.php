@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use Papercut\Markup\Markup;
-use Papercut\{Column, Document, Page};
+use Quoin\Markup\Markup;
+use Quoin\{Column, Document, Page};
 
-use function Papercut\{mm, pt};
+use function Quoin\{mm, pt};
 
 // Generic, made-up content: preformatted blocks (leading spaces, a tab, a blank line, a line longer than the box),
 // a <pre><code> pair, and inline code, kbd, samp and tt in running text.

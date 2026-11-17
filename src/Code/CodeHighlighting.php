@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Code;
+namespace Quoin\Code;
 
 /**
  * How code blocks are highlighted: the highlighter, the default theme and a default variant.

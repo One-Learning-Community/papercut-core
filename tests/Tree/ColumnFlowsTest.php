@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Tree;
+namespace Quoin\Tests\Tree;
 
-use Papercut\Decorator\Card;
-use Papercut\{Column, ColumnBreak, ColumnFlow, Document, Node, Page, Row, Table, TableCell, TableRow, Text, View};
-use Papercut\Exception\InvalidStructure;
-use Papercut\Style\{Align, ComputedStyle, Direction, StyleResolver, Theme};
-use Papercut\Tree\{ColumnFlowPlacement, ColumnFlows, Expander, Region, TreeVisitor, TreeWalker, Visit};
-use Papercut\Value\{Auto, Color, Edges, Length};
-use Papercut\Layout\{BreakToken, Constraints, Fragment, LayoutContext, LayoutEngine, LayoutResult, Layouter, Paginator};
-use Papercut\Tests\Support\FakeBackend;
-use Papercut\Text\FontRegistry;
-use Papercut\OverflowMode;
+use Quoin\Decorator\Card;
+use Quoin\{Column, ColumnBreak, ColumnFlow, Document, Node, Page, Row, Table, TableCell, TableRow, Text, View};
+use Quoin\Exception\InvalidStructure;
+use Quoin\Style\{Align, ComputedStyle, Direction, StyleResolver, Theme};
+use Quoin\Tree\{ColumnFlowPlacement, ColumnFlows, Expander, Region, TreeVisitor, TreeWalker, Visit};
+use Quoin\Value\{Auto, Color, Edges, Length};
+use Quoin\Layout\{BreakToken, Constraints, Fragment, LayoutContext, LayoutEngine, LayoutResult, Layouter, Paginator};
+use Quoin\Tests\Support\FakeBackend;
+use Quoin\Text\FontRegistry;
+use Quoin\OverflowMode;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -265,7 +265,7 @@ final class ColumnFlowsTest extends TestCase
             {
             }
 
-            public function layout(\Papercut\Node $node, ComputedStyle $style, Constraints $c, ?BreakToken $token, LayoutEngine $engine): LayoutResult
+            public function layout(\Quoin\Node $node, ComputedStyle $style, Constraints $c, ?BreakToken $token, LayoutEngine $engine): LayoutResult
             {
                 \assert($node instanceof RegionProbe);
                 $this->seen[$node->label] = [
@@ -276,7 +276,7 @@ final class ColumnFlowsTest extends TestCase
                 return LayoutResult::complete(new Fragment($c->width, 1.0));
             }
 
-            public function intrinsic(\Papercut\Node $node, ComputedStyle $style, LayoutEngine $engine): array
+            public function intrinsic(\Quoin\Node $node, ComputedStyle $style, LayoutEngine $engine): array
             {
                 return ['min' => 0.0, 'max' => 0.0];
             }
@@ -292,7 +292,7 @@ final class ColumnFlowsTest extends TestCase
                 ->footer(Column::make(new RegionProbe('footer')))
                 ->background(new RegionProbe('background'))
                 ->body(new RegionProbe('top'), Column::make(Row::make(new RegionProbe('deep'))))
-                ->overlay(\Papercut\Place::at('10pt', '10pt', new RegionProbe('overlay'))),
+                ->overlay(\Quoin\Place::at('10pt', '10pt', new RegionProbe('overlay'))),
         );
         self::assertSame([Region::Body, [], ['probe']], $seen['top']);
         self::assertSame([Region::Body, ['column', 'row'], ['column', 'row', 'probe']], $seen['deep']);
@@ -331,8 +331,8 @@ final class RegionProbe implements Node
         return 'probe';
     }
 
-    public function style(): \Papercut\Style\Style
+    public function style(): \Quoin\Style\Style
     {
-        return new \Papercut\Style\Style();
+        return new \Quoin\Style\Style();
     }
 }

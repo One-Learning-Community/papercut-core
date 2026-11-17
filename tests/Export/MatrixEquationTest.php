@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Export;
+namespace Quoin\Tests\Export;
 
-use Papercut\{Document, Equation, Page, Span, Text};
-use Papercut\Export\PdfOptions;
-use Papercut\Markup\Markup;
-use Papercut\Math\Math;
+use Quoin\{Document, Equation, Page, Span, Text};
+use Quoin\Export\PdfOptions;
+use Quoin\Markup\Markup;
+use Quoin\Math\Math;
 use PHPUnit\Framework\TestCase;
 
 final class MatrixEquationTest extends TestCase

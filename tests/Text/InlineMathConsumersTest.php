@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Text;
+namespace Quoin\Tests\Text;
 
-use Papercut\Decorator\{Badge, Field};
-use Papercut\Markup\Markup;
-use Papercut\Math\Math;
-use Papercut\{Span, Text};
-use Papercut\Toc\HeadingText;
+use Quoin\Decorator\{Badge, Field};
+use Quoin\Markup\Markup;
+use Quoin\Math\Math;
+use Quoin\{Span, Text};
+use Quoin\Toc\HeadingText;
 use PHPUnit\Framework\TestCase;
 
 /** Code that reads a span's text must not lose a formula, whose text is empty. */

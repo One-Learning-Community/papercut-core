@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Paint;
+namespace Quoin\Paint;
 
 /**
  * A page number or table of contents entry painted before the document's page count and headings' pages are known,

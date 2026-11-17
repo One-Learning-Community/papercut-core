@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Text;
+namespace Quoin\Text;
 
 /** The broad kind of a font. The value is the Word `w:family` hint. */
 enum FontClass: string

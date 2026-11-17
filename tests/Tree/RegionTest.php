@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Tree;
+namespace Quoin\Tests\Tree;
 
-use Papercut\Tree\Region;
+use Quoin\Tree\Region;
 use PHPUnit\Framework\TestCase;
 
 final class RegionTest extends TestCase

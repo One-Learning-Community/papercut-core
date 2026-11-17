@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut;
+namespace Quoin;
 
-use Papercut\Concerns\HasStyle;
-use Papercut\Support\EnumValue;
-use Papercut\Style\TextAlign;
+use Quoin\Concerns\HasStyle;
+use Quoin\Support\EnumValue;
+use Quoin\Style\TextAlign;
 
 final class TableCell implements Styled
 {
@@ -90,7 +90,7 @@ final class TableCell implements Styled
         return $this->header;
     }
 
-    /** @throws \Papercut\Exception\InvalidValue for a string that is not a text alignment */
+    /** @throws \Quoin\Exception\InvalidValue for a string that is not a text alignment */
     public function align(TextAlign|string $a): self
     {
         $a = EnumValue::from(TextAlign::class, $a, 'TableCell::align()');

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Markup;
+namespace Quoin\Markup;
 
-use Papercut\Code\CodeHighlighting;
+use Quoin\Code\CodeHighlighting;
 
 /**
  * Options for Markup conversion; `$images` is `\Closure(string $src): ?string` returning image bytes.

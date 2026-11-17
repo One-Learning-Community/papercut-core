@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
-use Papercut\Paint\{Op, PageNumberSlot, TocSlot};
+use Quoin\Paint\{Op, PageNumberSlot, TocSlot};
 
 /**
  * A laid-out box in local coordinates (top-left origin). Mutable only while
@@ -12,7 +12,7 @@ use Papercut\Paint\{Op, PageNumberSlot, TocSlot};
  * immutable. Never mutate a fragment you did not create; the paginator
  * reuses header and footer fragments across pages.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class Fragment
 {

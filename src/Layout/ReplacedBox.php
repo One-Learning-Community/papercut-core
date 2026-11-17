@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
-use Papercut\Value\Length;
+use Quoin\Value\Length;
 
-use Papercut\Style\ComputedStyle;
+use Quoin\Style\ComputedStyle;
 
 /**
  * Sizing for replaced content with an intrinsic size and aspect ratio: images and SVG.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class ReplacedBox
 {

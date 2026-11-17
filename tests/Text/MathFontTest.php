@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Text;
+namespace Quoin\Tests\Text;
 
-use Papercut\Backend\PhpPdf\PhpPdfBackend;
-use Papercut\Math\Exception\UnsupportedFont;
-use Papercut\Math\Math;
-use Papercut\Text\{FontRegistry, FontSet};
+use Quoin\Backend\PhpPdf\PhpPdfBackend;
+use Quoin\Math\Exception\UnsupportedFont;
+use Quoin\Math\Math;
+use Quoin\Text\{FontRegistry, FontSet};
 use PHPUnit\Framework\TestCase;
 
 final class MathFontTest extends TestCase
@@ -24,7 +24,7 @@ final class MathFontTest extends TestCase
 
     private function copyOfStix(): string
     {
-        $path = sys_get_temp_dir() . '/papercut-math-' . bin2hex(random_bytes(4)) . '.ttf';
+        $path = sys_get_temp_dir() . '/quoin-math-' . bin2hex(random_bytes(4)) . '.ttf';
         copy(Math::stixTwoMathPath(), $path);
         $this->temp[] = $path;
 
@@ -34,7 +34,7 @@ final class MathFontTest extends TestCase
     public function test_default_math_font_is_stix(): void
     {
         $this->assertSame(Math::stixTwoMathPath(), (new FontSet())->mathFontPath());
-        $this->assertSame('Papercut Math', FontSet::MATH_FAMILY);
+        $this->assertSame('Quoin Math', FontSet::MATH_FAMILY);
     }
 
     public function test_custom_math_font_path_used(): void
@@ -47,7 +47,7 @@ final class MathFontTest extends TestCase
         $math = $registry->mathFont();
         $paths = array_column(array_filter($registry->faces(), static fn (array $f): bool => $f['family'] === FontSet::MATH_FAMILY), 'path');
         $this->assertSame([realpath($path)], $paths);
-        $this->assertInstanceOf(\Papercut\Math\Font\TrueTypeFont::class, $math['font']);
+        $this->assertInstanceOf(\Quoin\Math\Font\TrueTypeFont::class, $math['font']);
         $this->assertSame($math['font'], $registry->mathFont()['font']);
     }
 
@@ -89,7 +89,7 @@ final class MathFontTest extends TestCase
 
     public function test_missing_custom_math_font_is_font_not_found(): void
     {
-        $this->expectException(\Papercut\Exception\FontNotFound::class);
+        $this->expectException(\Quoin\Exception\FontNotFound::class);
         FontRegistry::fromSet((new FontSet())->withMathFont('/no/such/math-font.ttf'), new PhpPdfBackend());
     }
 }

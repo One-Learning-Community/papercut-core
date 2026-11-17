@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Exception;
+namespace Quoin\Exception;
 
-use Papercut\PapercutException;
+use Quoin\QuoinException;
 
-final class InvalidValue extends PapercutException
+final class InvalidValue extends QuoinException
 {
     /** @param list<string> $locations */
     private function __construct(

@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 
-use Papercut\{Column, View, Document, Page, Row, Spacer, Text};
-use Papercut\Style\{Align, Justify};
+use Quoin\{Column, View, Document, Page, Row, Spacer, Text};
+use Quoin\Style\{Align, Justify};
 
-use function Papercut\{mm, pt};
+use function Quoin\{mm, pt};
 
 $box = static fn (string $label, string $bg): Text => Text::make($label)->padding(pt(8))->background($bg)->width(mm(28))->center();
 $row = static fn (Justify $j): View => Column::make(

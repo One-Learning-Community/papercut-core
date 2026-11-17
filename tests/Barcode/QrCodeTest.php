@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Barcode;
+namespace Quoin\Tests\Barcode;
 
-use Papercut\Barcode\{ErrorCorrection, ModuleRects, QrEncoder};
-use Papercut\{Document, Page, QrCode, Row};
-use Papercut\Exception\InvalidValue;
-use Papercut\Export\HtmlOptions;
-use Papercut\Layout\{Fragment, Status};
-use Papercut\Paint\Rect;
-use Papercut\Tests\Support\{LayoutHarness, PdfInspector};
+use Quoin\Barcode\{ErrorCorrection, ModuleRects, QrEncoder};
+use Quoin\{Document, Page, QrCode, Row};
+use Quoin\Exception\InvalidValue;
+use Quoin\Export\HtmlOptions;
+use Quoin\Layout\{Fragment, Status};
+use Quoin\Paint\Rect;
+use Quoin\Tests\Support\{LayoutHarness, PdfInspector};
 use PHPUnit\Framework\TestCase;
-use function Papercut\{mm, percent, pt};
+use function Quoin\{mm, percent, pt};
 
 final class QrCodeTest extends TestCase
 {
@@ -137,7 +137,7 @@ final class QrCodeTest extends TestCase
         $f = (new LayoutHarness())->layout(QrCode::make('x')->color('indigo-700'), 500)->fragment;
         $this->assertNotNull($f);
 
-        $this->assertEquals(\Papercut\Value\Color::parse('indigo-700'), self::rects($f)[0]->fill);
+        $this->assertEquals(\Quoin\Value\Color::parse('indigo-700'), self::rects($f)[0]->fill);
     }
 
     public function test_quiet_zone_can_change(): void
@@ -204,7 +204,7 @@ final class QrCodeTest extends TestCase
 
     public function test_a_grid_has_no_text_to_encode_again(): void
     {
-        $this->expectException(\Papercut\Exception\InvalidStructure::class);
+        $this->expectException(\Quoin\Exception\InvalidStructure::class);
 
         QrCode::fromModules([[true]])->errorCorrection(ErrorCorrection::High);
     }

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Value;
+namespace Quoin\Value;
 
-use Papercut\Exception\InvalidValue;
+use Quoin\Exception\InvalidValue;
 
 /** Column count, widths, gaps and rule of a ColumnFlow. Lengths are in points. */
 final readonly class ColumnSpec

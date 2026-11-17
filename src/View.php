@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut;
+namespace Quoin;
 
-use Papercut\Concerns\{HasNotes, HasStyle};
-use Papercut\Exception\InvalidValue;
-use Papercut\Style\{Align, Direction, Justify, Style};
-use Papercut\Support\{Check, EnumValue, Suggest};
-use Papercut\Value\{Color, ColumnRule, ColumnSpec, Length};
+use Quoin\Concerns\{HasNotes, HasStyle};
+use Quoin\Exception\InvalidValue;
+use Quoin\Style\{Align, Direction, Justify, Style};
+use Quoin\Support\{Check, EnumValue, Suggest};
+use Quoin\Value\{Color, ColumnRule, ColumnSpec, Length};
 
 final class View implements Styled, Annotated
 {

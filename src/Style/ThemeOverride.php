@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Style;
+namespace Quoin\Style;
 
-use Papercut\Exception\InvalidValue;
-use Papercut\Value\{Color, Edges, Length};
+use Quoin\Exception\InvalidValue;
+use Quoin\Value\{Color, Edges, Length};
 
 /**
  * A partial theme: the values it sets replace the theme's, the named styles

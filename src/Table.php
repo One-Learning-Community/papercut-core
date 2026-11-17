@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut;
+namespace Quoin;
 
-use Papercut\Concerns\HasStyle;
-use Papercut\Exception\InvalidValue;
-use Papercut\Value\{Auto, Fr, Length, Percent, TrackList};
+use Quoin\Concerns\HasStyle;
+use Quoin\Exception\InvalidValue;
+use Quoin\Value\{Auto, Fr, Length, Percent, TrackList};
 
 final class Table implements Styled
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Markup;
+namespace Quoin\Markup;
 
 enum BlankParagraphs: string
 {

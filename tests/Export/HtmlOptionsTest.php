@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Export;
+namespace Quoin\Tests\Export;
 
-use Papercut\Export\{ExportOptions, FontMode, HtmlOptions};
-use Papercut\Style\Theme;
-use Papercut\Text\FontSet;
+use Quoin\Export\{ExportOptions, FontMode, HtmlOptions};
+use Quoin\Style\Theme;
+use Quoin\Text\FontSet;
 use PHPUnit\Framework\TestCase;
 
 final class HtmlOptionsTest extends TestCase

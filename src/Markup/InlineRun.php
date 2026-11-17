@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Markup;
+namespace Quoin\Markup;
 
-use Papercut\Math\Node\Node as MathNode;
-use Papercut\Span;
-use Papercut\Style\Style;
+use Quoin\Math\Node\Node as MathNode;
+use Quoin\Span;
+use Quoin\Style\Style;
 
 /**
  * Accumulates the inline content of one block, collapsing whitespace the way

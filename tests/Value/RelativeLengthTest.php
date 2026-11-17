@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Value;
+namespace Quoin\Tests\Value;
 
-use Papercut\Exception\InvalidValue;
-use Papercut\Style\{ComputedStyle, Style, Theme};
-use Papercut\Value\{Edges, Length, Percent, TrackList};
+use Quoin\Exception\InvalidValue;
+use Quoin\Style\{ComputedStyle, Style, Theme};
+use Quoin\Value\{Edges, Length, Percent, TrackList};
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 /** em and lh: lengths relative to the element's font size and line height, resolved when styles are computed. */
 final class RelativeLengthTest extends TestCase

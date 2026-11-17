@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Value;
+namespace Quoin\Value;
 
-use Papercut\Exception\InvalidValue;
-use Papercut\Value\Internal\Tokens;
+use Quoin\Exception\InvalidValue;
+use Quoin\Value\Internal\Tokens;
 
 final readonly class Edges
 {

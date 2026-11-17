@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Feature;
+namespace Quoin\Tests\Feature;
 
-use Papercut\Backend\{Backend, FontHandle, ImageHandle};
-use Papercut\{Column, Document, Page, Text};
-use Papercut\Export\PdfOptions;
-use Papercut\Paint\{Bookmark, Clip, DocumentMeta, Opacity, Op, PageDisplayList};
-use Papercut\Tests\Support\{FakeBackend, PdfInspector};
+use Quoin\Backend\{Backend, FontHandle, ImageHandle};
+use Quoin\{Column, Document, Page, Text};
+use Quoin\Export\PdfOptions;
+use Quoin\Paint\{Bookmark, Clip, DocumentMeta, Opacity, Op, PageDisplayList};
+use Quoin\Tests\Support\{FakeBackend, PdfInspector};
 use PHPUnit\Framework\TestCase;
-use function Papercut\{mm, pt};
+use function Quoin\{mm, pt};
 
 final class BookmarksTest extends TestCase
 {
@@ -97,9 +97,9 @@ final class BookmarksTest extends TestCase
     public function test_markup_kept_out_of_the_toc_keeps_its_bookmarks(): void
     {
         $doc = Document::make(Page::a4()->body(
-            \Papercut\Toc::make(),
+            \Quoin\Toc::make(),
             Text::h1('Unit 1'),
-            \Papercut\Markup\Markup::html('<h2>Warm-up</h2><p>Body.</p>', new \Papercut\Markup\MarkupOptions(toc: false)),
+            \Quoin\Markup\Markup::html('<h2>Warm-up</h2><p>Body.</p>', new \Quoin\Markup\MarkupOptions(toc: false)),
         ));
 
         $this->assertSame([[1, 1, 'Unit 1'], [1, 2, 'Warm-up']], self::strip(self::bookmarks($doc)));
@@ -108,9 +108,9 @@ final class BookmarksTest extends TestCase
     public function test_section_and_card_heading_titles_are_bookmarked(): void
     {
         $doc = Document::make(Page::a4()->body(
-            \Papercut\Decorator\Section::make('Body')->title('Units')->number(2)->heading(1),
-            \Papercut\Decorator\Card::make('Body')->title('Unit 1')->heading(2),
-            \Papercut\Decorator\Section::make('Body')->title('Plain'),
+            \Quoin\Decorator\Section::make('Body')->title('Units')->number(2)->heading(1),
+            \Quoin\Decorator\Card::make('Body')->title('Unit 1')->heading(2),
+            \Quoin\Decorator\Section::make('Body')->title('Plain'),
         ));
 
         $this->assertSame([[1, 1, '2 Units'], [1, 2, 'Unit 1']], self::strip(self::bookmarks($doc)));

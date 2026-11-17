@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Markup;
+namespace Quoin\Tests\Markup;
 
-use Papercut\Markup\InlineCss;
-use Papercut\Style\ListMarker;
-use Papercut\Style\TextAlign;
-use Papercut\Value\Length;
-use Papercut\Value\Percent;
+use Quoin\Markup\InlineCss;
+use Quoin\Style\ListMarker;
+use Quoin\Style\TextAlign;
+use Quoin\Value\Length;
+use Quoin\Value\Percent;
 use PHPUnit\Framework\TestCase;
 
 final class InlineCssTest extends TestCase

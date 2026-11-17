@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Code;
+namespace Quoin\Tests\Code;
 
-use Papercut\Code\CodeToken;
-use Papercut\Code\HighlightedCode;
-use Papercut\Code\PhikiHighlighter;
-use Papercut\Code\UnknownLanguage;
-use Papercut\Code\UnknownTheme;
+use Quoin\Code\CodeToken;
+use Quoin\Code\HighlightedCode;
+use Quoin\Code\PhikiHighlighter;
+use Quoin\Code\UnknownLanguage;
+use Quoin\Code\UnknownTheme;
 use PHPUnit\Framework\TestCase;
 
 final class PhikiHighlighterTest extends TestCase
@@ -40,7 +40,7 @@ final class PhikiHighlighterTest extends TestCase
 
     public function test_tokens_carry_theme_colors_and_font_styles(): void
     {
-        $h = (new PhikiHighlighter())->highlight("<?php\n// hi\n\$x = 'a';", 'php', 'papercut-light');
+        $h = (new PhikiHighlighter())->highlight("<?php\n// hi\n\$x = 'a';", 'php', 'quoin-light');
         self::assertSame('#f6f8fa', (string) $h->background);
         self::assertSame('#24292f', (string) $h->foreground);
         // Phiki splits a comment into its delimiter and body; both carry the comment style.
@@ -54,7 +54,7 @@ final class PhikiHighlighterTest extends TestCase
 
     public function test_storage_keywords_take_the_keyword_color(): void
     {
-        $h = (new PhikiHighlighter())->highlight("<?php\nclass A {}\nconst X = 1;\ninterface I {}", 'php', 'papercut-light');
+        $h = (new PhikiHighlighter())->highlight("<?php\nclass A {}\nconst X = 1;\ninterface I {}", 'php', 'quoin-light');
         foreach (['class', 'const', 'interface'] as $word) {
             self::assertSame('#8250df', (string) self::find($h, $word)->color, $word);
         }
@@ -63,7 +63,7 @@ final class PhikiHighlighterTest extends TestCase
     public function test_markup_tag_and_attribute_names_are_colored_but_tag_punctuation_is_not(): void
     {
         foreach (['html' => '<a href="x">y</a>', 'xml' => '<a href="x">y</a>', 'vue' => "<template>\n  <a href=\"x\">y</a>\n</template>"] as $lang => $code) {
-            $h = (new PhikiHighlighter())->highlight($code, $lang, 'papercut-light');
+            $h = (new PhikiHighlighter())->highlight($code, $lang, 'quoin-light');
             self::assertSame('#116329', (string) self::find($h, 'a')->color, $lang . ' tag name');
             self::assertSame('#0550ae', (string) self::find($h, 'href')->color, $lang . ' attribute name');
             self::assertSame('#24292f', (string) ($h->lines[0][0]->color ?? $h->foreground), $lang . ' tag punctuation stays the text color');
@@ -74,7 +74,7 @@ final class PhikiHighlighterTest extends TestCase
     {
         $h = new PhikiHighlighter();
         foreach (["a = 1\nb = 2", "a = 1\nb = 2\n", "a = 1\r\nb = 2\r\n", ''] as $code) {
-            $lines = $h->highlight($code, 'python', 'papercut-light')->lines;
+            $lines = $h->highlight($code, 'python', 'quoin-light')->lines;
             $text = implode("\n", array_map(static fn (array $l): string => implode('', array_map(static fn (CodeToken $t): string => $t->text, $l)), $lines));
             // The adapter keeps every line the author wrote, including trailing blank ones.
             self::assertSame(str_replace(["\r\n", "\r"], "\n", $code), $text);
@@ -88,13 +88,13 @@ final class PhikiHighlighterTest extends TestCase
         self::assertSame('JavaScript', $h->displayName('js'));
         self::assertSame('Shell', $h->displayName('sh'));
         self::assertNull($h->displayName('nosuchlang'));
-        self::assertEquals($h->highlight('$a = 1;', 'php', 'papercut-light'), $h->highlight('$a = 1;', 'PHP', 'papercut-light'));
+        self::assertEquals($h->highlight('$a = 1;', 'php', 'quoin-light'), $h->highlight('$a = 1;', 'PHP', 'quoin-light'));
     }
 
     public function test_unknown_language_throws(): void
     {
         $this->expectException(UnknownLanguage::class);
-        (new PhikiHighlighter())->highlight('x', 'nosuchlang', 'papercut-light');
+        (new PhikiHighlighter())->highlight('x', 'nosuchlang', 'quoin-light');
     }
 
     public function test_unknown_theme_throws(): void
@@ -230,6 +230,6 @@ final class PhikiHighlighterTest extends TestCase
     {
         $this->expectException(UnknownLanguage::class);
         $this->expectExceptionMessage('NoSuchLang');
-        (new PhikiHighlighter())->highlight('x', 'NoSuchLang', 'papercut-light');
+        (new PhikiHighlighter())->highlight('x', 'NoSuchLang', 'quoin-light');
     }
 }

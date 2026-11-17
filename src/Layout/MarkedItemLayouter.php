@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
-use Papercut\Node;
-use Papercut\Paint\TextRun;
-use Papercut\Style\ComputedStyle;
+use Quoin\Node;
+use Quoin\Paint\TextRun;
+use Quoin\Style\ComputedStyle;
 
 /**
  * Lays out a list item's content beside its gutter, with the marker
  * right-aligned in the gutter on the item's first slice only.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class MarkedItemLayouter implements Layouter
 {

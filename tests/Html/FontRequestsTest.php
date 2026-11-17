@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Html;
+namespace Quoin\Tests\Html;
 
-use Papercut\{Column, Document, Page, Span, Text};
-use Papercut\Backend\DefaultBackend;
-use Papercut\Export\{Fidelity, HtmlOptions};
-use Papercut\Html\{FontRequests, FontVariant, HtmlWriter};
-use Papercut\Style\{Style, StyleResolver};
-use Papercut\Text\{FontFace, FontSet, FontStyle};
-use Papercut\Tree\TreeWalker;
+use Quoin\{Column, Document, Page, Span, Text};
+use Quoin\Backend\DefaultBackend;
+use Quoin\Export\{Fidelity, HtmlOptions};
+use Quoin\Html\{FontRequests, FontVariant, HtmlWriter};
+use Quoin\Style\{Style, StyleResolver};
+use Quoin\Text\{FontFace, FontSet, FontStyle};
+use Quoin\Tree\TreeWalker;
 use PHPUnit\Framework\TestCase;
 
 final class FontRequestsTest extends TestCase
@@ -24,7 +24,7 @@ final class FontRequestsTest extends TestCase
         return $writer;
     }
 
-    /** @return list<array{request: \Papercut\Html\FontRequest, path: string}> */
+    /** @return list<array{request: \Quoin\Html\FontRequest, path: string}> */
     private function collect(Document $doc, FontSet $fonts = new FontSet()): array
     {
         $writer = $this->walk($doc, new HtmlOptions(fonts: $fonts));

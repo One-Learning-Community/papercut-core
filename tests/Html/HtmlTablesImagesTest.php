@@ -2,25 +2,25 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Html;
+namespace Quoin\Tests\Html;
 
-use Papercut\{Column, Document, Image, Link, Page, Spacer, Table, TableCell, TableRow, Text};
-use Papercut\Html\Css;
-use Papercut\Style\{Direction, Justify};
-use Papercut\Exception\ImageUnreadable;
-use Papercut\Export\{HtmlOptions, PdfOptions};
-use Papercut\Style\ImageFit;
-use Papercut\Backend\{Backend, FontHandle, ImageHandle};
-use Papercut\Backend\PhpPdf\PhpPdfBackend;
-use Papercut\Export\Fidelity;
-use Papercut\Html\HtmlWriter;
-use Papercut\Paint\DocumentMeta;
-use Papercut\Style\StyleResolver;
-use Papercut\Tests\Support\TestImages;
-use Papercut\Tree\TreeWalker;
+use Quoin\{Column, Document, Image, Link, Page, Spacer, Table, TableCell, TableRow, Text};
+use Quoin\Html\Css;
+use Quoin\Style\{Direction, Justify};
+use Quoin\Exception\ImageUnreadable;
+use Quoin\Export\{HtmlOptions, PdfOptions};
+use Quoin\Style\ImageFit;
+use Quoin\Backend\{Backend, FontHandle, ImageHandle};
+use Quoin\Backend\PhpPdf\PhpPdfBackend;
+use Quoin\Export\Fidelity;
+use Quoin\Html\HtmlWriter;
+use Quoin\Paint\DocumentMeta;
+use Quoin\Style\StyleResolver;
+use Quoin\Tests\Support\TestImages;
+use Quoin\Tree\TreeWalker;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class HtmlTablesImagesTest extends TestCase
 {
@@ -53,7 +53,7 @@ final class HtmlTablesImagesTest extends TestCase
         return (string) $e->getAttribute('style');
     }
 
-    private function body(\Papercut\Node|\Papercut\Component ...$nodes): Document
+    private function body(\Quoin\Node|\Quoin\Component ...$nodes): Document
     {
         return Document::make(Page::a4()->body(...$nodes));
     }
@@ -185,7 +185,7 @@ final class HtmlTablesImagesTest extends TestCase
 
     public function test_row_style_is_emitted(): void
     {
-        $html = $this->html($this->body(Table::make()->columns('1fr')->bodyRow(TableRow::make('a')->background(\Papercut\Value\Color::hex('#ff0000')))));
+        $html = $this->html($this->body(Table::make()->columns('1fr')->bodyRow(TableRow::make('a')->background(\Quoin\Value\Color::hex('#ff0000')))));
         self::assertStringContainsString('background:#ff0000', $this->style($this->xpath($html, '//tbody/tr')[0]));
     }
 
@@ -210,8 +210,8 @@ final class HtmlTablesImagesTest extends TestCase
         // A percentage height on a td or tr usually computes to auto, so the length is the one written.
         $html = $this->html($this->body(Table::make()->columns('1fr 1fr')->bodyRow(
             TableRow::make(
-                TableCell::make('a')->height(\Papercut\Value\Percent::of(50))->minHeight(pt(30)),
-                TableCell::make('b')->height(pt(25))->minHeight(\Papercut\Value\Percent::of(50)),
+                TableCell::make('a')->height(\Quoin\Value\Percent::of(50))->minHeight(pt(30)),
+                TableCell::make('b')->height(pt(25))->minHeight(\Quoin\Value\Percent::of(50)),
             ),
         )));
         $cells = $this->xpath($html, '//tbody/tr/td');
@@ -349,7 +349,7 @@ final class HtmlTablesImagesTest extends TestCase
     public function test_stray_cell_warning_respects_two_argument_callbacks(): void
     {
         $got = [];
-        $this->html($this->body(TableCell::make('x')), new HtmlOptions(onWarning: function (string $m, ?\Papercut\Export\FidelityReport $r = null) use (&$got): void {
+        $this->html($this->body(TableCell::make('x')), new HtmlOptions(onWarning: function (string $m, ?\Quoin\Export\FidelityReport $r = null) use (&$got): void {
             $got[] = [$m, $r];
         }));
         $stray = array_values(array_filter($got, static fn (array $g): bool => str_contains($g[0], 'outside a table')));
@@ -447,7 +447,7 @@ final class HtmlTablesImagesTest extends TestCase
     public function test_nested_links_render_one_anchor_and_one_report(): void
     {
         $messages = [];
-        $doc = $this->body(Link::to('https://outer.example', Text::spans(\Papercut\Span::text('plain '), new \Papercut\Span('inner', href: 'https://inner.example'), new \Papercut\Span(' more', href: 'https://inner2.example'))));
+        $doc = $this->body(Link::to('https://outer.example', Text::spans(\Quoin\Span::text('plain '), new \Quoin\Span('inner', href: 'https://inner.example'), new \Quoin\Span(' more', href: 'https://inner2.example'))));
         $html = $this->html($doc, new HtmlOptions(onWarning: function (string $m) use (&$messages): void {
             $messages[] = $m;
         }));
@@ -574,8 +574,8 @@ final class HtmlTablesImagesTest extends TestCase
         }
     }
 
-    /** @return \Papercut\Backend\Backend&object{loads: int} */
-    private function countingBackend(string $method): \Papercut\Backend\Backend
+    /** @return \Quoin\Backend\Backend&object{loads: int} */
+    private function countingBackend(string $method): \Quoin\Backend\Backend
     {
         return new class ($method) implements Backend {
             public int $loads = 0;
@@ -633,8 +633,8 @@ final class HtmlTablesImagesTest extends TestCase
 
     public function test_table_and_row_text_styles_cascade(): void
     {
-        $red = \Papercut\Value\Color::hex('#ff0000');
-        $blue = \Papercut\Value\Color::hex('#0000ff');
+        $red = \Quoin\Value\Color::hex('#ff0000');
+        $blue = \Quoin\Value\Color::hex('#0000ff');
         $html = $this->html($this->body(Table::make()->columns('1fr 1fr')->color($red)->bodyRow(TableRow::make('a', TableCell::make('b')->color($blue))->italic())));
         self::assertStringContainsString('color:#ff0000', $this->style($this->xpath($html, '//table')[0]));
         self::assertStringContainsString('font-style:italic', $this->style($this->xpath($html, '//tr')[0]));
@@ -692,7 +692,7 @@ final class HtmlTablesImagesTest extends TestCase
             try {
                 $doc->$m();
                 self::fail('expected InvalidStructure');
-            } catch (\Papercut\Exception\InvalidStructure $e) {
+            } catch (\Quoin\Exception\InvalidStructure $e) {
                 $messages[] = $e->getMessage();
             }
         }

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Vector;
+namespace Quoin\Tests\Vector;
 
-use Papercut\Exception\ImageUnreadable;
-use Papercut\Vector\SvgDocument;
+use Quoin\Exception\ImageUnreadable;
+use Quoin\Vector\SvgDocument;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -67,8 +67,8 @@ final class SvgDocumentTest extends TestCase
     {
         $svg = self::parse('width="100mm" viewBox="0 0 40 20"');
 
-        self::assertEqualsWithDelta(\Papercut\mm(100)->points, $svg->widthPt, 1e-9);
-        self::assertEqualsWithDelta(\Papercut\mm(50)->points, $svg->heightPt, 1e-9);
+        self::assertEqualsWithDelta(\Quoin\mm(100)->points, $svg->widthPt, 1e-9);
+        self::assertEqualsWithDelta(\Quoin\mm(50)->points, $svg->heightPt, 1e-9);
     }
 
     public function test_view_box_takes_commas_and_keeps_its_origin(): void

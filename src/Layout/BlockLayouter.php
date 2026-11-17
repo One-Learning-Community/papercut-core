@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
-use Papercut\{ColumnBreak, Link, Node, PageBreak, Spacer, View};
-use Papercut\Tree\{ColumnFlows, NodePath};
-use Papercut\Style\{Align, ComputedStyle, Direction};
-use Papercut\Value\{Length, Percent};
+use Quoin\{ColumnBreak, Link, Node, PageBreak, Spacer, View};
+use Quoin\Tree\{ColumnFlows, NodePath};
+use Quoin\Style\{Align, ComputedStyle, Direction};
+use Quoin\Value\{Length, Percent};
 
 /**
  * Column-direction Views (and Links): children stacked top to bottom with
@@ -18,7 +18,7 @@ use Papercut\Value\{Length, Percent};
  * with a definiteHeight (flex stretch) stays splittable; when it completes in
  * a single slice it fills at least that height the same way.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class BlockLayouter implements Layouter
 {
@@ -294,7 +294,7 @@ final class BlockLayouter implements Layouter
         return $break instanceof ColumnBreak ? ForcedBreak::Column : ForcedBreak::Page;
     }
 
-    /** @return list<\Papercut\Node|\Papercut\Component> */
+    /** @return list<\Quoin\Node|\Quoin\Component> */
     private static function children(Node $node): array
     {
         if ($node instanceof View || $node instanceof Link) {

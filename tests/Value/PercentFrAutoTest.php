@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Value;
+namespace Quoin\Tests\Value;
 
-use Papercut\Exception\InvalidValue;
-use Papercut\Value\{Auto, Fr, Percent};
+use Quoin\Exception\InvalidValue;
+use Quoin\Value\{Auto, Fr, Percent};
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\{fr, percent};
+use function Quoin\{fr, percent};
 
 final class PercentFrAutoTest extends TestCase
 {

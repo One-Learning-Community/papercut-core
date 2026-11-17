@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Support;
+namespace Quoin\Tests\Support;
 
-use Papercut\Backend\FontHandle;
+use Quoin\Backend\FontHandle;
 
 final class FakeFont implements FontHandle
 {

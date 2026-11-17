@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut;
+namespace Quoin;
 
 enum OverflowMode
 {

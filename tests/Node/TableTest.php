@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Node;
+namespace Quoin\Tests\Node;
 
-use Papercut\{Table, TableCell, TableRow, Text};
-use Papercut\Value\{Fr, Length};
+use Quoin\{Table, TableCell, TableRow, Text};
+use Quoin\Value\{Fr, Length};
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\mm;
+use function Quoin\mm;
 
 final class TableTest extends TestCase
 {
@@ -51,7 +51,7 @@ final class TableTest extends TestCase
 
     public function test_columns_variadic_typed(): void
     {
-        $t = Table::make()->columns(mm(10), \Papercut\fr(1));
+        $t = Table::make()->columns(mm(10), \Quoin\fr(1));
         self::assertInstanceOf(Length::class, $t->trackList()?->tracks[0]);
     }
 
@@ -78,7 +78,7 @@ final class TableTest extends TestCase
 
     public function test_columns_without_tracks_throws(): void
     {
-        $this->expectException(\Papercut\Exception\InvalidValue::class);
+        $this->expectException(\Quoin\Exception\InvalidValue::class);
         Table::make()->columns();
     }
 }

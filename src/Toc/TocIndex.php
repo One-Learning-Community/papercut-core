@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Toc;
+namespace Quoin\Toc;
 
-use Papercut\{Document, Node, Page, Text, Toc as TocNode};
-use Papercut\Style\{ComputedStyle, PageThemes, StyleResolver};
-use Papercut\Tree\{Region, TreeVisitor, TreeWalker, Visit};
+use Quoin\{Document, Node, Page, Text, Toc as TocNode};
+use Quoin\Style\{ComputedStyle, PageThemes, StyleResolver};
+use Quoin\Tree\{Region, TreeVisitor, TreeWalker, Visit};
 
 /**
  * The headings that table-of-contents blocks list, collected from the node tree
@@ -41,7 +41,7 @@ final class TocIndex implements TreeVisitor
         foreach ($index->candidates as [$key, $level, $text]) {
             foreach ($index->ranges as [$from, $to]) {
                 if ($level >= $from && $level <= $to) {
-                    $entry = new TocEntry($key, $level, $text, 'papercut-toc-' . count($index->entries));
+                    $entry = new TocEntry($key, $level, $text, 'quoin-toc-' . count($index->entries));
                     $index->entries[] = $entry;
                     $index->byKey[$key] = $entry;
                     break;

@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Markup;
+namespace Quoin\Markup;
 
-use Papercut\Exception\InvalidValue;
-use Papercut\Export\FidelityLevel;
-use Papercut\Style\ListMarker;
-use Papercut\Style\Style;
-use Papercut\Style\TextAlign;
-use Papercut\Value\Color;
-use Papercut\Value\ColumnSpec;
-use Papercut\Value\Edges;
-use Papercut\Value\Length;
-use Papercut\Value\Percent;
+use Quoin\Exception\InvalidValue;
+use Quoin\Export\FidelityLevel;
+use Quoin\Style\ListMarker;
+use Quoin\Style\Style;
+use Quoin\Style\TextAlign;
+use Quoin\Value\Color;
+use Quoin\Value\ColumnSpec;
+use Quoin\Value\Edges;
+use Quoin\Value\Length;
+use Quoin\Value\Percent;
 
 /**
- * Reads an HTML `style` attribute into a Papercut Style. Only the properties
- * below are understood, and their values go through Papercut's own parsers (so
+ * Reads an HTML `style` attribute into a Style. Only the properties
+ * below are understood, and their values go through its own parsers (so
  * `px` converts at 0.75pt); every other declaration, and every value those
  * parsers reject, is returned in `dropped` as written. Span-level elements
  * ($inline) take the text properties only; `list-style-type` applies only

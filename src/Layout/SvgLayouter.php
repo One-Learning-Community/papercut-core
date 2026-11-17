@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
-use Papercut\{Node, Svg};
-use Papercut\Paint\{Clip, DrawSvg};
-use Papercut\Style\ComputedStyle;
-use Papercut\Value\Length;
+use Quoin\{Node, Svg};
+use Quoin\Paint\{Clip, DrawSvg};
+use Quoin\Style\ComputedStyle;
+use Quoin\Value\Length;
 
 /**
  * An SVG is monolithic, sized like an image from its natural size. Its view box is placed in the
  * content box by preserveAspectRatio, and anything drawn outside the box is clipped, as a
  * browser does.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class SvgLayouter implements Layouter
 {

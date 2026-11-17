@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Feature;
+namespace Quoin\Tests\Feature;
 
-use Papercut\{Document, OverflowMode, Page, Text};
-use Papercut\Exception\InvalidValue;
-use Papercut\Export\PdfOptions;
+use Quoin\{Document, OverflowMode, Page, Text};
+use Quoin\Exception\InvalidValue;
+use Quoin\Export\PdfOptions;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 /** Margins that meet or cross leave no room for content, so both formats refuse the page. */
 final class PageMarginsTest extends TestCase

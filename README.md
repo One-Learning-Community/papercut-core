@@ -1,38 +1,38 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/One-Learning-Community/papercut/main/art/papercut-logo-dark.svg">
-  <img alt="Papercut" src="https://raw.githubusercontent.com/One-Learning-Community/papercut/main/art/papercut-logo.svg" width="240">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/One-Learning-Community/quoin/main/art/quoin-logo-dark.svg">
+  <img alt="Quoin" src="https://raw.githubusercontent.com/One-Learning-Community/quoin/main/art/quoin-logo.svg" width="177">
 </picture>
 
-# papercut/core
+# quoin/core
 
 Component-based, page-aware PDF layout engine for modern PHP. Build documents from typed, immutable
 components with flexbox-style layout and page-aware pagination; a pure-PHP engine turns the tree into a PDF.
 There is no browser and no CSS cascade.
 
-**Documentation:** [one-learning-community.github.io/papercut](https://one-learning-community.github.io/papercut/guide/)
+**Documentation:** [one-learning-community.github.io/quoin](https://one-learning-community.github.io/quoin/guide/)
 
-> **Status: 0.15, before 1.0.** Until 1.0 a minor version may change the API; patch versions won't. Using Laravel? See
-> [`papercut/laravel`](../laravel) for the Blade front end of this same engine.
+> **Status: 0.16, before 1.0.** Until 1.0 a minor version may change the API; patch versions won't. Using Laravel? See
+> [`quoin/laravel`](../laravel) for the Blade front end of this same engine.
 
 ## Requirements
 
 PHP 8.4+, `ext-mbstring`, `ext-zlib`, `ext-dom`. Composer dependencies are
 [`dskripchenko/php-pdf`](https://github.com/dskripchenko/php-pdf) (MIT), used behind a backend adapter, and
-`papercut/math` for equations. STIX Two Math is bundled as the math font.
+`quoin/math` for equations. STIX Two Math is bundled as the math font.
 
 ## Quick start
 
-Every example below is a complete snippet that leaves a `Papercut\Document` in `$document` (and, where needed, a
+Every example below is a complete snippet that leaves a `Quoin\Document` in `$document` (and, where needed, a
 `PdfOptions` in `$options`); the test suite runs each one (`tests/Feature/ReadmeTest.php`). Real code would end with `$document->toPdf()->save('out.pdf')`.
 
 ```php
-use Papercut\{Column, Document, Page, Text};
-use function Papercut\{mm, pt};
+use Quoin\{Column, Document, Page, Text};
+use function Quoin\{mm, pt};
 
 $document = Document::make(
     Page::a4()->margin(mm(20))->body(
         Column::make(
-            Text::h1('Hello, Papercut'),
+            Text::h1('Hello, Quoin'),
             Text::p('A column of text. Inter is bundled, so this embeds a real font.'),
         )->gap(pt(8)),
     ),
@@ -62,8 +62,8 @@ Output: `$document->toPdf()` returns an `Output`: `->save($path)`, `->bytes()` (
 | `PageNumber::make('Page {page} of {total}')` | Page number and page count. |
 | `PageBreak::make()` | Forced break. |
 | `ColumnFlow::make(...)`, `ColumnBreak::make()` | Text set in columns, like Word's; a `ColumnBreak` sends what follows to the next column. |
-| `Equation::of(...)` | A block [equation](https://one-learning-community.github.io/papercut/guide/equations), built with `Papercut\Math\Math` nodes. Use `Span::math()` for one inside a line. |
-| `Card`, `Callout`, `Blockquote`, `Section`, `Field`, `ChoiceList`, `KeyValueList`, `Badge`, `Stat`, `Totals`, `Signature`, `CodeBlock` | [Decorators](https://one-learning-community.github.io/papercut/guide/decorators) (in `Papercut\Decorator`): ready-made pieces that take their look from the theme. |
+| `Equation::of(...)` | A block [equation](https://one-learning-community.github.io/quoin/guide/equations), built with `Quoin\Math\Math` nodes. Use `Span::math()` for one inside a line. |
+| `Card`, `Callout`, `Blockquote`, `Section`, `Field`, `ChoiceList`, `KeyValueList`, `Badge`, `Stat`, `Totals`, `Signature`, `CodeBlock` | [Decorators](https://one-learning-community.github.io/quoin/guide/decorators) (in `Quoin\Decorator`): ready-made pieces that take their look from the theme. |
 
 Components are immutable: every method returns a modified copy.
 
@@ -74,10 +74,10 @@ Lengths are typed values created by helper functions: `pt()`, `px()`, `mm()`, `c
 no ambiguity about the unit. Strings are accepted where noted (`'1fr 20mm'`, `'slate-500'`).
 
 ```php
-use Papercut\{Column, Document, Page, Row, Text};
-use Papercut\Style\Justify;
-use Papercut\Value\Edges;
-use function Papercut\{mm, pt, percent};
+use Quoin\{Column, Document, Page, Row, Text};
+use Quoin\Style\Justify;
+use Quoin\Value\Edges;
+use function Quoin\{mm, pt, percent};
 
 $document = Document::make(
     Page::a4()->margin(mm(15))->body(
@@ -107,11 +107,11 @@ Colors are `Color` values or strings: hex (`'#336699'`) or the bundled Tailwind 
 Named styles live in the `Theme`; apply one by name:
 
 ```php
-use Papercut\{Column, Document, Page, Text};
-use Papercut\Export\PdfOptions;
-use Papercut\Style\{Style, Theme};
-use Papercut\Value\Color;
-use function Papercut\{mm, pt};
+use Quoin\{Column, Document, Page, Text};
+use Quoin\Export\PdfOptions;
+use Quoin\Style\{Style, Theme};
+use Quoin\Value\Color;
+use function Quoin\{mm, pt};
 
 $theme = Theme::default()->withStyle('highlight', Style::make(color: Color::parse('indigo-600'), fontWeight: 700));
 
@@ -135,9 +135,9 @@ bold, italic, underline, strike, `<mark>` (a `yellow-200` background), `<code>` 
 For full control build spans yourself, including `Span::code($text)`, `Span::badge($text, $tone, $variant)` and `Span::math(...)` (an inline equation), none of which read markup.
 
 ```php
-use Papercut\{Column, Document, Page, Span, Text};
-use Papercut\Style\Style;
-use function Papercut\{mm, pt};
+use Quoin\{Column, Document, Page, Span, Text};
+use Quoin\Style\Style;
+use function Quoin\{mm, pt};
 
 $document = Document::make(
     Page::a4()->margin(mm(20))->body(
@@ -172,9 +172,9 @@ line. An item can split across pages; its marker stays with its first line. HTML
 | `None` | No marker (the gutter stays) |
 
 ```php
-use Papercut\{Document, ListItem, ListNode, Page};
-use Papercut\Style\ListMarker;
-use function Papercut\mm;
+use Quoin\{Document, ListItem, ListNode, Page};
+use Quoin\Style\ListMarker;
+use function Quoin\mm;
 
 $document = Document::make(
     Page::a4()->margin(mm(20))->body(
@@ -193,11 +193,11 @@ $document = Document::make(
 browser: it maps a small, useful subset of HTML and reports the rest.
 
 ```php
-use Papercut\{Column, Document, Page, Text};
-use Papercut\Markup\{Markup, MarkupOptions, StyleMode};
-use function Papercut\{mm, pt};
+use Quoin\{Column, Document, Page, Text};
+use Quoin\Markup\{Markup, MarkupOptions, StyleMode};
+use function Quoin\{mm, pt};
 
-$slide = '<h2>Agenda</h2><p>Welcome to <b>Papercut</b>.</p><ol start="3"><li>Intro</li><li>Demo</li></ol>';
+$slide = '<h2>Agenda</h2><p>Welcome to <b>Quoin</b>.</p><ol start="3"><li>Intro</li><li>Demo</li></ol>';
 
 $document = Document::make(
     Page::a4()->margin(mm(20))->body(
@@ -242,7 +242,7 @@ as one blank line each. A truly empty `<p></p>` is dropped in both modes.
 
 ### Images
 
-Papercut never reads an `<img src>` itself. The `images` closure gets the raw decoded `src` and returns the image
+Markup conversion never reads an `<img src>` itself. The `images` closure gets the raw decoded `src` and returns the image
 bytes, or `null` for a missing image (a throw counts as missing). Bytes that are not a recognized image format
 (PNG, JPEG, and with `ext-gd` WebP, GIF, BMP, AVIF; sniffed at conversion time) are treated as missing too. A missing
 image shows its `alt` text in italics, or nothing without `alt`. `width` and `height` attributes apply in both style
@@ -251,9 +251,9 @@ from the image's own aspect ratio. The image keeps the aspect of its bytes, so a
 an empty page. An `img` inside `a href` becomes a linked image.
 
 ```php
-use Papercut\{Document, Page};
-use Papercut\Markup\{Markup, MarkupOptions};
-use function Papercut\mm;
+use Quoin\{Document, Page};
+use Quoin\Markup\{Markup, MarkupOptions};
+use function Quoin\mm;
 
 $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
 $markup = new MarkupOptions(images: fn (string $src): ?string => $src === 'logo.png' ? $png : null);
@@ -279,7 +279,7 @@ In `Original` mode these properties are understood; `px` converts at 0.75pt.
 | `width`, `height`, `min-*`, `max-*` | Blocks and images |
 | `list-style-type` | Lists |
 
-Every other declaration, and any value Papercut's parsers refuse, is dropped and reported by declaration. A trailing
+Every other declaration, and any value the parsers refuse, is dropped and reported by declaration. A trailing
 `!important` is ignored and units are case-insensitive (`12PX`). Known gap: CSS color keywords such as `red` and
 `hsl()` are not recognized yet.
 `float: left|right` renders a normal block (reported); floats set through classes are invisible and not reported.
@@ -314,8 +314,8 @@ between rows, never through one (unless a single row is taller than a page), and
 the table crosses (`repeatHeader(false)` turns that off).
 
 ```php
-use Papercut\{Document, Page, Table, TableRow, Text};
-use function Papercut\{mm, pt};
+use Quoin\{Document, Page, Table, TableRow, Text};
+use function Quoin\{mm, pt};
 
 $rows = [];
 for ($i = 1; $i <= 120; $i++) {
@@ -340,8 +340,8 @@ $document = Document::make(Page::a4()->margin(mm(20))->body($table));
 `PageNumber::make('Page {page} of {total}')` fills in both numbers, even though `{total}` is only known after layout.
 
 ```php
-use Papercut\{Column, Document, Page, PageNumber, Row, Spacer, Text};
-use function Papercut\{mm, pt};
+use Quoin\{Column, Document, Page, PageNumber, Row, Spacer, Text};
+use function Quoin\{mm, pt};
 
 $body = [];
 for ($i = 1; $i <= 80; $i++) {
@@ -364,8 +364,8 @@ $document = Document::make(
 - `minLines(n)`: minimum lines left at the bottom (and carried to the top) when a paragraph splits.
 
 ```php
-use Papercut\{Column, Document, Page, PageBreak, Text};
-use function Papercut\{mm, pt};
+use Quoin\{Column, Document, Page, PageBreak, Text};
+use function Quoin\{mm, pt};
 
 $document = Document::make(
     Page::a4()->margin(mm(20))->body(
@@ -385,7 +385,7 @@ $document = Document::make(
 Headings `h1` to `h4` become entries in the PDF's bookmarks panel, nested by level. Any component can add one with `bookmark($title, $level = null)`, and `bookmark(false)` takes a heading out. Headers, footers and backgrounds never add bookmarks. `new PdfOptions(bookmarks: false)` leaves the panel empty.
 
 ```php
-use Papercut\{Column, Document, Page, Text};
+use Quoin\{Column, Document, Page, Text};
 
 $document = Document::make(Page::a4()->body(Column::make(
     Text::h1('Annual report'),
@@ -396,25 +396,25 @@ $document = Document::make(Page::a4()->body(Column::make(
 
 ## Encryption
 
-`new PdfOptions(encryption: Encryption::password('secret'))` encrypts the PDF with AES-256 so it opens only with that password; readers may print and copy but not edit. `new Encryption($userPassword, $ownerPassword, print:, copy:, modify:, annotate:, assemble:)` sets the permissions. An empty user password lets anyone open the document while the permissions apply. Without an owner password a random one is generated, so the permissions cannot be lifted. Screen-reader access is always allowed. Signing and merging are left to php-pdf's `PdfSigner` and `PdfMerger`, which work on Papercut's output.
+`new PdfOptions(encryption: Encryption::password('secret'))` encrypts the PDF with AES-256 so it opens only with that password; readers may print and copy but not edit. `new Encryption($userPassword, $ownerPassword, print:, copy:, modify:, annotate:, assemble:)` sets the permissions. An empty user password lets anyone open the document while the permissions apply. Without an owner password a random one is generated, so the permissions cannot be lifted. Screen-reader access is always allowed. Signing and merging are left to php-pdf's `PdfSigner` and `PdfMerger`, which work on the generated PDF.
 
 ## QR codes
 
-`QrCode::make($value, ErrorCorrection $level = Medium)` draws a QR code as vector squares in the text color. It is square: `width()` (or `height()`) sets the side, 25mm by default, quiet zone included (`quietZone(n)`, 4 modules by default). php-pdf's encoder holds up to 213 bytes at Medium; implement `Papercut\Barcode\QrEncoder` to use another, or pass a grid to `QrCode::fromModules()`. HTML exports draw it as an inline SVG.
+`QrCode::make($value, ErrorCorrection $level = Medium)` draws a QR code as vector squares in the text color. It is square: `width()` (or `height()`) sets the side, 25mm by default, quiet zone included (`quietZone(n)`, 4 modules by default). php-pdf's encoder holds up to 213 bytes at Medium; implement `Quoin\Barcode\QrEncoder` to use another, or pass a grid to `QrCode::fromModules()`. HTML exports draw it as an inline SVG.
 
 ```php
-use Papercut\{Document, Page, QrCode};
-use function Papercut\mm;
+use Quoin\{Document, Page, QrCode};
+use function Quoin\mm;
 
 $document = Document::make(Page::a4()->body(QrCode::make('https://acme.test/pay/INV-142')->width(mm(30))));
 ```
 
-With the optional `bacon/bacon-qr-code` package installed, you can style a code: `shape(QrShape::Rounded|Dots)`, `eyes(QrEyes::Dot|Pointy)`, `eyeColor($color)` and `gradient($from, $to, QrGradient $type = Diagonal)`. Papercut still encodes the modules, and Bacon draws them as an SVG. Without the package, styling throws `MissingPackage` with the `composer require` command. Dots and rounded modules are harder to scan, so they raise the error correction to `Quartile` (up to 151 bytes), re-encoding the text, unless it is already `High`; `errorCorrection()` won't take such a code lower. `new BaconQrEncoder()` (in `Papercut\Barcode\Bacon`) encodes up to 2,953 bytes when passed as the third argument to `make()`. HTML exports show a styled code as an SVG image.
+With the optional `bacon/bacon-qr-code` package installed, you can style a code: `shape(QrShape::Rounded|Dots)`, `eyes(QrEyes::Dot|Pointy)`, `eyeColor($color)` and `gradient($from, $to, QrGradient $type = Diagonal)`. Encoding stays built in; Bacon only draws the modules as an SVG. Without the package, styling throws `MissingPackage` with the `composer require` command. Dots and rounded modules are harder to scan, so they raise the error correction to `Quartile` (up to 151 bytes), re-encoding the text, unless it is already `High`; `errorCorrection()` won't take such a code lower. `new BaconQrEncoder()` (in `Quoin\Barcode\Bacon`) encodes up to 2,953 bytes when passed as the third argument to `make()`. HTML exports show a styled code as an SVG image.
 
 ```php
-use Papercut\{Document, Page, QrCode};
-use Papercut\Barcode\{QrEyes, QrShape};
-use function Papercut\mm;
+use Quoin\{Document, Page, QrCode};
+use Quoin\Barcode\{QrEyes, QrShape};
+use function Quoin\mm;
 
 $qr = QrCode::make('https://acme.test/pay/INV-142')
     ->shape(QrShape::Dots)
@@ -431,11 +431,11 @@ $document = Document::make(Page::a4()->body($qr));
 
 Paths (arcs included), basic shapes, groups with nested transforms and inherited fill and stroke, `<use>`, `<style>` rules, opacity, `fill-rule="evenodd"`, and linear and radial gradients on any shape are drawn. `<clipPath>`, `<mask>`, `<filter>`, `<pattern>`, `<image>`, `<marker>`, `<symbol>`, `<textPath>` and `<tspan>` are not drawn yet, and a warning names any the SVG uses. `<text>` is set in the document's embedded fonts: a `font-family` you registered is used, otherwise the SVG element's own family.
 
-Untrusted SVG is safe to draw. Papercut never loads files, DTDs or URLs named in an SVG, refuses one that declares entities, removes scripts and event handlers, and refuses one over 10 MB or over a million units of drawing work, with each `<use>` counted (one per path point, 15 per circle or ellipse, 5 per other element; `ImageUnreadable`). HTML exports show it as an `<img>` with a `data:` URI, never inline, with the SVG's `<title>` as the alt text.
+Untrusted SVG is safe to draw. Drawing an SVG never loads files, DTDs or URLs it names; it refuses one that declares entities, removes scripts and event handlers, and refuses one over 10 MB or over a million units of drawing work, with each `<use>` counted (one per path point, 15 per circle or ellipse, 5 per other element; `ImageUnreadable`). HTML exports show it as an `<img>` with a `data:` URI, never inline, with the SVG's `<title>` as the alt text.
 
 ```php
-use Papercut\{Document, Page, Svg};
-use function Papercut\mm;
+use Quoin\{Document, Page, Svg};
+use function Quoin\mm;
 
 $ring = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><title>A ring</title>'
     . '<path fill="#4f46e5" fill-rule="evenodd" d="M50 10 A40 40 0 1 1 49.99 10 Z M50 30 A20 20 0 1 1 49.99 30 Z"/></svg>';
@@ -453,11 +453,11 @@ $document = Document::make(Page::a4()->body(Svg::fromString($ring)->width(mm(30)
 `PdfPage` also works anywhere in your content, like an image. HTML exports leave PDF pages and templates out and report them as dropped, and position places with CSS.
 
 ```php
-use Papercut\{Column, Document, Page, PdfPage, Place, QrCode, Text};
-use Papercut\Style\Anchor;
-use function Papercut\{mm, percent, pt};
+use Quoin\{Column, Document, Page, PdfPage, Place, QrCode, Text};
+use Quoin\Style\Anchor;
+use function Quoin\{mm, percent, pt};
 
-// Any PDF works as a template; this one is made with Papercut.
+// Any PDF works as a template; this one is made with this library.
 $template = Document::make(Page::a4()->landscape()->margin(mm(15))->body(
     Column::make(Text::make('Certificate of Completion')->size(pt(32))->bold()->center())
         ->border(pt(4), '#1e3a8a')->padding(mm(12)),
@@ -475,9 +475,9 @@ $document = Document::make(
 ## Images and links
 
 ```php
-use Papercut\{Column, Document, Image, Link, Page, Text};
-use Papercut\Style\ImageFit;
-use function Papercut\{mm, pt};
+use Quoin\{Column, Document, Image, Link, Page, Text};
+use Quoin\Style\ImageFit;
+use function Quoin\{mm, pt};
 
 // A 1x1 PNG, inline to keep the example self-contained. Use Image::file('logo.png') in practice.
 $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
@@ -499,10 +499,10 @@ used. Add your own families with a `FontSet` of `FontFace`s, pick them with `fon
 the primary font lacks.
 
 ```php
-use Papercut\{Column, Document, Page, Text};
-use Papercut\Export\PdfOptions;
-use Papercut\Text\{FontFace, FontSet};
-use function Papercut\{mm, pt};
+use Quoin\{Column, Document, Page, Text};
+use Quoin\Export\PdfOptions;
+use Quoin\Text\{FontFace, FontSet};
+use function Quoin\{mm, pt};
 
 // Add your own family (paths to TTFs), here reusing the bundled files under another name:
 $inter = dirname((new ReflectionClass(FontSet::class))->getFileName(), 3) . '/resources/fonts/Inter';
@@ -536,9 +536,9 @@ neither is HarfBuzz shaping.
 - `FontMode::Sources`: an ordered stack of font sources decides, family by family, where the browser gets the font. Pass the stack as `fontSources`. A source is a `FontSource` object or a closure `fn (FontRequest $r): ?FontAnswer`; return `null` to pass a family to the next source.
 
 ```php
-use Papercut\{Document, Page, Text};
-use Papercut\Export\{FontMode, HtmlOptions};
-use Papercut\Html\{GoogleFonts, LocalFonts};
+use Quoin\{Document, Page, Text};
+use Quoin\Export\{FontMode, HtmlOptions};
+use Quoin\Html\{GoogleFonts, LocalFonts};
 
 $document = Document::make(Page::a4()->body(Text::make('Hello')));
 
@@ -572,8 +572,8 @@ A source that answers with an unsafe URL (a scheme other than http or https, a p
 
 ## Word export
 
-The optional [`papercut/docx`](../docx/README.md) package exports any document as a Word file:
-`$document->export(new \Papercut\Docx\DocxExporter())->save('invoice.docx')`. Word, LibreOffice and Google Docs
+The optional [`quoin/docx`](../docx/README.md) package exports any document as a Word file:
+`$document->export(new \Quoin\Docx\DocxExporter())->save('invoice.docx')`. Word, LibreOffice and Google Docs
 paginate it themselves; what Word can't show is reported, as with HTML export.
 
 ## Font cache
@@ -581,17 +581,17 @@ paginate it themselves; what Word can't show is reported, as with HTML export.
 Where every request is a new process (PHP-FPM), each font face would be parsed again on every request. The default
 backend keeps each parsed face in a file instead, and later processes restore it in a fraction of the time (Inter:
 1.7 ms parsed, 0.2 ms restored). Each face gets one file of a few hundred KB in
-`sys_get_temp_dir()/papercut-cache-<uid>`. The key covers the font's path, mtime and size plus the php-pdf version,
+`sys_get_temp_dir()/quoin-cache-<uid>`. The key covers the font's path, mtime and size plus the php-pdf version,
 so an updated font or library simply gets a new entry. Entries unused for 30 days are pruned. Any problem (an
 unwritable directory, a symlinked or foreign-owned one, a damaged file) falls back silently to parsing; output is
 identical either way.
 
 ```php
-use Papercut\{Document, Page, Text};
-use Papercut\Export\PdfOptions;
+use Quoin\{Document, Page, Text};
+use Quoin\Export\PdfOptions;
 
 $document = Document::make(Page::a4()->body(Text::make('Hello')));
-$options = new PdfOptions(cacheDir: '/var/cache/myapp/papercut'); // your own directory
+$options = new PdfOptions(cacheDir: '/var/cache/myapp/quoin'); // your own directory
 $options = new PdfOptions(cacheDir: false);                       // no disk cache
 ```
 
@@ -599,9 +599,9 @@ A service that renders PDFs all day can let opcache hold the parsed fonts in sha
 memory for every face ever cached:
 
 ```php
-use Papercut\{Document, Page, Text};
-use Papercut\Backend\PhpPdf\{FontStateCache, PhpPdfBackend};
-use Papercut\Export\PdfOptions;
+use Quoin\{Document, Page, Text};
+use Quoin\Backend\PhpPdf\{FontStateCache, PhpPdfBackend};
+use Quoin\Export\PdfOptions;
 
 $document = Document::make(Page::a4()->body(Text::make('Hello')));
 $options = new PdfOptions(backend: new PhpPdfBackend(fontCacheFormat: FontStateCache::PHP));
@@ -609,7 +609,7 @@ $options = new PdfOptions(backend: new PhpPdfBackend(fontCacheFormat: FontStateC
 
 ## Errors
 
-Every error extends `Papercut\PapercutException` and says what is wrong and where.
+Every error extends `Quoin\QuoinException` and says what is wrong and where.
 
 | Exception | Cause |
 |---|---|
@@ -623,12 +623,12 @@ By default overflow throws. `new PdfOptions(overflow: OverflowMode::Clip)` clips
 `onWarning`.
 
 ```php
-use Papercut\{Column, Document, Page, PapercutException, Text};
-use function Papercut\{mm, pt};
+use Quoin\{Column, Document, Page, QuoinException, Text};
+use function Quoin\{mm, pt};
 
 try {
     $text = Text::make('Oops')->attributes(['colour' => 'red']);
-} catch (PapercutException $e) {
+} catch (QuoinException $e) {
     $text = Text::make('Caught: ' . $e->getMessage());
 }
 
@@ -641,9 +641,9 @@ Runnable scripts in [`examples/core`](../../examples/core): an invoice, a multi-
 
 ## Credits
 
-Every PDF Papercut makes is written by [`dskripchenko/php-pdf`](https://github.com/dskripchenko/php-pdf), by Denis Skripchenko. Papercut lays out and paginates the
+Every PDF is written by [`dskripchenko/php-pdf`](https://github.com/dskripchenko/php-pdf), by Denis Skripchenko. The layout engine lays out and paginates the
 document; php-pdf parses, subsets and embeds the fonts, applies kerning, embeds images, draws SVG, encodes QR codes,
-encrypts, and reads the PDFs used as page templates. When Papercut needed more, the maintainer added it upstream.
+encrypts, and reads the PDFs used as page templates. When more was needed, the maintainer added it upstream.
 Thank you.
 
 ## License

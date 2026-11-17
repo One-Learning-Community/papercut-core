@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
-use Papercut\{Node, PdfPage};
-use Papercut\Paint\DrawPdfPage;
-use Papercut\Style\ComputedStyle;
-use Papercut\Value\Length;
+use Quoin\{Node, PdfPage};
+use Quoin\Paint\DrawPdfPage;
+use Quoin\Style\ComputedStyle;
+use Quoin\Value\Length;
 
 /**
  * A page of another PDF is monolithic, sized like an image from the page's own size. When both
  * width and height are set, the page keeps its proportions and is centered in its box.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class PdfPageLayouter implements Layouter
 {

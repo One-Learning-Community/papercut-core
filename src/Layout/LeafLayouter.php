@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
-use Papercut\{ColumnBreak, Node, PageBreak, PageNumber, Spacer};
-use Papercut\Paint\PageNumberSlot;
-use Papercut\Style\ComputedStyle;
-use Papercut\Text\{CachedFont, FontStyle};
+use Quoin\{ColumnBreak, Node, PageBreak, PageNumber, Spacer};
+use Quoin\Paint\PageNumberSlot;
+use Quoin\Style\ComputedStyle;
+use Quoin\Text\{CachedFont, FontStyle};
 
 /**
  * Spacer, PageBreak and PageNumber. Forced breaks and flex growth are the
  * parent's job; a Spacer here only takes its fixed (or stretched) height. A
  * PageNumber is one line box carrying a PageNumberSlot the Painter fills in.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class LeafLayouter implements Layouter
 {

@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut;
+namespace Quoin;
 
-use Papercut\Backend\PhpPdf\PhpPdfQrEncoder;
-use Papercut\Barcode\Bacon\BaconQrSvg;
-use Papercut\Barcode\{ErrorCorrection, QrDesign, QrEncoder, QrEyes, QrGradient, QrShape};
-use Papercut\Concerns\HasStyle;
-use Papercut\Exception\{InvalidStructure, InvalidValue, MissingPackage};
-use Papercut\Support\{Check, EnumValue};
-use Papercut\Value\Color;
+use Quoin\Backend\PhpPdf\PhpPdfQrEncoder;
+use Quoin\Barcode\Bacon\BaconQrSvg;
+use Quoin\Barcode\{ErrorCorrection, QrDesign, QrEncoder, QrEyes, QrGradient, QrShape};
+use Quoin\Concerns\HasStyle;
+use Quoin\Exception\{InvalidStructure, InvalidValue, MissingPackage};
+use Quoin\Support\{Check, EnumValue};
+use Quoin\Value\Color;
 
 /**
  * A QR code drawn as vector squares, so it stays sharp at any size and needs no image library.

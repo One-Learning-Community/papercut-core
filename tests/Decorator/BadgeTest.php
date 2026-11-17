@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Decorator;
+namespace Quoin\Tests\Decorator;
 
 use InvalidArgumentException;
-use Papercut\{Column, Document, Page, Text, View};
-use Papercut\Decorator\{Badge, Decorator};
-use Papercut\Style\{Align, ComputedStyle, StyleResolver, Theme};
-use Papercut\Value\Color;
-use Papercut\Tests\Support\LayoutHarness;
+use Quoin\{Column, Document, Page, Text, View};
+use Quoin\Decorator\{Badge, Decorator};
+use Quoin\Style\{Align, ComputedStyle, StyleResolver, Theme};
+use Quoin\Value\Color;
+use Quoin\Tests\Support\LayoutHarness;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class BadgeTest extends TestCase
 {

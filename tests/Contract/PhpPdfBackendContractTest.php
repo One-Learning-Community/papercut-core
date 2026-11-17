@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Contract;
+namespace Quoin\Tests\Contract;
 
-use Papercut\Backend\Backend;
-use Papercut\Backend\PhpPdf\PhpPdfBackend;
+use Quoin\Backend\Backend;
+use Quoin\Backend\PhpPdf\PhpPdfBackend;
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 
 #[RequiresPhpExtension('gd')]

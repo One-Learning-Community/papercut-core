@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tree;
+namespace Quoin\Tree;
 
-use Papercut\{Node, View};
-use Papercut\Style\{ComputedStyle, Direction};
+use Quoin\{Node, View};
+use Quoin\Style\{ComputedStyle, Direction};
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
+/** @internal Engine detail, not public API. It may change in any release. */
 final class NodePath
 {
     /** Views are named by their computed direction; debugName() can be stale after attributes(). */

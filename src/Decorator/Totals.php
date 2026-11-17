@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Decorator;
+namespace Quoin\Decorator;
 
-use Papercut\{Component, Node, Table, TableCell, View};
-use Papercut\Concerns\{HasStyle, HasVariants};
-use Papercut\Value\{Auto, Fr};
+use Quoin\{Component, Node, Table, TableCell, View};
+use Quoin\Concerns\{HasStyle, HasVariants};
+use Quoin\Value\{Auto, Fr};
 
 /**
  * Label and amount rows with the amounts right-aligned, such as an invoice's subtotal, tax and total.

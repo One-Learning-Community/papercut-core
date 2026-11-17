@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Export;
+namespace Quoin\Tests\Export;
 
-use Papercut\Backend\DefaultBackend;
-use Papercut\Exception\ImageUnreadable;
-use Papercut\Export\LoadedImage;
-use Papercut\Image;
-use Papercut\Tests\Support\TestImages;
+use Quoin\Backend\DefaultBackend;
+use Quoin\Exception\ImageUnreadable;
+use Quoin\Export\LoadedImage;
+use Quoin\Image;
+use Quoin\Tests\Support\TestImages;
 use PHPUnit\Framework\TestCase;
 
 final class LoadedImageTest extends TestCase

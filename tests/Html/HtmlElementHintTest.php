@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Html;
+namespace Quoin\Tests\Html;
 
-use Papercut\{Document, Page, View};
-use Papercut\Exception\InvalidValue;
+use Quoin\{Document, Page, View};
+use Quoin\Exception\InvalidValue;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class HtmlElementHintTest extends TestCase
 {

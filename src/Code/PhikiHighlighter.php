@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Code;
+namespace Quoin\Code;
 
-use Papercut\Value\Color;
+use Quoin\Value\Color;
 use Phiki\Exceptions\UnrecognisedGrammarException;
 use Phiki\Exceptions\UnrecognisedThemeException;
 use Phiki\Grammar\Grammar;

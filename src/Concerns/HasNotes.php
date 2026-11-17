@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Concerns;
+namespace Quoin\Concerns;
 
-use Papercut\Markup\Note;
+use Quoin\Markup\Note;
 
 trait HasNotes
 {

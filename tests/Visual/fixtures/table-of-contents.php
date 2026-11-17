@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Papercut\{Document, Page, Text, Toc};
+use Quoin\{Document, Page, Text, Toc};
 
 // Generic, made-up content: a cover page, a contents list of levels 1 and 2 with dot leaders and links,
 // and a few sections across later pages.

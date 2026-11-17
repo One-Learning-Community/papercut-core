@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Feature;
+namespace Quoin\Tests\Feature;
 
-use Papercut\Tests\Support\PdfInspector;
+use Quoin\Tests\Support\PdfInspector;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Executes every fenced ```php block of packages/core/README.md so the guide cannot rot.
  * Convention: a block is a complete snippet (it may start with `use` lines) that leaves a
- * Papercut\Document in `$document`
+ * Quoin\Document in `$document`
  * (and optionally a PdfOptions in `$options`); the harness saves it to a temp file and validates it.
  */
 final class ReadmeTest extends TestCase
@@ -38,7 +38,7 @@ final class ReadmeTest extends TestCase
     #[DataProvider('blocks')]
     public function test_block_runs_and_renders_a_valid_pdf(string $code): void
     {
-        $dir = sys_get_temp_dir() . '/papercut-readme-' . bin2hex(random_bytes(4));
+        $dir = sys_get_temp_dir() . '/quoin-readme-' . bin2hex(random_bytes(4));
         mkdir($dir);
         $script = $dir . '/block.php';
         $pdfPath = $dir . '/out.pdf';

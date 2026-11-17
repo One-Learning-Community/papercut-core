@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Text;
+namespace Quoin\Tests\Text;
 
-use Papercut\Span;
-use Papercut\Style\{ComputedStyle, Style, Theme, WhiteSpace};
-use Papercut\Tests\Support\FakeBackend;
-use Papercut\Text\{FontRegistry, Itemizer};
+use Quoin\Span;
+use Quoin\Style\{ComputedStyle, Style, Theme, WhiteSpace};
+use Quoin\Tests\Support\FakeBackend;
+use Quoin\Text\{FontRegistry, Itemizer};
 use PHPUnit\Framework\TestCase;
 
 final class ItemizerTest extends TestCase
@@ -64,7 +64,7 @@ final class ItemizerTest extends TestCase
     }
 
     /**
-     * @param list<\Papercut\Text\InlineItem> $items
+     * @param list<\Quoin\Text\InlineItem> $items
      * @return list<string>
      */
     private static function kinds(array $items): array

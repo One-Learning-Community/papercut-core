@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Paint;
+namespace Quoin\Paint;
 
-use Papercut\Text\SvgFonts;
-use Papercut\Vector\SvgDocument;
+use Quoin\Text\SvgFonts;
+use Quoin\Vector\SvgDocument;
 
 /**
  * An SVG drawn so that its view box fills this rectangle; the layout clips it to its box.

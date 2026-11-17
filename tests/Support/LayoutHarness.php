@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Support;
+namespace Quoin\Tests\Support;
 
-use Papercut\{Component, Node, OverflowMode};
-use Papercut\Layout\{BreakToken, Constraints, LayoutContext, LayoutEngine, LayoutResult};
-use Papercut\Style\{ComputedStyle, Theme};
-use Papercut\Text\FontRegistry;
+use Quoin\{Component, Node, OverflowMode};
+use Quoin\Layout\{BreakToken, Constraints, LayoutContext, LayoutEngine, LayoutResult};
+use Quoin\Style\{ComputedStyle, Theme};
+use Quoin\Text\FontRegistry;
 
 final class LayoutHarness
 {
@@ -38,14 +38,14 @@ final class LayoutHarness
      *
      * @return list<array{font: string, text: string}>
      */
-    public static function fontRuns(?\Papercut\Layout\Fragment $f): array
+    public static function fontRuns(?\Quoin\Layout\Fragment $f): array
     {
         if ($f === null) {
             return [];
         }
         $out = [];
         foreach ($f->ops() as $op) {
-            if ($op instanceof \Papercut\Paint\TextRun) {
+            if ($op instanceof \Quoin\Paint\TextRun) {
                 $out[] = ['font' => $op->font->id(), 'text' => $op->text];
             }
         }
@@ -60,14 +60,14 @@ final class LayoutHarness
      *
      * @return list<array{text: string, x: float, baseline: float}>
      */
-    public static function runs(?\Papercut\Layout\Fragment $f, float $ox = 0, float $oy = 0): array
+    public static function runs(?\Quoin\Layout\Fragment $f, float $ox = 0, float $oy = 0): array
     {
         if ($f === null) {
             return [];
         }
         $out = [];
         foreach ($f->ops() as $op) {
-            if ($op instanceof \Papercut\Paint\TextRun) {
+            if ($op instanceof \Quoin\Paint\TextRun) {
                 $out[] = ['text' => $op->text, 'x' => $ox + $op->x, 'baseline' => $oy + $op->baseline];
             }
         }

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Backend;
+namespace Quoin\Tests\Backend;
 
-use Papercut\Backend\PhpPdf\PhpPdfBackend;
-use Papercut\Backend\PhpPdf\PhpPdfFont;
-use Papercut\Exception\FontNotFound;
+use Quoin\Backend\PhpPdf\PhpPdfBackend;
+use Quoin\Backend\PhpPdf\PhpPdfFont;
+use Quoin\Exception\FontNotFound;
 use PHPUnit\Framework\TestCase;
 
 final class PhpPdfFontTest extends TestCase

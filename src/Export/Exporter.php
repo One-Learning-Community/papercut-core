@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Export;
+namespace Quoin\Export;
 
-use Papercut\Document;
+use Quoin\Document;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
+/** @internal Engine detail, not public API. It may change in any release. */
 interface Exporter
 {
     public function export(Document $doc, ExportOptions $options): Output;

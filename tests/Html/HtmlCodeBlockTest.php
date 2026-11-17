@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Html;
+namespace Quoin\Tests\Html;
 
-use Papercut\Decorator\CodeBlock;
-use Papercut\{Document, Page};
+use Quoin\Decorator\CodeBlock;
+use Quoin\{Document, Page};
 use PHPUnit\Framework\TestCase;
 
 final class HtmlCodeBlockTest extends TestCase

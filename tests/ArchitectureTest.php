@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests;
+namespace Quoin\Tests;
 
 use PHPUnit\Framework\TestCase;
 
@@ -94,12 +94,12 @@ final class ArchitectureTest extends TestCase
                     continue;
                 }
                 $code = (string) file_get_contents($file->getPathname());
-                if (preg_match('/Papercut\\\\(Layout|Backend)\b/', $code) === 1) {
+                if (preg_match('/Quoin\\\\(Layout|Backend)\b/', $code) === 1) {
                     $offenders[] = substr($file->getPathname(), strlen($src) + 1);
                 }
             }
         }
-        self::assertSame([], $offenders, 'src/Tree and src/Style must not reference Papercut\\Layout or Papercut\\Backend');
+        self::assertSame([], $offenders, 'src/Tree and src/Style must not reference Quoin\\Layout or Quoin\\Backend');
     }
 
     public function test_core_never_imports_the_docx_package(): void
@@ -113,10 +113,10 @@ final class ArchitectureTest extends TestCase
                 continue;
             }
             $code = (string) file_get_contents($file->getPathname());
-            if (str_contains($code, 'Papercut\\Docx') || str_contains($code, 'PhpDocx')) {
+            if (str_contains($code, 'Quoin\\Docx') || str_contains($code, 'PhpDocx')) {
                 $offenders[] = substr($file->getPathname(), strlen($src) + 1);
             }
         }
-        self::assertSame([], $offenders, 'Core must not depend on papercut/docx or php-docx');
+        self::assertSame([], $offenders, 'Core must not depend on quoin/docx or php-docx');
     }
 }

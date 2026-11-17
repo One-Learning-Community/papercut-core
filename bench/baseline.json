@@ -1,5 +1,5 @@
 {
-    "note": "Medians of bench/run.php (5 runs after 1 warm-up, Xdebug off, OPcache CLI on) per machine class (env PAPERCUT_BENCH_MACHINE). \"local\" is a developer laptop (Apple M5 Max); CI runs as \"ci-ubuntu-latest\". A machine class without an entry checks only page counts and writes one, uploaded as the job's \"bench\" artifact; commit it to arm the gate.",
+    "note": "Medians of bench/run.php (5 runs after 1 warm-up, Xdebug off, OPcache CLI on) per machine class (env QUOIN_BENCH_MACHINE). \"local\" is a developer laptop (Apple M5 Max); CI runs as \"ci-ubuntu-latest\". A machine class without an entry checks only page counts and writes one, uploaded as the job's \"bench\" artifact; commit it to arm the gate.",
     "machines": {
         "ci-ubuntu-latest": {
             "median_ms": 78.82,

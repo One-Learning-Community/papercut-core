@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Text;
+namespace Quoin\Tests\Text;
 
 use InvalidArgumentException;
-use Papercut\{Span, Text};
-use Papercut\Decorator\Badge;
-use Papercut\Exception\UnknownAttribute;
-use Papercut\Layout\Fragment;
-use Papercut\Paint\{Link as LinkOp, Rect, TextRun};
-use Papercut\Style\{Style, Theme, WhiteSpace};
-use Papercut\Value\Edges;
-use Papercut\Tests\Support\LayoutHarness;
-use Papercut\Value\Color;
+use Quoin\{Span, Text};
+use Quoin\Decorator\Badge;
+use Quoin\Exception\UnknownAttribute;
+use Quoin\Layout\Fragment;
+use Quoin\Paint\{Link as LinkOp, Rect, TextRun};
+use Quoin\Style\{Style, Theme, WhiteSpace};
+use Quoin\Value\Edges;
+use Quoin\Tests\Support\LayoutHarness;
+use Quoin\Value\Color;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class InlineBadgeTest extends TestCase
 {
@@ -138,7 +138,7 @@ final class InlineBadgeTest extends TestCase
 
     public function test_theme_override_of_badge_tone_reaches_inline_badges(): void
     {
-        $theme = Theme::default()->withStyle('badge.tip', Style::make(background: Color::named('red-100'), padding: \Papercut\Value\Edges::of(pt(0), pt(10))));
+        $theme = Theme::default()->withStyle('badge.tip', Style::make(background: Color::named('red-100'), padding: \Quoin\Value\Edges::of(pt(0), pt(10))));
         $ops = self::ops(Text::spans(Span::badge('201', 'tip')), 300, $theme);
         $rect = self::rects($ops)[0];
         self::assertEquals(Color::named('red-100'), $rect->fill);

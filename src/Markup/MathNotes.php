@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Markup;
+namespace Quoin\Markup;
 
-use Papercut\Export\FidelityLevel;
-use Papercut\Math\Math;
-use Papercut\Math\Node\Node as MathNode;
-use Papercut\Math\NoteLevel;
+use Quoin\Export\FidelityLevel;
+use Quoin\Math\Math;
+use Quoin\Math\Node\Node as MathNode;
+use Quoin\Math\NoteLevel;
 
 /**
  * Turns what a formula's input (MathML or TeX) lost, recorded inside a formula tree, into fidelity notes.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class MathNotes
 {

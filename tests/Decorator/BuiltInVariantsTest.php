@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Decorator;
+namespace Quoin\Tests\Decorator;
 
-use Papercut\Decorator\{Badge, Card, Field, Section};
-use Papercut\Style\{ComputedStyle, StyleResolver, Theme};
-use Papercut\Value\Color;
+use Quoin\Decorator\{Badge, Card, Field, Section};
+use Quoin\Style\{ComputedStyle, StyleResolver, Theme};
+use Quoin\Value\Color;
 use PHPUnit\Framework\TestCase;
 
 /** The variants that ship with the default theme resolve through the normal variant names. */
 final class BuiltInVariantsTest extends TestCase
 {
-    private function resolve(\Papercut\Node $node): ComputedStyle
+    private function resolve(\Quoin\Node $node): ComputedStyle
     {
         $theme = Theme::default();
         return (new StyleResolver($theme))->resolve($node, ComputedStyle::root($theme));
@@ -54,13 +54,13 @@ final class BuiltInVariantsTest extends TestCase
         $resolver = new StyleResolver($theme);
         $plain = Section::make('x')->title('T')->render();
         $large = Section::make('x')->title('T')->variant('large')->render();
-        $titleSize = function (\Papercut\View $section) use ($resolver, $theme): float {
+        $titleSize = function (\Quoin\View $section) use ($resolver, $theme): float {
             $root = $resolver->resolve($section, ComputedStyle::root($theme));
             $heading = $section->children()[0];
-            self::assertInstanceOf(\Papercut\View::class, $heading);
+            self::assertInstanceOf(\Quoin\View::class, $heading);
             $h = $resolver->resolve($heading, $root);
             $title = $heading->children()[count($heading->children()) - 1] ?? null;
-            self::assertInstanceOf(\Papercut\Text::class, $title);
+            self::assertInstanceOf(\Quoin\Text::class, $title);
             return $resolver->resolve($title, $h)->fontSize;
         };
         self::assertGreaterThan($titleSize($plain), $titleSize($large));

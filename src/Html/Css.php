@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Html;
+namespace Quoin\Html;
 
-use Papercut\Style\{Align, ComputedStyle, Justify, Theme, WhiteSpace};
-use Papercut\Text\{FontClass, FontSet};
-use Papercut\Value\{Auto, Color, ColumnSpec, Edges, Length, Percent};
+use Quoin\Style\{Align, ComputedStyle, Justify, Theme, WhiteSpace};
+use Quoin\Text\{FontClass, FontSet};
+use Quoin\Value\{Auto, Color, ColumnSpec, Edges, Length, Percent};
 
 /**
  * Pure mapping from resolved style values to CSS declarations. Only values that differ from the root defaults are emitted.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class Css
 {

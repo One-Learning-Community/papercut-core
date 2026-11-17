@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Support;
+namespace Quoin\Tests\Support;
 
-use Papercut\Image;
-use Papercut\Support\AltText;
+use Quoin\Image;
+use Quoin\Support\AltText;
 use PHPUnit\Framework\TestCase;
 
 final class AltTextTest extends TestCase

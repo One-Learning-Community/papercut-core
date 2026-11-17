@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Feature;
+namespace Quoin\Tests\Feature;
 
-use Papercut\Text;
-use Papercut\Tests\Support\{FakeBackend, LayoutHarness};
-use Papercut\Text\FontRegistry;
+use Quoin\Text;
+use Quoin\Tests\Support\{FakeBackend, LayoutHarness};
+use Quoin\Text\FontRegistry;
 use PHPUnit\Framework\TestCase;
 
 final class FallbackFamiliesTest extends TestCase

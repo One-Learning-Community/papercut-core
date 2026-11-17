@@ -2,26 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Markup;
+namespace Quoin\Tests\Markup;
 
-use Papercut\Export\FidelityLevel;
-use Papercut\Image;
-use Papercut\ListNode;
-use Papercut\Markup\BlankParagraphs;
-use Papercut\Markup\Markup;
-use Papercut\Markup\MarkupOptions;
-use Papercut\Markup\Note;
-use Papercut\Markup\StyleMode;
-use Papercut\Span;
-use Papercut\Style\ListMarker;
-use Papercut\Style\TextAlign;
-use Papercut\Tests\Support\TestImages;
-use Papercut\Text;
-use Papercut\Value\Length;
-use Papercut\View;
+use Quoin\Export\FidelityLevel;
+use Quoin\Image;
+use Quoin\ListNode;
+use Quoin\Markup\BlankParagraphs;
+use Quoin\Markup\Markup;
+use Quoin\Markup\MarkupOptions;
+use Quoin\Markup\Note;
+use Quoin\Markup\StyleMode;
+use Quoin\Span;
+use Quoin\Style\ListMarker;
+use Quoin\Style\TextAlign;
+use Quoin\Tests\Support\TestImages;
+use Quoin\Text;
+use Quoin\Value\Length;
+use Quoin\View;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\px;
+use function Quoin\px;
 
 final class HtmlConverterTest extends TestCase
 {
@@ -120,7 +120,7 @@ final class HtmlConverterTest extends TestCase
         $headings = static function (View $v): array {
             $found = [];
             $walk = static function (object $n) use (&$walk, &$found): void {
-                if ($n instanceof \Papercut\Markup\ThemedBlock) {
+                if ($n instanceof \Quoin\Markup\ThemedBlock) {
                     $n = $n->render();
                 }
                 if ($n instanceof Text) {

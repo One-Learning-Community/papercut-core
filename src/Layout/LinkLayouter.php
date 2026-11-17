@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
-use Papercut\{Link, Node};
-use Papercut\Paint\Link as LinkOp;
-use Papercut\Style\ComputedStyle;
+use Quoin\{Link, Node};
+use Quoin\Paint\Link as LinkOp;
+use Quoin\Style\ComputedStyle;
 
 /**
  * A Link lays out like a column block and adds a link annotation over each fragment.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class LinkLayouter implements Layouter
 {

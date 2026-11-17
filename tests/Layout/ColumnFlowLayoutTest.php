@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Layout;
+namespace Quoin\Tests\Layout;
 
-use Papercut\{Column, ColumnBreak, ColumnFlow, Document, Image, Link, Page, PageBreak, Row, Table, TableCell, Text, View};
-use Papercut\Exception\{InvalidStructure, LayoutOverflow};
-use Papercut\Layout\{LayoutContext, LayoutEngine, Paginator};
-use Papercut\Paint\{Bookmark, Line, PageDisplayList, Painter, TextRun};
-use Papercut\Paint\Link as LinkOp;
-use Papercut\Style\Theme;
-use Papercut\Tests\Support\FakeBackend;
-use Papercut\Text\FontRegistry;
-use Papercut\Value\Color;
+use Quoin\{Column, ColumnBreak, ColumnFlow, Document, Image, Link, Page, PageBreak, Row, Table, TableCell, Text, View};
+use Quoin\Exception\{InvalidStructure, LayoutOverflow};
+use Quoin\Layout\{LayoutContext, LayoutEngine, Paginator};
+use Quoin\Paint\{Bookmark, Line, PageDisplayList, Painter, TextRun};
+use Quoin\Paint\Link as LinkOp;
+use Quoin\Style\Theme;
+use Quoin\Tests\Support\FakeBackend;
+use Quoin\Text\FontRegistry;
+use Quoin\Value\Color;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class ColumnFlowLayoutTest extends TestCase
 {
@@ -23,7 +23,7 @@ final class ColumnFlowLayoutTest extends TestCase
     private array $warnings = [];
 
     /** @return list<PageDisplayList> */
-    private function paginate(Document $doc, \Papercut\OverflowMode $mode = \Papercut\OverflowMode::Throw): array
+    private function paginate(Document $doc, \Quoin\OverflowMode $mode = \Quoin\OverflowMode::Throw): array
     {
         $b = new FakeBackend();
         $ctx = new LayoutContext(FontRegistry::withDefaults($b), Theme::default(), $b, $mode, function (string $w): void { $this->warnings[] = $w; });
@@ -36,7 +36,7 @@ final class ColumnFlowLayoutTest extends TestCase
         return Page::size(pt(220), pt(100))->margin(pt(10))->headerGap(pt(0))->footerGap(pt(0));
     }
 
-    private function flow(\Papercut\Node ...$children): View
+    private function flow(\Quoin\Node ...$children): View
     {
         return ColumnFlow::make(...$children)->columnGap(pt(20));
     }
@@ -310,7 +310,7 @@ final class ColumnFlowLayoutTest extends TestCase
     public function test_gaps_that_leave_no_room_warn_and_stay_in_the_box_when_clipping(): void
     {
         $doc = Document::make($this->page()->body(View::make(ColumnFlow::make(Text::make('abc'))->columns(4))->width(pt(100))));
-        $pages = $this->paginate($doc, \Papercut\OverflowMode::Clip);
+        $pages = $this->paginate($doc, \Quoin\OverflowMode::Clip);
         self::assertCount(1, $this->warnings);
         self::assertStringContainsString('leave no room for columns', $this->warnings[0]);
         self::assertSame([['abc', 10.0]], $this->runs($pages[0]));

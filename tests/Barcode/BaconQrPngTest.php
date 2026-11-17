@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Barcode;
+namespace Quoin\Tests\Barcode;
 
-use Papercut\Barcode\Bacon\BaconQrSvg;
-use Papercut\Barcode\{QrDesign, QrShape};
-use Papercut\QrCode;
-use Papercut\Value\Color;
+use Quoin\Barcode\Bacon\BaconQrSvg;
+use Quoin\Barcode\{QrDesign, QrShape};
+use Quoin\QrCode;
+use Quoin\Value\Color;
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\TestCase;
 

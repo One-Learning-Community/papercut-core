@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Html;
+namespace Quoin\Tests\Html;
 
-use Papercut\Html\{Css, InlineSvg};
+use Quoin\Html\{Css, InlineSvg};
 use PHPUnit\Framework\TestCase;
 
 final class InlineSvgTest extends TestCase

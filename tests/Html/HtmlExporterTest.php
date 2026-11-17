@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Html;
+namespace Quoin\Tests\Html;
 
-use Papercut\{Column, Document, Link, Page, PageBreak, PageNumber, Row, Span, Spacer, Text, View};
-use Papercut\Export\{FidelityReport, HtmlOptions};
-use Papercut\Exception\InvalidValue;
-use Papercut\Style\{Justify, Style};
-use Papercut\Value\Color;
+use Quoin\{Column, Document, Link, Page, PageBreak, PageNumber, Row, Span, Spacer, Text, View};
+use Quoin\Export\{FidelityReport, HtmlOptions};
+use Quoin\Exception\InvalidValue;
+use Quoin\Style\{Justify, Style};
+use Quoin\Value\Color;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class HtmlExporterTest extends TestCase
 {
@@ -75,14 +75,14 @@ final class HtmlExporterTest extends TestCase
         self::assertSame('text/html; charset=UTF-8', $out->mime());
         self::assertSame('html', $out->extension());
         self::assertStringStartsWith('<style>', $out->bytes());
-        self::assertStringContainsString('</style><div class="papercut" lang="fr" style="', $out->bytes());
+        self::assertStringContainsString('</style><div class="quoin" lang="fr" style="', $out->bytes());
         self::assertStringNotContainsString('<!DOCTYPE', $out->bytes());
 
         $full = $this->html($doc, new HtmlOptions(fullPage: true));
         self::assertStringStartsWith('<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">', $full);
         self::assertSame('T', $this->one($full, '//head/title')->textContent);
         self::assertCount(1, $this->xpath($full, '//head/style'));
-        self::assertCount(1, $this->xpath($full, '//body/div[@class="papercut"]/section[@class="pc-page"]'));
+        self::assertCount(1, $this->xpath($full, '//body/div[@class="quoin"]/section[@class="pc-page"]'));
         self::assertStringContainsString('<html lang="en">', $this->html($this->simple(), new HtmlOptions(fullPage: true)));
     }
 
@@ -299,7 +299,7 @@ final class HtmlExporterTest extends TestCase
 
     public function test_fragment_root_has_no_lang_without_document_lang(): void
     {
-        self::assertNull($this->one($this->html($this->simple()), '//div[@class="papercut"]')->getAttribute('lang'));
+        self::assertNull($this->one($this->html($this->simple()), '//div[@class="quoin"]')->getAttribute('lang'));
     }
 
     public function test_entities_are_escaped_once(): void
@@ -336,7 +336,7 @@ final class HtmlExporterTest extends TestCase
         $html = $this->html($this->simple(), new HtmlOptions(fullPage: true));
         self::assertStringContainsString('@page{size:595.28pt 841.89pt;margin:56.693pt 56.693pt 56.693pt 56.693pt}', $html);
         self::assertStringContainsString('max-width:595.28pt;min-height:841.89pt;padding:56.693pt', $html);
-        self::assertStringContainsString('.papercut tr{break-inside:avoid}', $html);
+        self::assertStringContainsString('.quoin tr{break-inside:avoid}', $html);
     }
 
     public function test_fragment_style_has_no_page_rule(): void
@@ -346,8 +346,8 @@ final class HtmlExporterTest extends TestCase
 
     public function test_list_ending_a_cell_has_no_bottom_margin_but_a_followed_list_keeps_it(): void
     {
-        $cell = \Papercut\TableCell::make(Text::make('P'), \Papercut\ListNode::unordered('A'), \Papercut\ListNode::unordered('B'));
-        $html = $this->html(Document::make(Page::a4()->body(\Papercut\Table::make()->columns('1fr')->row($cell))));
+        $cell = \Quoin\TableCell::make(Text::make('P'), \Quoin\ListNode::unordered('A'), \Quoin\ListNode::unordered('B'));
+        $html = $this->html(Document::make(Page::a4()->body(\Quoin\Table::make()->columns('1fr')->row($cell))));
         $styles = array_map(fn (\Dom\Node $n): string => $this->attr($n, 'style'), $this->xpath($html, '//ul'));
         self::assertCount(2, $styles);
         self::assertStringContainsString('margin:0pt 0pt 6pt 0pt', $styles[0]);

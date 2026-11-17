@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Value;
+namespace Quoin\Value;
 
-use Papercut\Exception\InvalidValue;
+use Quoin\Exception\InvalidValue;
 
 final readonly class Length implements \Stringable
 {

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Style;
+namespace Quoin\Tests\Style;
 
 use PHPUnit\Framework\TestCase;
-use Papercut\{Document, Page};
-use Papercut\Style\{PageThemes, Theme, ThemeOverride};
-use Papercut\Value\Color;
+use Quoin\{Document, Page};
+use Quoin\Style\{PageThemes, Theme, ThemeOverride};
+use Quoin\Value\Color;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class PageThemesTest extends TestCase
 {

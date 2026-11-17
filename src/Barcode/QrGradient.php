@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Barcode;
+namespace Quoin\Barcode;
 
 /** Which way a styled QR code's gradient runs across the code. */
 enum QrGradient: string

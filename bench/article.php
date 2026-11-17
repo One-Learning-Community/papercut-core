@@ -11,10 +11,10 @@ declare(strict_types=1);
  * Returns the Document. Deterministic: no clock, no randomness.
  */
 
-use Papercut\{Column, Document, ListNode, Page, PageNumber, Text, Toc};
-use Papercut\Decorator\Blockquote;
+use Quoin\{Column, Document, ListNode, Page, PageNumber, Text, Toc};
+use Quoin\Decorator\Blockquote;
 
-use function Papercut\{mm, pt};
+use function Quoin\{mm, pt};
 
 $autoload = __DIR__ . '/../vendor/autoload.php';
 if (!class_exists(Document::class) && is_file($autoload)) {

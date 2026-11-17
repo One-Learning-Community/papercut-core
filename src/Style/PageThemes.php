@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Style;
+namespace Quoin\Style;
 
-use Papercut\{Document, Page};
+use Quoin\{Document, Page};
 
 /**
  * The theme each page renders with: the base theme with the document's override, then the
  * page's own. Pages without an override share the document's Theme and StyleResolver.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class PageThemes
 {

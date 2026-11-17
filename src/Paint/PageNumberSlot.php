@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Paint;
+namespace Quoin\Paint;
 
-use Papercut\Style\TextAlign;
-use Papercut\Text\CachedFont;
-use Papercut\Value\Color;
+use Quoin\Style\TextAlign;
+use Quoin\Text\CachedFont;
+use Quoin\Value\Color;
 
 /**
  * A page-number placeholder carried in fragments. The Painter replaces

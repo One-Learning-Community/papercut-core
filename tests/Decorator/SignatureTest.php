@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Decorator;
+namespace Quoin\Tests\Decorator;
 
-use Papercut\{Document, Page, Text, View};
-use Papercut\Decorator\{Decorator, Signature};
-use Papercut\Style\{ComputedStyle, StyleResolver, Theme};
+use Quoin\{Document, Page, Text, View};
+use Quoin\Decorator\{Decorator, Signature};
+use Quoin\Style\{ComputedStyle, StyleResolver, Theme};
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class SignatureTest extends TestCase
 {
@@ -73,25 +73,25 @@ final class SignatureTest extends TestCase
     public function test_lays_out_side_by_side(): void
     {
         $pdf = Document::make(Page::letter()->body(
-            \Papercut\Row::make(Signature::make()->name('A'), Signature::make()->name('B'))->gap(pt(24)),
+            \Quoin\Row::make(Signature::make()->name('A'), Signature::make()->name('B'))->gap(pt(24)),
         ))->toPdf()->bytes();
         self::assertStringStartsWith('%PDF', $pdf);
     }
 
     public function test_beside_a_long_paragraph_it_shrinks_no_further_than_its_captions(): void
     {
-        $text = \Papercut\View::make(Text::make(str_repeat('I confirm the details above are correct. ', 10)))->grow(1);
-        $row = \Papercut\Row::make($text, Signature::make()->name('Jane Smith')->role('Director'));
-        $f = (new \Papercut\Tests\Support\LayoutHarness())->layout($row, 300)->fragment;
+        $text = \Quoin\View::make(Text::make(str_repeat('I confirm the details above are correct. ', 10)))->grow(1);
+        $row = \Quoin\Row::make($text, Signature::make()->name('Jane Smith')->role('Director'));
+        $f = (new \Quoin\Tests\Support\LayoutHarness())->layout($row, 300)->fragment;
         self::assertNotNull($f);
         // FakeFont: 5pt a letter at the base size; the widest word is "Director" at 0.85em, 8 × 4.25 = 34pt
         self::assertEqualsWithDelta(34.0, $f->children()[1]['fragment']->width, 1e-6);
     }
 
-    private static function node(\Papercut\View $parent, int $i): \Papercut\Text|\Papercut\View
+    private static function node(\Quoin\View $parent, int $i): \Quoin\Text|\Quoin\View
     {
         $child = $parent->children()[$i] ?? null;
-        self::assertTrue($child instanceof \Papercut\Text || $child instanceof \Papercut\View);
+        self::assertTrue($child instanceof \Quoin\Text || $child instanceof \Quoin\View);
         return $child;
     }
 }

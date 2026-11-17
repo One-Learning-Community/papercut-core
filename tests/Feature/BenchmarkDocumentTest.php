@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Feature;
+namespace Quoin\Tests\Feature;
 
-use Papercut\Document;
-use Papercut\Tests\Support\PdfInspector;
+use Quoin\Document;
+use Quoin\Tests\Support\PdfInspector;
 use PHPUnit\Framework\TestCase;
 
 /** Keeps the benchmark documents meaningful: the 150 ms target is for exactly 10 pages, and bench/check.php pins both counts. */

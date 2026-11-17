@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Backend;
+namespace Quoin\Backend;
 
-use Papercut\Backend\PhpPdf\PhpPdfBackend;
+use Quoin\Backend\PhpPdf\PhpPdfBackend;
 
 /**
  * The one place that names the backend every exporter uses unless told otherwise.
  *
- * @internal Part of Papercut's PDF writer. Custom backends aren't supported, and it may change in any release.
+ * @internal Part of the PDF writer. Custom backends aren't supported, and it may change in any release.
  */
 final class DefaultBackend
 {

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Code;
+namespace Quoin\Tests\Code;
 
-use Papercut\Code\CodeTheme;
+use Quoin\Code\CodeTheme;
 use PHPUnit\Framework\TestCase;
 
 final class CodeThemeTest extends TestCase
@@ -36,7 +36,7 @@ final class CodeThemeTest extends TestCase
         }
     }
 
-    public function test_default_theme_is_valid_json_named_papercut_light(): void
+    public function test_default_theme_is_valid_json_named_quoin_light(): void
     {
         $json = json_decode((string) file_get_contents(CodeTheme::defaultPath()), true, 512, JSON_THROW_ON_ERROR);
         self::assertSame(CodeTheme::DEFAULT, $json['name']);

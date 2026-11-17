@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut;
+namespace Quoin;
 
-use Papercut\Concerns\HasStyle;
-use Papercut\Style\ImageFit;
-use Papercut\Support\{AltText, EnumValue};
+use Quoin\Concerns\HasStyle;
+use Quoin\Style\ImageFit;
+use Quoin\Support\{AltText, EnumValue};
 
 final class Image implements Styled
 {
@@ -32,7 +32,7 @@ final class Image implements Styled
         return new self('bytes', $bytes);
     }
 
-    /** @throws \Papercut\Exception\InvalidValue for a string that is not a fit mode */
+    /** @throws \Quoin\Exception\InvalidValue for a string that is not a fit mode */
     public function fit(ImageFit|string $fit): self
     {
         $fit = EnumValue::from(ImageFit::class, $fit, 'Image::fit()');

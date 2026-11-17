@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Markup;
+namespace Quoin\Tests\Markup;
 
-use Papercut\Export\{HtmlOptions, PdfOptions};
-use Papercut\Markup\{Markup, MarkupOptions, StyleMode};
-use Papercut\Tests\Support\FailsOnDiagnostics;
-use Papercut\{Document, Page};
+use Quoin\Export\{HtmlOptions, PdfOptions};
+use Quoin\Markup\{Markup, MarkupOptions, StyleMode};
+use Quoin\Tests\Support\FailsOnDiagnostics;
+use Quoin\{Document, Page};
 use PHPUnit\Framework\TestCase;
 
 /** An iframe, video or audio src with a control character is dropped with a note; markup never throws (D1). */

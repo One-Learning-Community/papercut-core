@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Barcode\Bacon;
+namespace Quoin\Barcode\Bacon;
 
 use BaconQrCode\Common\{ErrorCorrectionLevel, Mode, Version};
 use BaconQrCode\Encoder\{ByteMatrix, QrCode};
@@ -12,15 +12,15 @@ use BaconQrCode\Renderer\Image\{ImageBackEndInterface, ImagickImageBackEnd, SvgI
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\Module\{DotsModule, RoundnessModule, SquareModule};
 use BaconQrCode\Renderer\RendererStyle\{EyeFill, Fill, Gradient, GradientType, RendererStyle};
-use Papercut\Barcode\{ErrorCorrection, QrDesign, QrEyes, QrGradient, QrShape};
-use Papercut\Exception\{InvalidValue, MissingPackage};
-use Papercut\Value\Color;
+use Quoin\Barcode\{ErrorCorrection, QrDesign, QrEyes, QrGradient, QrShape};
+use Quoin\Exception\{InvalidValue, MissingPackage};
+use Quoin\Value\Color;
 
 /**
- * Draws a QR code's modules as an SVG with BaconQrCode, an optional package. Papercut encodes
+ * Draws a QR code's modules as an SVG with BaconQrCode, an optional package. The core encodes
  * the grid; Bacon only draws it, so styled and plain codes carry the same modules.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class BaconQrSvg
 {

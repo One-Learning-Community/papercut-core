@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 
-use Papercut\{Column, Document, Page, PageBreak, PageNumber, Row, Spacer, Text};
+use Quoin\{Column, Document, Page, PageBreak, PageNumber, Row, Spacer, Text};
 
-use function Papercut\{mm, pt};
+use function Quoin\{mm, pt};
 
 return Document::make(
     Page::a6()->margin(mm(12))

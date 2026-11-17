@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Layout;
+namespace Quoin\Tests\Layout;
 
-use Papercut\{Column, ColumnBreak, ColumnFlow, Document, ListNode, PageBreak, Page, Table, TableCell, Text, View};
-use Papercut\Exception\InvalidStructure;
-use Papercut\Layout\{ForcedBreak, LayoutContext, LayoutEngine, Paginator, Status};
-use Papercut\Style\Theme;
-use Papercut\Tests\Support\{FakeBackend, LayoutHarness};
-use Papercut\Text\FontRegistry;
+use Quoin\{Column, ColumnBreak, ColumnFlow, Document, ListNode, PageBreak, Page, Table, TableCell, Text, View};
+use Quoin\Exception\InvalidStructure;
+use Quoin\Layout\{ForcedBreak, LayoutContext, LayoutEngine, Paginator, Status};
+use Quoin\Style\Theme;
+use Quoin\Tests\Support\{FakeBackend, LayoutHarness};
+use Quoin\Text\FontRegistry;
 use PHPUnit\Framework\TestCase;
 
 final class ForcedBreakTest extends TestCase
@@ -70,7 +70,7 @@ final class ForcedBreakTest extends TestCase
 
     public function test_column_break_outside_a_flow_throws_invalid_structure(): void
     {
-        $doc = Document::make(Page::size(\Papercut\pt(200), \Papercut\pt(100))->margin(\Papercut\pt(10))->body(Text::make('a'), ColumnBreak::make(), Text::make('b')));
+        $doc = Document::make(Page::size(\Quoin\pt(200), \Quoin\pt(100))->margin(\Quoin\pt(10))->body(Text::make('a'), ColumnBreak::make(), Text::make('b')));
         try {
             $this->paginate($doc);
             self::fail('Expected InvalidStructure');
@@ -95,7 +95,7 @@ final class ForcedBreakTest extends TestCase
 
     public function test_column_break_directly_in_a_row_throws(): void
     {
-        $flow = ColumnFlow::make(\Papercut\Row::make(Text::make('a'), ColumnBreak::make(), Text::make('b')), Text::make('c'));
+        $flow = ColumnFlow::make(\Quoin\Row::make(Text::make('a'), ColumnBreak::make(), Text::make('b')), Text::make('c'));
         try {
             (new LayoutHarness())->layout($flow, 200);
             self::fail('Expected InvalidStructure');
@@ -109,7 +109,7 @@ final class ForcedBreakTest extends TestCase
         $h = new LayoutHarness();
         $last = $h->layout(ColumnFlow::make(Text::make('a'), ColumnBreak::make()), 200);
         self::assertSame(Status::Complete, $last->status);
-        $fixed = $h->layout(ColumnFlow::make(Column::make(Text::make('a'), ColumnBreak::make(), Text::make('b'))->height(\Papercut\pt(100))), 200);
+        $fixed = $h->layout(ColumnFlow::make(Column::make(Text::make('a'), ColumnBreak::make(), Text::make('b'))->height(\Quoin\pt(100))), 200);
         self::assertSame(Status::Complete, $fixed->status);
         self::assertCount(2, LayoutHarness::runs($fixed->fragment));
     }
@@ -117,7 +117,7 @@ final class ForcedBreakTest extends TestCase
     private function paginate(Document $doc): void
     {
         $b = new FakeBackend();
-        $ctx = new LayoutContext(FontRegistry::withDefaults($b), Theme::default(), $b, \Papercut\OverflowMode::Throw, static function (string $w): void {
+        $ctx = new LayoutContext(FontRegistry::withDefaults($b), Theme::default(), $b, \Quoin\OverflowMode::Throw, static function (string $w): void {
         });
         (new Paginator(new LayoutEngine($ctx), $ctx))->paginate($doc);
     }

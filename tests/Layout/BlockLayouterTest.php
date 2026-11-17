@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Layout;
+namespace Quoin\Tests\Layout;
 
-use Papercut\{Column, Link, PageBreak, Spacer, Text, View};
-use Papercut\Node;
-use Papercut\Layout\{BreakToken, Constraints, Fragment, LayoutEngine, LayoutResult, Layouter, Status};
-use Papercut\Style\ComputedStyle;
-use Papercut\Paint\{Line, Link as LinkOp, Rect};
-use Papercut\Style\Align;
-use Papercut\Tests\Support\LayoutHarness;
-use Papercut\Value\Color;
+use Quoin\{Column, Link, PageBreak, Spacer, Text, View};
+use Quoin\Node;
+use Quoin\Layout\{BreakToken, Constraints, Fragment, LayoutEngine, LayoutResult, Layouter, Status};
+use Quoin\Style\ComputedStyle;
+use Quoin\Paint\{Line, Link as LinkOp, Rect};
+use Quoin\Style\Align;
+use Quoin\Tests\Support\LayoutHarness;
+use Quoin\Value\Color;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\{percent, pt};
+use function Quoin\{percent, pt};
 
 final class BlockLayouterTest extends TestCase
 {
@@ -160,13 +160,13 @@ final class BlockLayouterTest extends TestCase
     public function test_stretched_auto_height_fills_but_stays_splittable(): void
     {
         $h = new LayoutHarness();
-        $root = \Papercut\Style\ComputedStyle::root(\Papercut\Style\Theme::default());
+        $root = \Quoin\Style\ComputedStyle::root(\Quoin\Style\Theme::default());
         $col = Column::make(Text::make('a'), Text::make('b'), Text::make('c'));
-        $split = $h->engine->layout($col, $root, new \Papercut\Layout\Constraints(100, 30, true, 100));
+        $split = $h->engine->layout($col, $root, new \Quoin\Layout\Constraints(100, 30, true, 100));
         self::assertSame(Status::Partial, $split->status);
-        $full = $h->engine->layout($col, $root, new \Papercut\Layout\Constraints(100, null, true, 100));
+        $full = $h->engine->layout($col, $root, new \Quoin\Layout\Constraints(100, null, true, 100));
         self::assertSame(100.0, $full->fragment?->height);
-        $tall = $h->engine->layout($col, $root, new \Papercut\Layout\Constraints(100, null, true, 20));
+        $tall = $h->engine->layout($col, $root, new \Quoin\Layout\Constraints(100, null, true, 20));
         self::assertSame(42.0, $tall->fragment?->height); // at least definiteHeight, never less than content
     }
 
@@ -274,7 +274,7 @@ final class BlockLayouterTest extends TestCase
 
     public function test_dashed_and_partial_borders_emit_lines(): void
     {
-        $v = View::make('x')->border(pt(2), Color::black(), \Papercut\Style\BorderStyle::Dashed);
+        $v = View::make('x')->border(pt(2), Color::black(), \Quoin\Style\BorderStyle::Dashed);
         $ops = (new LayoutHarness())->layout($v, 100)->fragment?->ops() ?? [];
         $lines = array_values(array_filter($ops, fn ($o) => $o instanceof Line));
         self::assertCount(4, $lines);
@@ -283,7 +283,7 @@ final class BlockLayouterTest extends TestCase
 
     public function test_opacity_and_explicit_width_and_justify_end(): void
     {
-        $col = Column::make(Text::make('a'))->height(pt(50))->justify(\Papercut\Style\Justify::End)->opacity(0.5)->width(pt(60));
+        $col = Column::make(Text::make('a'))->height(pt(50))->justify(\Quoin\Style\Justify::End)->opacity(0.5)->width(pt(60));
         $r = (new LayoutHarness())->layout($col, 100);
         self::assertSame(0.5, $r->fragment?->opacity);
         self::assertSame(60.0, $r->fragment->width);
@@ -299,7 +299,7 @@ final class BlockLayouterTest extends TestCase
     public function test_intrinsic_sizes(): void
     {
         $h = new LayoutHarness();
-        $root = \Papercut\Style\ComputedStyle::root(\Papercut\Style\Theme::default());
+        $root = \Quoin\Style\ComputedStyle::root(\Quoin\Style\Theme::default());
         $col = Column::make(Text::make('ab cdef'), Text::make('xyz')->margin(pt(0), pt(2)))->padding(pt(1));
         self::assertSame(['min' => 22.0, 'max' => 37.0], $h->engine->intrinsic($col, $root));
         self::assertSame(['min' => 80.0, 'max' => 80.0], $h->engine->intrinsic($col->width(pt(80)), $root));
@@ -333,7 +333,7 @@ final class BlockLayouterTest extends TestCase
 
     public function test_percent_width_of_an_aligned_table_is_a_share_of_the_parent(): void
     {
-        $table = \Papercut\Table::make()->row('Subtotal', '1')->width(percent(50))->alignSelf(Align::End);
+        $table = \Quoin\Table::make()->row('Subtotal', '1')->width(percent(50))->alignSelf(Align::End);
         $child = self::onlyChild((new LayoutHarness())->layout(Column::make($table), 200)->fragment);
         self::assertSame(100.0, $child['width']);
         self::assertSame(100.0, $child['x']);
@@ -383,7 +383,7 @@ final class BlockLayouterTest extends TestCase
 
     // --- Fix round 2: forced breaks inside explicit-height boxes are satisfied in place ---
 
-    /** @return iterable<string, array{\Papercut\View, list<string>}> */
+    /** @return iterable<string, array{\Quoin\View, list<string>}> */
     public static function inPlaceBoxes(): iterable
     {
         yield 'nested breakBefore' => [Column::make(Column::make(Text::make('a'), Text::make('b')->breakBefore()))->height(pt(100)), ['a', 'b']];
@@ -394,7 +394,7 @@ final class BlockLayouterTest extends TestCase
 
     /** @param list<string> $texts */
     #[\PHPUnit\Framework\Attributes\DataProvider('inPlaceBoxes')]
-    public function test_fixed_height_box_satisfies_nested_breaks_in_place(\Papercut\View $box, array $texts): void
+    public function test_fixed_height_box_satisfies_nested_breaks_in_place(\Quoin\View $box, array $texts): void
     {
         $r = (new LayoutHarness())->layout($box, 100, 500);
         self::assertSame(Status::Complete, $r->status);
@@ -498,8 +498,8 @@ final class ScriptedNode implements Node
         return 'scripted';
     }
 
-    public function style(): \Papercut\Style\Style
+    public function style(): \Quoin\Style\Style
     {
-        return new \Papercut\Style\Style();
+        return new \Quoin\Style\Style();
     }
 }

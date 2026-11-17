@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Node;
+namespace Quoin\Tests\Node;
 
-use Papercut\{Column, Component, Image, Link, Node, PageBreak, PageNumber, Row, Spacer, Span, Text, View};
-use Papercut\Style\{Align, Direction, ImageFit, Justify, Style, TextAlign};
-use Papercut\Value\{Color, Length};
+use Quoin\{Column, Component, Image, Link, Node, PageBreak, PageNumber, Row, Spacer, Span, Text, View};
+use Quoin\Style\{Align, Direction, ImageFit, Justify, Style, TextAlign};
+use Quoin\Value\{Color, Length};
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\{mm, pt};
+use function Quoin\{mm, pt};
 
 final class NodesTest extends TestCase
 {
@@ -79,8 +79,8 @@ final class NodesTest extends TestCase
 
     public function test_a_spacer_gap_must_be_absolute(): void
     {
-        $this->expectException(\Papercut\Exception\InvalidValue::class);
-        Spacer::flex()->size(\Papercut\Value\Length::em(2));
+        $this->expectException(\Quoin\Exception\InvalidValue::class);
+        Spacer::flex()->size(\Quoin\Value\Length::em(2));
     }
 
     public function test_leaf_nodes(): void
@@ -125,9 +125,9 @@ final class NodesTest extends TestCase
     public function test_styled_nodes_implement_the_styled_interface(): void
     {
         $nodes = [View::make(), Text::make('x'), Image::bytes('x'), Spacer::fixed(pt(1)), PageBreak::make(), PageNumber::make('{page}'),
-            Link::to('https://x.test', 'x'), \Papercut\Table::make(), \Papercut\TableRow::make(), \Papercut\TableCell::make('x')];
+            Link::to('https://x.test', 'x'), \Quoin\Table::make(), \Quoin\TableRow::make(), \Quoin\TableCell::make('x')];
         foreach ($nodes as $n) {
-            self::assertInstanceOf(\Papercut\Styled::class, $n, $n::class);
+            self::assertInstanceOf(\Quoin\Styled::class, $n, $n::class);
         }
         self::assertSame('card', Text::make('x')->apply('card')->styleName());
     }

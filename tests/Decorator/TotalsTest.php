@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Decorator;
+namespace Quoin\Tests\Decorator;
 
 use InvalidArgumentException;
-use Papercut\{Table, Text, View};
-use Papercut\Decorator\{Decorator, KeyValueList, KeyValuePair, Totals};
-use Papercut\Style\{Align, ComputedStyle, StyleResolver, TextAlign, Theme};
-use Papercut\Value\TrackList;
+use Quoin\{Table, Text, View};
+use Quoin\Decorator\{Decorator, KeyValueList, KeyValuePair, Totals};
+use Quoin\Style\{Align, ComputedStyle, StyleResolver, TextAlign, Theme};
+use Quoin\Value\TrackList;
 use PHPUnit\Framework\TestCase;
 
 final class TotalsTest extends TestCase
@@ -104,9 +104,9 @@ final class TotalsTest extends TestCase
 
     public function test_beside_a_growing_paragraph_it_keeps_its_width(): void
     {
-        $notes = \Papercut\View::make(Text::make(str_repeat('Payment is due within thirty days of the invoice date. ', 8)))->grow(1);
-        $row = \Papercut\Row::make($notes, Totals::make()->row('Subtotal', '$1,000.00')->total('Total due', '$1,082.50'))->gap(\Papercut\pt(16));
-        $f = (new \Papercut\Tests\Support\LayoutHarness())->layout($row, 400)->fragment;
+        $notes = \Quoin\View::make(Text::make(str_repeat('Payment is due within thirty days of the invoice date. ', 8)))->grow(1);
+        $row = \Quoin\Row::make($notes, Totals::make()->row('Subtotal', '$1,000.00')->total('Total due', '$1,082.50'))->gap(\Quoin\pt(16));
+        $f = (new \Quoin\Tests\Support\LayoutHarness())->layout($row, 400)->fragment;
         self::assertNotNull($f);
         $widths = array_map(fn (array $c): float => $c['fragment']->width, $f->children());
         self::assertEqualsWithDelta(180.0, $widths[1], 1e-6); // 45% of 400

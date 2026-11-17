@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Export;
+namespace Quoin\Tests\Export;
 
-use Papercut\{Column, Document, Page, Text};
-use Papercut\Exception\InvalidValue;
-use Papercut\Export\{Encryption, PdfOptions};
+use Quoin\{Column, Document, Page, Text};
+use Quoin\Exception\InvalidValue;
+use Quoin\Export\{Encryption, PdfOptions};
 use PHPUnit\Framework\TestCase;
 
 final class EncryptionTest extends TestCase

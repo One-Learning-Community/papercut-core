@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tree;
+namespace Quoin\Tree;
 
-use Papercut\{Node, Page};
-use Papercut\Style\ComputedStyle;
+use Quoin\{Node, Page};
+use Quoin\Style\ComputedStyle;
 
-/** @internal Part of Papercut's engine, not its public API. It may change in any release. */
+/** @internal Engine detail, not public API. It may change in any release. */
 interface TreeVisitor
 {
     public function enterPage(Page $page, int $index): void;

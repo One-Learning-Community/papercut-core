@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Layout;
+namespace Quoin\Tests\Layout;
 
-use Papercut\{Column, Document, OverflowMode, Page, Row, Table, TableCell, TableRow, Text, View};
-use Papercut\Decorator\Field;
-use Papercut\Layout\{Fragment, LayoutContext, LayoutEngine, LayoutResult, Paginator, Status};
-use Papercut\Paint\{PageDisplayList, Painter, Rect};
-use Papercut\Style\Theme;
-use Papercut\Tests\Support\FakeBackend;
-use Papercut\Text\FontRegistry;
-use Papercut\Tests\Support\LayoutHarness;
+use Quoin\{Column, Document, OverflowMode, Page, Row, Table, TableCell, TableRow, Text, View};
+use Quoin\Decorator\Field;
+use Quoin\Layout\{Fragment, LayoutContext, LayoutEngine, LayoutResult, Paginator, Status};
+use Quoin\Paint\{PageDisplayList, Painter, Rect};
+use Quoin\Style\Theme;
+use Quoin\Tests\Support\FakeBackend;
+use Quoin\Text\FontRegistry;
+use Quoin\Tests\Support\LayoutHarness;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\{mm, percent, pt};
+use function Quoin\{mm, percent, pt};
 
 /** min-height and max-height on boxes that size to their content. */
 final class MinMaxHeightTest extends TestCase

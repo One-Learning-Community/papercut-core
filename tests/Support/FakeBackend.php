@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Support;
+namespace Quoin\Tests\Support;
 
-use Papercut\Backend\{Backend, FontHandle, ImageHandle};
-use Papercut\Paint\{DocumentMeta, PageDisplayList};
+use Quoin\Backend\{Backend, FontHandle, ImageHandle};
+use Quoin\Paint\{DocumentMeta, PageDisplayList};
 
 final class FakeBackend implements Backend
 {

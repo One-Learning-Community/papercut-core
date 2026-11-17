@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
-use Papercut\{Node, OverflowMode, Table, TableCell, TableRow, View};
-use Papercut\Exception\{LayoutOverflow, UnknownAttribute};
-use Papercut\Style\{ComputedStyle, Justify, Style, Theme};
-use Papercut\Value\{Auto, Fr, Length, Percent};
+use Quoin\{Node, OverflowMode, Table, TableCell, TableRow, View};
+use Quoin\Exception\{LayoutOverflow, UnknownAttribute};
+use Quoin\Style\{ComputedStyle, Justify, Style, Theme};
+use Quoin\Value\{Auto, Fr, Length, Percent};
 
 /**
  * Tables: a grid of columns sized from the track list, rows stacked top to
@@ -53,7 +53,7 @@ use Papercut\Value\{Auto, Fr, Length, Percent};
  * the inherited style and width), so continuations and retries neither
  * re-measure cells nor repeat column warnings.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class TableLayouter implements Layouter
 {

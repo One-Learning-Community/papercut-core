@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Barcode;
+namespace Quoin\Barcode;
 
-use Papercut\Exception\InvalidValue;
+use Quoin\Exception\InvalidValue;
 
 /** Turns text into a QR code's grid of modules. */
 interface QrEncoder

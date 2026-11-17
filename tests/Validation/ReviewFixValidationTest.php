@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Validation;
+namespace Quoin\Tests\Validation;
 
-use Papercut\Exception\{InvalidStructure, InvalidValue};
-use Papercut\Export\{DocxOptions, HtmlOptions, PdfOptions};
-use Papercut\Markup\Markup;
-use Papercut\Style\Style;
-use Papercut\Tests\Support\FailsOnDiagnostics;
-use Papercut\{Column, Document, Image, Link, Page, QrCode, Span, Table, Text};
+use Quoin\Exception\{InvalidStructure, InvalidValue};
+use Quoin\Export\{DocxOptions, HtmlOptions, PdfOptions};
+use Quoin\Markup\Markup;
+use Quoin\Style\Style;
+use Quoin\Tests\Support\FailsOnDiagnostics;
+use Quoin\{Column, Document, Image, Link, Page, QrCode, Span, Table, Text};
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 /** Final fix wave: setters the first pass missed (I2, M1, M5) and the message and attribute leftovers. */
 final class ReviewFixValidationTest extends TestCase
@@ -88,7 +88,7 @@ final class ReviewFixValidationTest extends TestCase
         }
         // A view may still be zero wide.
         $width = Column::make(Text::make('x'))->attributes(['width' => '0pt'])->style()->width;
-        self::assertInstanceOf(\Papercut\Value\Length::class, $width);
+        self::assertInstanceOf(\Quoin\Value\Length::class, $width);
         self::assertSame(0.0, $width->points);
     }
 
@@ -104,7 +104,7 @@ final class ReviewFixValidationTest extends TestCase
         }
     }
 
-    public function test_error_correction_on_a_grid_is_a_papercut_exception(): void
+    public function test_error_correction_on_a_grid_is_a_quoin_exception(): void
     {
         $qr = QrCode::fromModules([[true]]);
         foreach ([static fn () => $qr->errorCorrection('H')] as $call) {

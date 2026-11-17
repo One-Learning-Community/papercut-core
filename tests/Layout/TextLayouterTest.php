@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Layout;
+namespace Quoin\Tests\Layout;
 
-use Papercut\{Component, Node, Span, Text, View};
-use Papercut\Exception\LayoutOverflow;
-use Papercut\Layout\{BreakToken, Constraints, Fragment, LayoutResult, Status};
-use Papercut\Paint\{Line as LineOp, Link as LinkOp, Rect, TextRun};
-use Papercut\PapercutException;
-use Papercut\Style\{ComputedStyle, Style, Theme, WhiteSpace};
-use Papercut\Tests\Support\LayoutHarness;
-use Papercut\Value\Color;
+use Quoin\{Component, Node, Span, Text, View};
+use Quoin\Exception\LayoutOverflow;
+use Quoin\Layout\{BreakToken, Constraints, Fragment, LayoutResult, Status};
+use Quoin\Paint\{Line as LineOp, Link as LinkOp, Rect, TextRun};
+use Quoin\QuoinException;
+use Quoin\Style\{ComputedStyle, Style, Theme, WhiteSpace};
+use Quoin\Tests\Support\LayoutHarness;
+use Quoin\Value\Color;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class TextLayouterTest extends TestCase
 {
@@ -85,7 +85,7 @@ final class TextLayouterTest extends TestCase
 
     public function test_text_after_a_tab_lands_on_the_stop_when_the_run_before_it_kerns(): void
     {
-        $h = new LayoutHarness(backend: new \Papercut\Tests\Support\FakeBackend(kerning: true));
+        $h = new LayoutHarness(backend: new \Quoin\Tests\Support\FakeBackend(kerning: true));
         // "To A" is 20pt of glyphs but draws 1pt tighter; the tab still ends at the stop at 40pt.
         $runs = LayoutHarness::runs($h->layout(self::preWrap("To A\tx"), 200)->fragment);
 
@@ -250,7 +250,7 @@ final class TextLayouterTest extends TestCase
     {
         foreach (['underline', 'strike'] as $kind) {
             $st = Style::make(...[$kind => true]);
-            $t = Text::spans(new Span('ab ', $st), new Span('', $st, math: \Papercut\Math\Math::frac('1', '2')), new Span(' cd', $st));
+            $t = Text::spans(new Span('ab ', $st), new Span('', $st, math: \Quoin\Math\Math::frac('1', '2')), new Span(' cd', $st));
             $ops = (new LayoutHarness())->layout($t, 400)->fragment?->ops() ?? [];
             $lines = array_values(array_filter($ops, fn ($o) => $o instanceof LineOp));
             self::assertCount(2, $lines, $kind);
@@ -340,7 +340,7 @@ final class TextLayouterTest extends TestCase
     public function test_intrinsic_sizes(): void
     {
         $h = new LayoutHarness();
-        $s = $h->engine->intrinsic(Text::make('aa bbbb c'), \Papercut\Style\ComputedStyle::root(\Papercut\Style\Theme::default()));
+        $s = $h->engine->intrinsic(Text::make('aa bbbb c'), \Quoin\Style\ComputedStyle::root(\Quoin\Style\Theme::default()));
         self::assertSame(20.0, $s['min']);
         self::assertSame(45.0, $s['max']);
     }
@@ -394,15 +394,15 @@ final class TextLayouterTest extends TestCase
     {
         $h = new LayoutHarness();
         try {
-            $h->layout(View::make(\Papercut\TableRow::make())->attributes(['direction' => 'row']), 100);
+            $h->layout(View::make(\Quoin\TableRow::make())->attributes(['direction' => 'row']), 100);
             self::fail('Expected InvalidStructure');
-        } catch (\Papercut\Exception\InvalidStructure $e) {
+        } catch (\Quoin\Exception\InvalidStructure $e) {
             self::assertStringContainsString('"row > tr[0]"', $e->getMessage());
         }
         try {
-            $h->layout(\Papercut\TableRow::make(), 100);
+            $h->layout(\Quoin\TableRow::make(), 100);
             self::fail('Expected InvalidStructure');
-        } catch (\Papercut\Exception\InvalidStructure $e) {
+        } catch (\Quoin\Exception\InvalidStructure $e) {
             self::assertStringContainsString('"tr"', $e->getMessage());
         }
     }
@@ -440,15 +440,15 @@ final class TextLayouterTest extends TestCase
     public function test_context_caches_images_by_source(): void
     {
         $ctx = (new LayoutHarness())->engine->context();
-        $a = $ctx->image(\Papercut\Image::file('/tmp/a.png'));
-        self::assertSame($a, $ctx->image(\Papercut\Image::file('/tmp/a.png')));
-        self::assertNotSame($a, $ctx->image(\Papercut\Image::bytes('/tmp/a.png')));
+        $a = $ctx->image(\Quoin\Image::file('/tmp/a.png'));
+        self::assertSame($a, $ctx->image(\Quoin\Image::file('/tmp/a.png')));
+        self::assertNotSame($a, $ctx->image(\Quoin\Image::bytes('/tmp/a.png')));
     }
 
     public function test_layout_overflow_message(): void
     {
         $e = new LayoutOverflow('page > column > image', 'content is taller than the page body');
-        self::assertInstanceOf(PapercutException::class, $e);
+        self::assertInstanceOf(QuoinException::class, $e);
         self::assertSame('Content at "page > column > image" cannot fit on an empty page: content is taller than the page body.', $e->getMessage());
     }
 
@@ -539,9 +539,9 @@ final class TextLayouterTest extends TestCase
     public function test_unknown_named_style_reports_node_path(): void
     {
         try {
-            (new LayoutHarness())->layout(\Papercut\Column::make(Text::make('a'), Text::make('b')->apply('nope')), 100);
+            (new LayoutHarness())->layout(\Quoin\Column::make(Text::make('a'), Text::make('b')->apply('nope')), 100);
             self::fail('Expected UnknownAttribute');
-        } catch (\Papercut\Exception\UnknownAttribute $e) {
+        } catch (\Quoin\Exception\UnknownAttribute $e) {
             self::assertStringContainsString('at column > text[1]', $e->getMessage());
         }
     }
@@ -550,7 +550,7 @@ final class TextLayouterTest extends TestCase
 
     public function test_merged_runs_are_measured_as_drawn(): void
     {
-        $h = new LayoutHarness(backend: new \Papercut\Tests\Support\FakeBackend(kerning: true));
+        $h = new LayoutHarness(backend: new \Quoin\Tests\Support\FakeBackend(kerning: true));
         // items: "To" 10 + " " 5 + "Avoid" 25 = 40; the merged run kerns "o A" by -1pt
         $t = Text::spans(Span::text('To Avoid'), new Span('x', Style::make(fontWeight: 700)));
         $runs = LayoutHarness::runs($h->layout($t, 200)->fragment);
@@ -588,7 +588,7 @@ final class TextLayouterTest extends TestCase
         $first = $h->layout($t, 5, 28);
         self::assertSame(Status::Partial, $first->status);
         $font = $h->engine->context()->fonts->resolve('Inter')->inner();
-        self::assertInstanceOf(\Papercut\Tests\Support\FakeFont::class, $font);
+        self::assertInstanceOf(\Quoin\Tests\Support\FakeFont::class, $font);
         $font->metricCalls = 0;
         $rest = $h->layout($t, 5, null, $first->token);
         self::assertSame(Status::Complete, $rest->status);
@@ -599,7 +599,7 @@ final class TextLayouterTest extends TestCase
 
     public function test_right_and_center_alignment_use_the_measured_merged_width(): void
     {
-        $h = new LayoutHarness(backend: new \Papercut\Tests\Support\FakeBackend(kerning: true));
+        $h = new LayoutHarness(backend: new \Quoin\Tests\Support\FakeBackend(kerning: true));
         // items sum to 40pt, the merged run "To Avoid" is drawn 39pt wide
         $right = LayoutHarness::runs($h->layout(Text::make('To Avoid')->right(), 100)->fragment);
         self::assertSame(61.0, $right[0]['x']);
@@ -608,23 +608,23 @@ final class TextLayouterTest extends TestCase
     }
 
     /** A TextLayouter that counts intrinsic() calls. */
-    private static function countingTextLayouter(): \Papercut\Layout\Layouter
+    private static function countingTextLayouter(): \Quoin\Layout\Layouter
     {
-        return new class () implements \Papercut\Layout\Layouter {
+        return new class () implements \Quoin\Layout\Layouter {
             public int $intrinsics = 0;
-            private \Papercut\Layout\TextLayouter $inner;
+            private \Quoin\Layout\TextLayouter $inner;
 
             public function __construct()
             {
-                $this->inner = new \Papercut\Layout\TextLayouter();
+                $this->inner = new \Quoin\Layout\TextLayouter();
             }
 
-            public function layout(Node $node, ComputedStyle $style, Constraints $c, ?BreakToken $token, \Papercut\Layout\LayoutEngine $engine): LayoutResult
+            public function layout(Node $node, ComputedStyle $style, Constraints $c, ?BreakToken $token, \Quoin\Layout\LayoutEngine $engine): LayoutResult
             {
                 return $this->inner->layout($node, $style, $c, $token, $engine);
             }
 
-            public function intrinsic(Node $node, ComputedStyle $style, \Papercut\Layout\LayoutEngine $engine): array
+            public function intrinsic(Node $node, ComputedStyle $style, \Quoin\Layout\LayoutEngine $engine): array
             {
                 $this->intrinsics++;
                 return $this->inner->intrinsic($node, $style, $engine);

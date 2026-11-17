@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 
-use Papercut\{Column, Document, Page};
-use Papercut\Markup\{Markup, MarkupOptions, StyleMode};
+use Quoin\{Column, Document, Page};
+use Quoin\Markup\{Markup, MarkupOptions, StyleMode};
 
-use function Papercut\{mm, pt};
+use function Quoin\{mm, pt};
 
 // Samples q105 (figure + three-level outline), q107 (paragraphs + figure with a zero-width no-break space) and
 // q138 (linked image) from spec §11, in original style mode. Each src resolves to a generated PNG at the size its

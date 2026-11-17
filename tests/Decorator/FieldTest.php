@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Decorator;
+namespace Quoin\Tests\Decorator;
 
 use InvalidArgumentException;
-use Papercut\{Image, Span, Text, View};
-use Papercut\Decorator\{Decorator, Field};
-use Papercut\Markup\Markup;
-use Papercut\Value\Length;
+use Quoin\{Image, Span, Text, View};
+use Quoin\Decorator\{Decorator, Field};
+use Quoin\Markup\Markup;
+use Quoin\Value\Length;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class FieldTest extends TestCase
 {

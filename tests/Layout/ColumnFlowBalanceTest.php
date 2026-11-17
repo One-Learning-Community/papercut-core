@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Layout;
+namespace Quoin\Tests\Layout;
 
-use Papercut\{ColumnBreak, ColumnFlow, Document, Page, PageBreak, Text, View};
-use Papercut\Layout\{LayoutContext, LayoutEngine, Paginator};
-use Papercut\Paint\{Line, PageDisplayList, Painter, TextRun};
-use Papercut\Style\Theme;
-use Papercut\Tests\Support\FakeBackend;
-use Papercut\Text\FontRegistry;
-use Papercut\Value\Color;
+use Quoin\{ColumnBreak, ColumnFlow, Document, Page, PageBreak, Text, View};
+use Quoin\Layout\{LayoutContext, LayoutEngine, Paginator};
+use Quoin\Paint\{Line, PageDisplayList, Painter, TextRun};
+use Quoin\Style\Theme;
+use Quoin\Tests\Support\FakeBackend;
+use Quoin\Text\FontRegistry;
+use Quoin\Value\Color;
 use PHPUnit\Framework\TestCase;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 final class ColumnFlowBalanceTest extends TestCase
 {
@@ -22,7 +22,7 @@ final class ColumnFlowBalanceTest extends TestCase
     private ?LayoutContext $lastCtx = null;
 
     /** @return list<PageDisplayList> */
-    private function paginate(Document $doc, \Papercut\OverflowMode $mode = \Papercut\OverflowMode::Throw): array
+    private function paginate(Document $doc, \Quoin\OverflowMode $mode = \Quoin\OverflowMode::Throw): array
     {
         $b = new FakeBackend();
         $ctx = new LayoutContext(FontRegistry::withDefaults($b), Theme::default(), $b, $mode, function (string $w): void {
@@ -38,7 +38,7 @@ final class ColumnFlowBalanceTest extends TestCase
         return Page::size(pt(220), pt(100))->margin(pt(10))->headerGap(pt(0))->footerGap(pt(0));
     }
 
-    private function flow(\Papercut\Node ...$children): View
+    private function flow(\Quoin\Node ...$children): View
     {
         return ColumnFlow::make(...$children)->columnGap(pt(20));
     }
@@ -201,12 +201,12 @@ final class ColumnFlowBalanceTest extends TestCase
 
     public function test_clip_mode_trials_do_not_clip_a_tall_first_child(): void
     {
-        $flow = $this->flow(\Papercut\Image::bytes('x')->width(pt(50))->height(pt(60))->fit(\Papercut\Style\ImageFit::Fill), ...self::lines(1, 3));
-        $pages = $this->paginate(Document::make($this->page()->body($flow)), \Papercut\OverflowMode::Clip);
+        $flow = $this->flow(\Quoin\Image::bytes('x')->width(pt(50))->height(pt(60))->fit(\Quoin\Style\ImageFit::Fill), ...self::lines(1, 3));
+        $pages = $this->paginate(Document::make($this->page()->body($flow)), \Quoin\OverflowMode::Clip);
         self::assertCount(1, $pages);
         self::assertSame(['L1', 'L2', 'L3'], $this->column($pages[0], 120.0));
         self::assertSame([], array_values(array_filter($this->warnings, fn (string $w) => str_contains($w, 'clipped'))));
-        $images = array_values(array_filter($pages[0]->ops, fn ($o) => $o instanceof \Papercut\Paint\DrawImage));
+        $images = array_values(array_filter($pages[0]->ops, fn ($o) => $o instanceof \Quoin\Paint\DrawImage));
         self::assertCount(1, $images);
         self::assertEqualsWithDelta(60.0, $images[0]->height, 1e-9);
     }

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Code;
+namespace Quoin\Code;
 
-use Papercut\Value\Color;
+use Quoin\Value\Color;
 
 /**
  * Muted chrome colors for a code block (label, border, strip bar, caption rule), chosen by the background's brightness.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final readonly class CodeColors
 {

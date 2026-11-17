@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Html;
+namespace Quoin\Html;
 
 /**
  * Decides where the browser gets one font family.

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Layout;
+namespace Quoin\Layout;
 
-use Papercut\{ListItem, Styled, Text, View};
-use Papercut\Style\{ListEntry, Style};
+use Quoin\{ListItem, Styled, Text, View};
+use Quoin\Style\{ListEntry, Style};
 
 /**
  * A ListItem paired with its marker label, the list's gutter width and the

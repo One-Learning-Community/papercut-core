@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Export;
+namespace Quoin\Tests\Export;
 
-use Papercut\{Document, Page, Text};
-use Papercut\Exception\UnsupportedFeature;
-use Papercut\Export\{ExportOptions, Fidelity, FidelityLevel, FidelityReport, PdfOptions};
+use Quoin\{Document, Page, Text};
+use Quoin\Exception\UnsupportedFeature;
+use Quoin\Export\{ExportOptions, Fidelity, FidelityLevel, FidelityReport, PdfOptions};
 use PHPUnit\Framework\TestCase;
 
 final class FidelityTest extends TestCase
@@ -77,7 +77,7 @@ final class FidelityTest extends TestCase
     {
         $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="20"><text x="0" y="15">日本</text></svg>';
         $this->expectException(UnsupportedFeature::class);
-        Document::make(Page::a5()->body(\Papercut\Svg::fromString($svg)))->toPdf(new PdfOptions(strict: true));
+        Document::make(Page::a5()->body(\Quoin\Svg::fromString($svg)))->toPdf(new PdfOptions(strict: true));
     }
 
     public function test_strict_pdf_ignores_a_header_that_never_prints(): void

@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Tests\Backend;
+namespace Quoin\Tests\Backend;
 
-use Papercut\Backend\PhpPdf\{GdImageConverter, PhpPdfBackend, PhpPdfImage};
-use Papercut\Document;
-use Papercut\Exception\ImageUnreadable;
-use Papercut\Export\{LoadedImage, PdfExporter, PdfOptions};
-use Papercut\Image;
-use Papercut\Page;
-use Papercut\Tests\Support\TestImages;
+use Quoin\Backend\PhpPdf\{GdImageConverter, PhpPdfBackend, PhpPdfImage};
+use Quoin\Document;
+use Quoin\Exception\ImageUnreadable;
+use Quoin\Export\{LoadedImage, PdfExporter, PdfOptions};
+use Quoin\Image;
+use Quoin\Page;
+use Quoin\Tests\Support\TestImages;
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\TestCase;
 

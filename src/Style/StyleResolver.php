@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Style;
+namespace Quoin\Style;
 
-use Papercut\{Component, Link, ListItem, ListNode, Node, Place, Styled, TableCell, Text, ThemedComponent, Toc as TocNode, View};
-use Papercut\Tree\Expander;
-use Papercut\Value\Edges;
+use Quoin\{Component, Link, ListItem, ListNode, Node, Place, Styled, TableCell, Text, ThemedComponent, Toc as TocNode, View};
+use Quoin\Tree\Expander;
+use Quoin\Value\Edges;
 
-use function Papercut\pt;
+use function Quoin\pt;
 
 /**
  * Resolves a node's computed style from the theme. Independent of layout, so
  * every exporter resolves styles identically.
  *
- * @internal Part of Papercut's engine, not its public API. It may change in any release.
+ * @internal Engine detail, not public API. It may change in any release.
  */
 final class StyleResolver
 {

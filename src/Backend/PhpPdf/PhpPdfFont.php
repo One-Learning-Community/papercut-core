@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Papercut\Backend\PhpPdf;
+namespace Quoin\Backend\PhpPdf;
 
 use Dskripchenko\PhpPdf\Pdf\PdfFont;
-use Papercut\Backend\{FontHandle, JoinsInPairs};
+use Quoin\Backend\{FontHandle, JoinsInPairs};
 
-/** @internal Part of Papercut's PDF writer. Custom backends aren't supported, and it may change in any release. */
+/** @internal Part of the PDF writer. Custom backends aren't supported, and it may change in any release. */
 final class PhpPdfFont implements FontHandle, JoinsInPairs
 {
     public function __construct(
