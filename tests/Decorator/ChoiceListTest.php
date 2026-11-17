@@ -131,10 +131,10 @@ final class ChoiceListTest extends TestCase
         [, $marker] = self::row(ChoiceList::radio()->option('A'));
         $r = (new StyleResolver($theme))->resolve($marker, ComputedStyle::root($theme));
 
-        // 0.75em at the default 10pt: a 7.5pt circle.
-        self::assertEqualsWithDelta(3.75, $r->radius, 1e-9);
+        // 0.75em at the default 10pt: a 7.5pt circle, its radius far past half so it stays one at any marker size.
         self::assertInstanceOf(Length::class, $r->width);
         self::assertEqualsWithDelta(7.5, $r->width->points, 1e-9);
+        self::assertGreaterThanOrEqual(10.0, $r->radius, 'at least half of a 2em (20pt) marker');
     }
 
     public function test_empty_list_renders_and_exports(): void

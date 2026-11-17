@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Papercut\Layout;
 
 use Papercut\Math\Font\TrueTypeFont;
-use Papercut\Math\Layout\{Box, Glyph, Rule};
+use Papercut\Math\Layout\{Box, DisplayItem, Glyph, Rule};
 use Papercut\Math\Render\SvgRenderer;
 use Papercut\Paint\{DrawSvg, Rect, TextRun};
 use Papercut\Style\ComputedStyle;
@@ -46,33 +46,35 @@ final class MathPainter
         }
         /** @var list<Glyph> $paths */
         $paths = [];
-        foreach ($box->items as $item) {
+        $box->each(static function (DisplayItem $item, float $dx, float $dy) use ($f, $x, $baseline, $color, $handle, $font, $engine, $style, &$paths): void {
             if ($item instanceof Rule) {
-                $f->addOp(new Rect($x + $item->x, $baseline + $item->y, $item->w, $item->h, fill: $color));
-                continue;
+                $f->addOp(new Rect($x + $dx + $item->x, $baseline + $dy + $item->y, $item->w, $item->h, fill: $color));
+                return;
             }
             if (!$item instanceof Glyph) {
-                continue;
+                return;
             }
+            $gx = $x + $dx + $item->x;
+            $gy = $baseline + $dy + $item->y;
             $cp = self::codePoint($item->text);
-            if ($cp === null) {
-                $paths[] = $item;
-                continue;
+            if ($cp === null || $item->sx !== 1.0 || $item->sy !== 1.0) { // a scaled glyph (a stretch run) is only ever a path
+                $paths[] = $item->translated($dx, $dy);
+                return;
             }
             $gid = $font->gid($cp);
             if ($gid === $item->gid && $gid !== 0) {
-                $f->addOp(new TextRun($x + $item->x, $baseline + $item->y, $item->text ?? '', $handle, $item->size, $color));
-                continue;
+                $f->addOp(new TextRun($gx, $gy, $item->text ?? '', $handle, $item->size, $color));
+                return;
             }
             if ($gid === 0) {
                 // The math font does not have it: set it the way a paragraph would.
                 foreach ($engine->context()->itemizer()->runsFor($item->text ?? '', $style) as [$text, $face]) {
-                    $f->addOp(new TextRun($x + $item->x, $baseline + $item->y, $text, $face, $item->size, $color));
+                    $f->addOp(new TextRun($gx, $gy, $text, $face, $item->size, $color));
                 }
-                continue;
+                return;
             }
-            $paths[] = $item; // a variant of the character, not the character's own glyph
-        }
+            $paths[] = $item->translated($dx, $dy); // a variant of the character, not the character's own glyph
+        });
         if ($paths !== []) {
             // php-pdf's SVG drawing ignores the view box's origin, so the SVG is drawn from a zero origin: the glyphs are
             // moved down by the ascent into a box with none, which makes the view box "0 0 width height".

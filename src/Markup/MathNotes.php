@@ -10,7 +10,7 @@ use Papercut\Math\Node\Node as MathNode;
 use Papercut\Math\NoteLevel;
 
 /**
- * Turns what MathML input lost, recorded inside a formula tree, into fidelity notes.
+ * Turns what a formula's input (MathML or TeX) lost, recorded inside a formula tree, into fidelity notes.
  *
  * @internal Part of Papercut's engine, not its public API. It may change in any release.
  */
@@ -26,7 +26,8 @@ final class MathNotes
                     NoteLevel::Dropped => FidelityLevel::Dropped,
                     NoteLevel::Approximated => FidelityLevel::Approximated,
                 },
-                'math <' . $n->element . '> (' . $n->reason . ')',
+                // A MathML note names a tag (`<mtable>`); a TeX note, which says where as a byte offset, names a command (`\foo`).
+                (str_starts_with($n->where, 'offset ') ? 'math ' . $n->element : 'math <' . $n->element . '>') . ' (' . $n->reason . ')',
                 $n->where,
             );
         }

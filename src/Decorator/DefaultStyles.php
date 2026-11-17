@@ -141,10 +141,12 @@ final class DefaultStyles
             justify: Justify::Center,
             shrink: 0.0,
         );
-        $s['choice.marker.radio'] = Style::make(radius: Length::em(0.375));
+        // Far past half of any marker, so a radio stays a circle when a variant resizes the marker: renderers clamp a
+        // radius to half the box.
+        $s['choice.marker.radio'] = Style::make(radius: Length::em(100));
         $s['choice.marker.selected'] = Style::make(borderColor: self::c('slate-800'));
         $s['choice.mark'] = Style::make(width: Length::em(0.42), height: Length::em(0.42), background: self::c('slate-800'), radius: Length::em(0.08));
-        $s['choice.mark.radio'] = Style::make(radius: Length::em(0.21));
+        $s['choice.mark.radio'] = Style::make(radius: Length::em(100));
         $s['choice.label.selected'] = Style::make(fontWeight: 700);
 
         $s['key-value'] = Style::make();
