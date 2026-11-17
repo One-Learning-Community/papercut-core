@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Quoin\Layout;
 
-use Quoin\Math\Font\TrueTypeFont;
+use Quoin\Math\Font\Font;
 use Quoin\Math\Layout\{Box, DisplayItem, Glyph, Rule};
 use Quoin\Math\Render\SvgRenderer;
 use Quoin\Paint\{DrawSvg, Rect, TextRun};
@@ -37,7 +37,7 @@ final class MathPainter
         float $baseline,
         Color $color,
         CachedFont $handle,
-        TrueTypeFont $font,
+        Font $font,
         LayoutEngine $engine,
         ComputedStyle $style,
     ): void {

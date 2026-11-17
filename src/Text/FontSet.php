@@ -22,7 +22,7 @@ final readonly class FontSet
      * @param list<FontFace> $faces
      * @param list<string> $fallbacks families tried, in order, for glyphs the primary font lacks
      * @param array<string, string> $wordNames the name Word should use for a family, keyed by family (any case)
-     * @param ?string $mathFont path of a TrueType math font; null means the bundled STIX Two Math
+     * @param ?string $mathFont path of an OpenType math font (TrueType or CFF outlines, with a MATH table); null means the bundled STIX Two Math
      */
     public function __construct(
         public array $faces = [],
@@ -76,7 +76,7 @@ final readonly class FontSet
         return new self($this->faces, [...$this->fallbacks, ...array_values($families)], $this->wordNames, $this->mathFont);
     }
 
-    /** The font equations are set in (PDF and HTML; Word always uses Cambria Math). It must be a TrueType math font. */
+    /** The font equations are set in (PDF and HTML; Word always uses Cambria Math). It must be an OpenType math font with a MATH table: TrueType outlines or CFF (a PDF embeds a CFF font whole, so it is larger). */
     public function withMathFont(string $path): self
     {
         // The bundled font by another spelling of its path is still the bundled font.

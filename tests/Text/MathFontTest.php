@@ -47,7 +47,7 @@ final class MathFontTest extends TestCase
         $math = $registry->mathFont();
         $paths = array_column(array_filter($registry->faces(), static fn (array $f): bool => $f['family'] === FontSet::MATH_FAMILY), 'path');
         $this->assertSame([realpath($path)], $paths);
-        $this->assertInstanceOf(\Quoin\Math\Font\TrueTypeFont::class, $math['font']);
+        $this->assertInstanceOf(\Quoin\Math\Font\Font::class, $math['font']);
         $this->assertSame($math['font'], $registry->mathFont()['font']);
     }
 

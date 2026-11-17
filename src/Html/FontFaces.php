@@ -35,7 +35,7 @@ final class FontFaces
             if ($src === null) {
                 continue;
             }
-            $out .= '@font-face{font-family:' . Css::string($face->family) . ';src:url(' . $src . ') format("truetype");font-weight:' . $face->weight
+            $out .= '@font-face{font-family:' . Css::string($face->family) . ';src:url(' . $src . ') format("' . self::format($face) . '");font-weight:' . $face->weight
                 . ';font-style:' . ($face->style === FontStyle::Italic ? 'italic' : 'normal') . "}\n";
         }
 
@@ -50,7 +50,19 @@ final class FontFaces
             throw new FontNotFound('Font file not found: ' . $face->path);
         }
 
-        return 'data:font/ttf;base64,' . base64_encode($bytes);
+        return 'data:font/' . (str_starts_with($bytes, 'OTTO') ? 'otf' : 'ttf') . ';base64,' . base64_encode($bytes);
+    }
+
+    /** The CSS format of a face's file: "opentype" for CFF outlines (sfnt tag OTTO), else "truetype". */
+    private static function format(FontFace $face): string
+    {
+        $handle = @fopen($face->path, 'rb');
+        $tag = $handle === false ? false : fread($handle, 4);
+        if ($handle !== false) {
+            fclose($handle);
+        }
+
+        return $tag === 'OTTO' ? 'opentype' : 'truetype';
     }
 
     /** @param (\Closure(FontFace): ?string)|null $fontUrl */
@@ -74,6 +86,6 @@ final class FontFaces
         $face = new FontFace(FontSet::MATH_FAMILY, $set->mathFontPath());
         $src = $mode === FontMode::Embed || $mode === FontMode::Sources ? self::dataUri($face) : self::link($face, $fontUrl);
 
-        return $src === null ? '' : '@font-face{font-family:' . Css::string($face->family) . ';src:url(' . $src . ') format("truetype");font-weight:400;font-style:normal}' . "\n";
+        return $src === null ? '' : '@font-face{font-family:' . Css::string($face->family) . ';src:url(' . $src . ') format("' . self::format($face) . '");font-weight:400;font-style:normal}' . "\n";
     }
 }

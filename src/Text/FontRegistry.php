@@ -6,7 +6,7 @@ namespace Quoin\Text;
 
 use Quoin\Backend\Backend;
 use Quoin\Exception\{FontNotFound, InvalidValue};
-use Quoin\Math\Font\TrueTypeFont;
+use Quoin\Math\Font\Font;
 use Quoin\Math\Math;
 
 /** @internal Engine detail, not public API. It may change in any release. */
@@ -20,9 +20,9 @@ final class FontRegistry
     private array $resolved = [];
 
     private ?string $mathPath = null;
-    /** @var ?array{handle: CachedFont, font: TrueTypeFont} */
+    /** @var ?array{handle: CachedFont, font: Font} */
     private ?array $math = null;
-    private ?TrueTypeFont $checkedMath = null;
+    private ?Font $checkedMath = null;
 
     public function __construct(private readonly Backend $backend)
     {
@@ -49,7 +49,7 @@ final class FontRegistry
             if (!is_file($registry->mathPath) || !is_readable($registry->mathPath)) {
                 throw new FontNotFound('Font file not found: ' . $registry->mathPath);
             }
-            $registry->checkedMath = TrueTypeFont::fromFile($registry->mathPath);
+            $registry->checkedMath = Font::fromFile($registry->mathPath);
         }
         return $registry;
     }
@@ -58,7 +58,7 @@ final class FontRegistry
      * The math font, opened once. Its face is registered with the backend (and so embedded) only from here on,
      * so documents without equations are unchanged.
      *
-     * @return array{handle: CachedFont, font: TrueTypeFont}
+     * @return array{handle: CachedFont, font: Font}
      */
     public function mathFont(): array
     {
@@ -70,7 +70,7 @@ final class FontRegistry
 
         return $this->math = [
             'handle' => $this->resolve(FontSet::MATH_FAMILY),
-            'font' => $this->checkedMath ?? TrueTypeFont::fromFile($path),
+            'font' => $this->checkedMath ?? Font::fromFile($path),
         ];
     }
 
