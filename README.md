@@ -11,7 +11,7 @@ There is no browser and no CSS cascade.
 
 **Documentation:** [one-learning-community.github.io/quoin](https://one-learning-community.github.io/quoin/guide/)
 
-> **Status: 0.18, before 1.0.** Until 1.0 a minor version may change the API; patch versions won't. Using Laravel? See
+> **Status: 0.19, before 1.0.** Until 1.0 a minor version may change the API; patch versions won't. Using Laravel? See
 > [`quoin/laravel`](../laravel) for the Blade front end of this same engine.
 
 ## Requirements

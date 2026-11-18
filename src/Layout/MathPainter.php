@@ -82,7 +82,9 @@ final class MathPainter
             $renderer = new SvgRenderer($font, sprintf('#%02x%02x%02x', $color->r, $color->g, $color->b), $color->alpha);
             $svg = SvgDocument::parse($renderer->glyphPaths(
                 array_map(static fn (Glyph $g): Glyph => $g->translated(0.0, $box->ascent), $paths),
-                new Box($box->width, 0.0, $height),
+                $box->width,
+                0.0,
+                $height,
             ));
             $f->addOp(new DrawSvg($x, $baseline - $box->ascent, $box->width, $height, $svg, $engine->context()->svgFonts($style)));
         }
