@@ -7,6 +7,7 @@ namespace Quoin\Tests\Text;
 use Quoin\{Document, Equation, Page, Text};
 use Quoin\Export\{FontMode, HtmlOptions, PdfOptions};
 use Quoin\Math\Math;
+use Quoin\Tests\Support\PdfInspector;
 use Quoin\Text\FontSet;
 use PHPUnit\Framework\TestCase;
 
@@ -40,16 +41,7 @@ final class CffMathFontTest extends TestCase
         $this->assertStringStartsWith('%PDF-', $pdf);
         $this->assertStringContainsString('/FontFile3', $pdf); // the CFF font program, embedded whole
         $this->assertGreaterThan(strlen($bundled), strlen($pdf));
-        $file = tempnam(sys_get_temp_dir(), 'cffpdf') ?: $this->fail('no temp file');
-        try {
-            file_put_contents($file, $pdf);
-            if (trim((string) shell_exec('command -v qpdf')) !== '') {
-                exec('qpdf --check ' . escapeshellarg($file) . ' 2>&1', $out, $code);
-                $this->assertSame(0, $code, implode("\n", $out));
-            }
-        } finally {
-            unlink($file);
-        }
+        PdfInspector::check($pdf);
     }
 
     public function test_an_html_export_with_equations_in_a_cff_math_font(): void
