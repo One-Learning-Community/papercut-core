@@ -10,7 +10,7 @@ use Quoin\Markup\Note;
 
 /**
  * Invalid UTF-8 in text a developer passed to a builder: replaced with U+FFFD once, at the boundary, and reported.
- * The twin of Quoin\Math\Utf8 in quoin/math, which cannot depend on this package; keep the two in step.
+ * The twin of Phactorial\Utf8 in phactorial/phactorial, which cannot depend on this package; keep the two in step.
  *
  * @internal Engine detail, not public API. It may change in any release.
  */

@@ -9,7 +9,7 @@ use Quoin\Exception\InvalidValue;
 use Quoin\Tests\Support\PdfInspector;
 use Quoin\Decorator\{Badge, CodeBlock};
 use Quoin\Export\{HtmlOptions, PdfOptions};
-use Quoin\Math\Math;
+use Phactorial\Math;
 use PHPUnit\Framework\TestCase;
 
 final class InvalidUtf8Test extends TestCase

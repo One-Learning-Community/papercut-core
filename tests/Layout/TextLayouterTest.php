@@ -250,7 +250,7 @@ final class TextLayouterTest extends TestCase
     {
         foreach (['underline', 'strike'] as $kind) {
             $st = Style::make(...[$kind => true]);
-            $t = Text::spans(new Span('ab ', $st), new Span('', $st, math: \Quoin\Math\Math::frac('1', '2')), new Span(' cd', $st));
+            $t = Text::spans(new Span('ab ', $st), new Span('', $st, math: \Phactorial\Math::frac('1', '2')), new Span(' cd', $st));
             $ops = (new LayoutHarness())->layout($t, 400)->fragment?->ops() ?? [];
             $lines = array_values(array_filter($ops, fn ($o) => $o instanceof LineOp));
             self::assertCount(2, $lines, $kind);

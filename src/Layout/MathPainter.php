@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Quoin\Layout;
 
-use Quoin\Math\Font\Font;
-use Quoin\Math\Layout\{Box, DisplayItem, Glyph, Rule};
-use Quoin\Math\Render\SvgRenderer;
+use Phactorial\Font\Font;
+use Phactorial\Layout\{Box, DisplayItem, Glyph, Rule};
+use Phactorial\Render\SvgRenderer;
 use Quoin\Paint\{DrawSvg, Rect, TextRun};
 use Quoin\Style\ComputedStyle;
 use Quoin\Text\CachedFont;

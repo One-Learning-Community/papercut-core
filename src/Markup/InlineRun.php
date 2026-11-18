@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Quoin\Markup;
 
-use Quoin\Math\Node\Node as MathNode;
+use Phactorial\Node\Node as MathNode;
 use Quoin\Span;
 use Quoin\Style\Style;
 

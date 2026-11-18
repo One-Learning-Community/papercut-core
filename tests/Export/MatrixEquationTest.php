@@ -7,7 +7,7 @@ namespace Quoin\Tests\Export;
 use Quoin\{Document, Equation, Page, Span, Text};
 use Quoin\Export\PdfOptions;
 use Quoin\Markup\Markup;
-use Quoin\Math\Math;
+use Phactorial\Math;
 use PHPUnit\Framework\TestCase;
 
 final class MatrixEquationTest extends TestCase

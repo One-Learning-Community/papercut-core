@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Quoin\Toc;
 
 use Quoin\{Span, Text};
-use Quoin\Math\Render\TextWriter;
+use Phactorial\Render\TextWriter;
 
 /**
  * What a heading says and how deep it sits. Shared by bookmarks and the table of contents.

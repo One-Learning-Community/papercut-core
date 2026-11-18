@@ -7,7 +7,7 @@ namespace Quoin\Tests\Html;
 use Quoin\{Document, Equation, Page, Text};
 use Quoin\Export\{FontMode, HtmlOptions};
 use Quoin\Html\LocalFonts;
-use Quoin\Math\Math;
+use Phactorial\Math;
 use Quoin\Value\{Color, Length};
 use PHPUnit\Framework\TestCase;
 

@@ -6,7 +6,7 @@ namespace Quoin\Tests\Layout;
 
 use Quoin\{Equation, Text, View};
 use Quoin\Layout\{Fragment, Status};
-use Quoin\Math\Math;
+use Phactorial\Math;
 use Quoin\Paint\{DrawSvg, Op, Rect, TextRun};
 use Quoin\Style\{Theme, TextAlign};
 use Quoin\Tests\Support\{FakeBackend, LayoutHarness};

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Quoin\Text;
 
-use Quoin\Math\Layout\Box;
+use Phactorial\Layout\Box;
 use Quoin\Style\ComputedStyle;
 
 /** @internal Engine detail, not public API. It may change in any release. */

@@ -11,14 +11,14 @@ There is no browser and no CSS cascade.
 
 **Documentation:** [one-learning-community.github.io/quoin](https://one-learning-community.github.io/quoin/guide/)
 
-> **Status: 0.17, before 1.0.** Until 1.0 a minor version may change the API; patch versions won't. Using Laravel? See
+> **Status: 0.18, before 1.0.** Until 1.0 a minor version may change the API; patch versions won't. Using Laravel? See
 > [`quoin/laravel`](../laravel) for the Blade front end of this same engine.
 
 ## Requirements
 
 PHP 8.4+, `ext-mbstring`, `ext-zlib`, `ext-dom`. Composer dependencies are
 [`dskripchenko/php-pdf`](https://github.com/dskripchenko/php-pdf) (MIT), used behind a backend adapter, and
-`quoin/math` for equations. STIX Two Math is bundled as the math font.
+`phactorial/phactorial` for equations. STIX Two Math is bundled as the math font.
 
 ## Quick start
 
@@ -62,7 +62,7 @@ Output: `$document->toPdf()` returns an `Output`: `->save($path)`, `->bytes()` (
 | `PageNumber::make('Page {page} of {total}')` | Page number and page count. |
 | `PageBreak::make()` | Forced break. |
 | `ColumnFlow::make(...)`, `ColumnBreak::make()` | Text set in columns, like Word's; a `ColumnBreak` sends what follows to the next column. |
-| `Equation::of(...)` | A block [equation](https://one-learning-community.github.io/quoin/guide/equations), built with `Quoin\Math\Math` nodes. Use `Span::math()` for one inside a line. |
+| `Equation::of(...)` | A block [equation](https://one-learning-community.github.io/quoin/guide/equations), built with `Phactorial\Math` nodes. Use `Span::math()` for one inside a line. |
 | `Card`, `Callout`, `Blockquote`, `Section`, `Field`, `ChoiceList`, `KeyValueList`, `Badge`, `Stat`, `Totals`, `Signature`, `CodeBlock` | [Decorators](https://one-learning-community.github.io/quoin/guide/decorators) (in `Quoin\Decorator`): ready-made pieces that take their look from the theme. |
 
 Components are immutable: every method returns a modified copy.

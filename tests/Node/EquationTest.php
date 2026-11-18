@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Quoin\Tests\Node;
 
 use Quoin\Equation;
-use Quoin\Math\Math;
-use Quoin\Math\Node\Fraction;
+use Phactorial\Math;
+use Phactorial\Node\Fraction;
 use PHPUnit\Framework\TestCase;
 
 final class EquationTest extends TestCase

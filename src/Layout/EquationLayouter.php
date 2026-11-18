@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Quoin\Layout;
 
 use Quoin\{Equation, Node};
-use Quoin\Math\Layout\Box;
+use Phactorial\Layout\Box;
 use Quoin\Style\{ComputedStyle, TextAlign};
 
 /**

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Quoin\Tests\Text;
 
 use Quoin\Backend\PhpPdf\PhpPdfBackend;
-use Quoin\Math\Exception\UnsupportedFont;
-use Quoin\Math\Math;
+use Phactorial\Exception\UnsupportedFont;
+use Phactorial\Math;
 use Quoin\Text\{FontRegistry, FontSet};
 use PHPUnit\Framework\TestCase;
 
@@ -47,7 +47,7 @@ final class MathFontTest extends TestCase
         $math = $registry->mathFont();
         $paths = array_column(array_filter($registry->faces(), static fn (array $f): bool => $f['family'] === FontSet::MATH_FAMILY), 'path');
         $this->assertSame([realpath($path)], $paths);
-        $this->assertInstanceOf(\Quoin\Math\Font\Font::class, $math['font']);
+        $this->assertInstanceOf(\Phactorial\Font\Font::class, $math['font']);
         $this->assertSame($math['font'], $registry->mathFont()['font']);
     }
 

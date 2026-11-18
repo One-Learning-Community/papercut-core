@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Quoin\Text;
 
 use Quoin\Exception\FontNotFound;
-use Quoin\Math\Math;
+use Phactorial\Math;
 
 /** Format-neutral font configuration: extra faces on top of the bundled Inter and Cousine, and glyph fallback families. */
 final readonly class FontSet

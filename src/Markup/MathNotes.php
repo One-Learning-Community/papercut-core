@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Quoin\Markup;
 
 use Quoin\Export\FidelityLevel;
-use Quoin\Math\Math;
-use Quoin\Math\Node\Node as MathNode;
-use Quoin\Math\NoteLevel;
+use Phactorial\Math;
+use Phactorial\Node\Node as MathNode;
+use Phactorial\NoteLevel;
 
 /**
  * Turns what a formula's input (MathML or TeX) lost, recorded inside a formula tree, into fidelity notes.

@@ -6,20 +6,18 @@ namespace Quoin\Tests\Text;
 
 use Quoin\{Document, Equation, Page, Text};
 use Quoin\Export\{FontMode, HtmlOptions, PdfOptions};
-use Quoin\Math\Math;
+use Phactorial\Math;
 use Quoin\Tests\Support\PdfInspector;
 use Quoin\Text\FontSet;
 use PHPUnit\Framework\TestCase;
 
-/** A CFF (OpenType/PostScript) math font, Fira Math, set as the equation font. The font file lives in the math package's test fixtures. */
+/** A CFF (OpenType/PostScript) math font, Fira Math, set as the equation font. The font file (with its license) lives in this package's test fixtures. */
 final class CffMathFontTest extends TestCase
 {
     private function fira(): string
     {
-        $path = __DIR__ . '/../../vendor/quoin/math/tests/fixtures/FiraMath-Regular.otf';
-        if (!is_file($path)) {
-            $this->markTestSkipped('the math package test fixtures are not installed (dist archive)');
-        }
+        $path = __DIR__ . '/../fixtures/FiraMath-Regular.otf';
+        self::assertFileExists($path, 'the Fira Math fixture is part of the repository');
 
         return $path;
     }

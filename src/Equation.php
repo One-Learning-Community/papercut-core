@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Quoin;
 
 use Quoin\Concerns\HasStyle;
-use Quoin\Math\Math;
-use Quoin\Math\Node\Node as MathNode;
+use Phactorial\Math;
+use Phactorial\Node\Node as MathNode;
 
 /**
  * A displayed equation, set on a line of its own. It takes the text's size and color and is laid out in

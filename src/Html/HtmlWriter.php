@@ -13,7 +13,7 @@ use Quoin\Exception\InvalidValue;
 use Quoin\Export\{Fidelity, HtmlOptions};
 use Quoin\Layout\{GridCell, LayoutEngine, TableGrid, WidthResolver};
 use Quoin\Style\{ComputedStyle, Justify, ListMarker, StyleName, TextAlign};
-use Quoin\Math\Render\MathmlWriter;
+use Phactorial\Render\MathmlWriter;
 use Quoin\Text\{FontStyle, SvgFonts};
 use Quoin\Value\{Auto, ColumnSpec, Fr, Length, Percent};
 use Quoin\Toc\TocIndex;

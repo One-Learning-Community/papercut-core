@@ -6,7 +6,7 @@ namespace Quoin\Tests\Text;
 
 use Quoin\Decorator\{Badge, Field};
 use Quoin\Markup\Markup;
-use Quoin\Math\Math;
+use Phactorial\Math;
 use Quoin\{Span, Text};
 use Quoin\Toc\HeadingText;
 use PHPUnit\Framework\TestCase;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Quoin\Tests\Feature;
 
 use Quoin\{Document, Equation, Page, Text};
-use Quoin\Math\Math;
+use Phactorial\Math;
 use Quoin\Paint\DrawSvg;
 use Quoin\Tests\Support\{LayoutHarness, PdfInspector};
 use PHPUnit\Framework\TestCase;

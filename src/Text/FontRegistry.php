@@ -6,8 +6,8 @@ namespace Quoin\Text;
 
 use Quoin\Backend\Backend;
 use Quoin\Exception\{FontNotFound, InvalidValue};
-use Quoin\Math\Font\Font;
-use Quoin\Math\Math;
+use Phactorial\Font\Font;
+use Phactorial\Math;
 
 /** @internal Engine detail, not public API. It may change in any release. */
 final class FontRegistry

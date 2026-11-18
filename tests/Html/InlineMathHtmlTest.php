@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Quoin\Tests\Html;
 
 use Quoin\{Document, Page, Span, Table, Text};
-use Quoin\Math\Math;
+use Phactorial\Math;
 use PHPUnit\Framework\TestCase;
 
 final class InlineMathHtmlTest extends TestCase

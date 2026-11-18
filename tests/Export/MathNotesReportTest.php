@@ -8,7 +8,7 @@ use Quoin\{Document, Equation, Link, Page, Span, Table, Text};
 use Quoin\Exception\UnsupportedFeature;
 use Quoin\Export\{HtmlOptions, PdfOptions};
 use Quoin\Markup\Markup;
-use Quoin\Math\Math;
+use Phactorial\Math;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

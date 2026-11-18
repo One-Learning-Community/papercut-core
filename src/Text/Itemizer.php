@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Quoin\Text;
 
-use Quoin\Math\Layout\Box;
-use Quoin\Math\Math;
-use Quoin\Math\Node\Node as MathNode;
+use Phactorial\Layout\Box;
+use Phactorial\Math;
+use Phactorial\Node\Node as MathNode;
 use Quoin\Span;
 use Quoin\Style\{ComputedStyle, StyleResolver, Theme, WhiteSpace};
 

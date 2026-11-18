@@ -6,8 +6,8 @@ namespace Quoin;
 
 use Quoin\Concerns\NameRules;
 use Quoin\Decorator\Badge;
-use Quoin\Math\Math;
-use Quoin\Math\Node\Node as MathNode;
+use Phactorial\Math;
+use Phactorial\Node\Node as MathNode;
 use Quoin\Paint\Link as PaintLink;
 use Quoin\Style\Style;
 

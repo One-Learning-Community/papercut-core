@@ -6,7 +6,7 @@ namespace Quoin\Tests\Text;
 
 use Quoin\{Equation, Span, Text};
 use Quoin\Layout\Fragment;
-use Quoin\Math\Math;
+use Phactorial\Math;
 use Quoin\Paint\{Link as LinkOp, Op, TextRun};
 use Quoin\Style\{ComputedStyle, Style, TextAlign, Theme};
 use Quoin\Tests\Support\LayoutHarness;
@@ -29,7 +29,7 @@ final class InlineMathTest extends TestCase
         return array_values(array_filter($f->ops(), static fn (Op $o): bool => $o instanceof TextRun));
     }
 
-    private static function mathWidth(LayoutHarness $h, \Quoin\Math\Node\Node $m): float
+    private static function mathWidth(LayoutHarness $h, \Phactorial\Node\Node $m): float
     {
         return Math::layout($m, Theme::default()->fontSize, false, $h->engine->context()->fonts->mathFont()['font'], false)->width;
     }

@@ -12,7 +12,7 @@ use Quoin\Link;
 use Quoin\Markup\Markup;
 use Quoin\Markup\MarkupOptions;
 use Quoin\Markup\StyleMode;
-use Quoin\Math\Render\TextWriter;
+use Phactorial\Render\TextWriter;
 use Quoin\Page;
 use Quoin\Style\TextAlign;
 use Quoin\Tests\Support\FakeBackend;
