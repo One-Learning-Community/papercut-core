@@ -17,7 +17,8 @@ use Quoin\Vector\SvgDocument;
  * Paints a laid-out formula into a fragment. A glyph that stands for one character the math font draws as that
  * character is text, so it can be selected and searched. A glyph the math font lacks is set in the font the text
  * would use (a fallback family when one has it). Every other glyph (stretched fences, radical signs, assembly
- * pieces, variants with no code point of their own) is drawn as a path, all in one SVG; rules are rectangles.
+ * pieces, variants with no code point of their own) is drawn as a path, all in one SVG; rules are rectangles. A color
+ * from the formula (`\\color`, `mathcolor`) replaces the text color for the glyphs and rules it covers.
  *
  * @internal Engine detail, not public API. It may change in any release.
  */
@@ -48,12 +49,13 @@ final class MathPainter
         $paths = [];
         $box->each(static function (DisplayItem $item, float $dx, float $dy) use ($f, $x, $baseline, $color, $handle, $font, $engine, $style, &$paths): void {
             if ($item instanceof Rule) {
-                $f->addOp(new Rect($x + $dx + $item->x, $baseline + $dy + $item->y, $item->w, $item->h, fill: $color));
+                $f->addOp(new Rect($x + $dx + $item->x, $baseline + $dy + $item->y, $item->w, $item->h, fill: self::tint($color, $item->color)));
                 return;
             }
             if (!$item instanceof Glyph) {
                 return;
             }
+            $ink = self::tint($color, $item->color);
             $gx = $x + $dx + $item->x;
             $gy = $baseline + $dy + $item->y;
             $cp = self::codePoint($item->text);
@@ -63,13 +65,13 @@ final class MathPainter
             }
             $gid = $font->gid($cp);
             if ($gid === $item->gid && $gid !== 0) {
-                $f->addOp(new TextRun($gx, $gy, $item->text ?? '', $handle, $item->size, $color));
+                $f->addOp(new TextRun($gx, $gy, $item->text ?? '', $handle, $item->size, $ink));
                 return;
             }
             if ($gid === 0) {
                 // The math font does not have it: set it the way a paragraph would.
                 foreach ($engine->context()->itemizer()->runsFor($item->text ?? '', $style) as [$text, $face]) {
-                    $f->addOp(new TextRun($gx, $gy, $text, $face, $item->size, $color));
+                    $f->addOp(new TextRun($gx, $gy, $text, $face, $item->size, $ink));
                 }
                 return;
             }
@@ -88,6 +90,19 @@ final class MathPainter
             ));
             $f->addOp(new DrawSvg($x, $baseline - $box->ascent, $box->width, $height, $svg, $engine->context()->svgFonts($style)));
         }
+    }
+
+    /**
+     * The color an item is drawn in: its own `#rrggbb` from the formula when it has one, at the text color's opacity,
+     * else the text color.
+     */
+    private static function tint(Color $text, ?string $hex): Color
+    {
+        if ($hex === null) {
+            return $text;
+        }
+        $c = Color::hex($hex);
+        return Color::rgb($c->r, $c->g, $c->b, $text->alpha);
     }
 
     /** The code point of a string of exactly one, else null. */

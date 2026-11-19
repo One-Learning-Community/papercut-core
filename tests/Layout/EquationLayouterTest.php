@@ -183,4 +183,23 @@ final class EquationLayouterTest extends TestCase
         $this->assertNotSame([], $svgs);
         $this->assertStringContainsString('fill-opacity="0.5"', $svgs[0]->svg->xml);
     }
+
+    public function test_formula_color_overrides_text_color(): void
+    {
+        $h = new LayoutHarness();
+        $eq = Equation::of(Math::tex('a + \\textcolor{blue}{\\frac{b}{c}} + \\textcolor{#00ff00}{\\left( d \\right)}'))->color(Color::rgb(255, 0, 0, 0.5));
+        $f = $h->layout($eq, 400)->fragment;
+        $this->assertNotNull($f);
+        $colors = [];
+        foreach (self::ops($f) as $op) {
+            if ($op instanceof TextRun) {
+                $colors[$op->text] = $op->color;
+            } elseif ($op instanceof Rect) {
+                $this->assertEquals(Color::rgb(0, 0, 255, 0.5), $op->fill, 'the fraction bar takes the formula color');
+            }
+        }
+        $this->assertEquals(Color::rgb(255, 0, 0, 0.5), $colors['𝑎'], 'uncolored text keeps the text color');
+        $this->assertEquals(Color::rgb(0, 0, 255, 0.5), $colors['𝑏'], 'the formula color keeps the text opacity');
+        $this->assertEquals(Color::rgb(0, 255, 0, 0.5), $colors['𝑑']);
+    }
 }
